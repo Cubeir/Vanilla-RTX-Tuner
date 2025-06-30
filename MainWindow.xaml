@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Vanilla_RTX_Tuner_WinUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Vanilla_RTX_Tuner_WinUI"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="MainGrid">
+
+
+        <!-- Title bar -->
+        <Button x:Name="HelpButton"
+                Content="&#xE9CE;"
+                FontFamily="Segoe MDL2 Assets"
+                Width="40"
+                CornerRadius="0"
+                Height="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="15, 0, 138, 15"
+                FontSize="17"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Click="HelpButton_Click"
+                ToolTipService.ToolTip="Help" />
+
+        <Grid HorizontalAlignment="Center"
+              VerticalAlignment="Top"
+              Margin="0, 1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="iconImageBox"
+                   Grid.Column="0"
+                   Source="/Assets/netherite-rounded.png"
+                   Margin="0,0,7,0"
+                   Height="20"
+                   Width="Auto"
+                   VerticalAlignment="Center" />
+
+            <TextBlock x:Name="TitleBarText"
+                       Grid.Column="1"
+                       FontFamily="Segoe UI"
+                       Text="Vanilla RTX Tuner"
+                       Margin="0,6,0,5"
+                       VerticalAlignment="Center" />
+        </Grid>
+
+
+        <!-- Output log and progress bar -->
+        <TextBox x:Name="SidebarLog"
+                 Margin="15,80,15,15"
+                 Width="350"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Left"
+                 TextWrapping="Wrap"
+                 IsTabStop="True"
+                 AcceptsReturn="True"
+                 AllowFocusOnInteraction="True"
+                 IsReadOnly="True"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ToolTipService.ToolTip="All relevant logs appear here." />
+
+        <!-- simple progress bar, could improve later to update in real time -->
+        <ProgressBar x:Name="SidelogProgressBar"
+                     Width="348"
+                     IsIndeterminate="False"
+                     ShowPaused="False"
+                     ShowError="False"
+                     Margin="16.25,80,15,15"
+                     VerticalAlignment="Top"
+                     HorizontalAlignment="Left" />
+
+        <!-- Locate Pack Button -->
+        <Button x:Name="LocatePack"
+                Click="LocatePacks_Click"
+                Width="220"
+                Margin="15,40,0,15"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                FontWeight="SemiBold"
+                ToolTipService.ToolTip="Locates all currently-installed Vanilla RTX packages in Minecraft or Minecraft Preview (Optional: Enable Target Preview)">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <FontIcon Glyph="&#xF78B;"
+                          FontSize="18"
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="Locate Vanilla RTX Projects"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- Target Preview? -->
+        <ToggleButton x:Name="TargetPreviewToggle"
+                      Content="Target Preview"
+                      Margin="242.5,40,0,15"
+                      Width="122"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"
+                      FontWeight="SemiBold"
+                      Checked="TargetPreviewToggle_Checked"
+                      Unchecked="TargetPreviewToggle_Unchecked"
+                      ToolTipService.ToolTip="Decides whether the app targets Minecraft or Minecraft Preview." />
+
+        <!-- Pack Selection Options -->
+        <StackPanel x:Name="PackOptionsPanel"
+                    Orientation="Vertical"
+                    Margin="399,40,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
+
+            <CheckBox x:Name="OptionsAllCheckBox"
+                      Content="Select Packages"
+                      IsThreeState="True"
+                      IsEnabled="False"
+                      IsChecked="False"
+                      Checked="SelectAll_Checked"
+                      Unchecked="SelectAll_Unchecked"
+                      Indeterminate="SelectAll_Indeterminate"
+                      FontWeight="SemiBold" />
+
+            <CheckBox x:Name="VanillaRTXCheckBox"
+                      Content="Vanilla RTX"
+                      Margin="20,0,0,0"
+                      IsEnabled="False"
+                      Checked="Option_Checked"
+                      Unchecked="Option_Unchecked"
+                      FontWeight="SemiBold" />
+
+            <CheckBox x:Name="NormalsCheckBox"
+                      Content="Vanilla RTX Normals"
+                      Margin="20,0,0,0"
+                      IsEnabled="False"
+                      Checked="Option_Checked"
+                      Unchecked="Option_Unchecked"
+                      FontWeight="SemiBold" />
+
+            <CheckBox x:Name="OpusCheckBox"
+                      Content="Vanilla RTX Opus"
+                      Margin="20,0,0,0"
+                      IsEnabled="False"
+                      Checked="Option_Checked"
+                      Unchecked="Option_Unchecked"
+                      FontWeight="SemiBold" />
+        </StackPanel>
+
+
+
+        <!-- Multiplier Sliders -->
+        <StackPanel x:Name="SlidersPanel"
+                    Orientation="Vertical"
+                    Margin="380,200,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="0">
+
+            <!-- Fog  -->
+            <TextBlock Text="Fog Multiplier (0.0-10.0)"
+                       FontWeight="Bold"
+                       ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.1–0.8 for light fog, 1–3 for thick fog. 0 to disable air fog (Affects: All Packs)" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <Slider x:Name="FogMultiplierSlider"
+                        Width="200"
+                        Minimum="0"
+                        Maximum="10"
+                        StepFrequency="0.001"
+                        SmallChange="0.001"
+                        Value="1"
+                        ValueChanged="FogMultiplierSlider_ValueChanged" />
+                <TextBox x:Name="FogMultiplierBox"
+                         Width="60"
+                         Text="1.0"
+                         TextChanged="FogMultiplierBox_TextChanged" />
+            </StackPanel>
+
+            <!-- Spacer -->
+            <Rectangle Height="12"
+                       Fill="Transparent" />
+
+            <!-- Emissivity -->
+            <TextBlock Text="Emissivity Multiplier (0.5-10.0)"
+                       FontWeight="Bold"
+                       ToolTipService.ToolTip="Scales emissivity of all emissive blocks. 1 = default, 0.5 = half brightness, higher values = stronger glow (Affects: All Packs)" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <Slider x:Name="EmissivityMultiplierSlider"
+                        Width="200"
+                        Minimum="0.5"
+                        Maximum="10"
+                        StepFrequency="0.1"
+                        SmallChange="0.1"
+                        Value="1"
+                        ValueChanged="EmissivityMultiplierSlider_ValueChanged" />
+                <TextBox x:Name="EmissivityMultiplierBox"
+                         Width="60"
+                         Text="1.0"
+                         TextChanged="EmissivityMultiplierBox_TextChanged" />
+            </StackPanel>
+
+            <Rectangle Height="12"
+                       Fill="Transparent" />
+
+            <!-- Normalmaps -->
+            <TextBlock Text="Normal Intensity (0-600%)"
+                       FontWeight="Bold"
+                       ToolTipService.ToolTip="Increases Normal Map Intensity of Normals or Opus variants. 100% = default, 0% = flatten, higher values = more pronounced normals. (Affects: Normals and Opus Only)"/>
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <Slider x:Name="NormalIntensitySlider"
+                        Width="200"
+                        Minimum="0"
+                        Maximum="600"
+                        StepFrequency="1"
+                        SmallChange="1"
+                        Value="100"
+                        ValueChanged="NormalIntensity_ValueChanged" />
+                <TextBox x:Name="NormalIntensityBox"
+                         Width="60"
+                         Text="100"
+                         TextChanged="NormalIntensity_TextChanged" />
+            </StackPanel>
+        </StackPanel>
+
+
+
+
+
+        <!-- Multiplier Sliders, Series 2 -->
+        <StackPanel x:Name="SlidersPanel_S2"
+                    Orientation="Vertical"
+                    Margin="675,200,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="0">
+
+            <!-- Noisy Materials -->
+            <TextBlock Text="Material Noise Offset (0-20)"
+                       FontWeight="Bold"
+                       ToolTipService.ToolTip="Creates grainy materials by adding a layer of noise in a manner that keeps the pack's intended look intact, your input determines the maximum deviation. (Affects: All Packs)" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <Slider x:Name="MaterialNoiseSlider"
+                        Width="200"
+                        Minimum="0"
+                        Maximum="20"
+                        StepFrequency="1"
+                        SmallChange="1"
+                        Value="0"
+                        ValueChanged="MaterialNoise_ValueChanged" />
+                <TextBox x:Name="MaterialNoiseBox"
+                         Width="60"
+                         Text="0"
+                         TextChanged="MaterialNoise_TextChanged" />
+            </StackPanel>
+
+
+            <Rectangle Height="12"
+                       Fill="Transparent" />
+           
+            <!-- Roughen Up -->
+            <TextBlock Text="Roughen Up (0-15)"
+                       FontWeight="Bold"
+                       ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact lower values more. (Affects: All Packs)" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <Slider x:Name="RoughenUpSlider"
+                        Width="200"
+                        Minimum="0"
+                        Maximum="15"
+                        StepFrequency="1"
+                        SmallChange="1"
+                        Value="0"
+                        ValueChanged="RoughenUp_ValueChanged" />
+                <TextBox x:Name="RoughenUpBox"
+                         Width="60"
+                         Text="0"
+                         TextChanged="RoughenUp_TextChanged" />
+            </StackPanel>
+            
+            
+            <Rectangle Height="12"
+                       Fill="Transparent" />
+            
+            
+            <!-- Butcher Heightmaps -->
+            <TextBlock Text="Butcher Heightmaps (0-255)"
+                       FontWeight="Bold"
+                       ToolTipService.ToolTip="Butchers heightmaps and reduces refinedness, 0 = no change, 255 = fully lazy heightmaps (Affects: Vanilla RTX Only)" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <Slider x:Name="ButcherHeightmapsSlider"
+                        Width="200"
+                        Minimum="0"
+                        Maximum="255"
+                        StepFrequency="1"
+                        SmallChange="1"
+                        Value="0"
+                        ValueChanged="ButcherHeightmaps_ValueChanged" />
+                <TextBox x:Name="ButcherHeightmapsBox"
+                         Width="60"
+                         Text="0"
+                         TextChanged="ButcherHeightmaps_TextChanged" />
+            </StackPanel>
+        </StackPanel>
+
+
+
+
+
+
+        <!-- Update Button -->
+        <Button x:Name="UpdateCoreVanillaRTX"
+                Click="UpdateCoreVanillaRTX_Click"
+                Width="280"
+                FontWeight="SemiBold"
+                Margin="380,0,0,55"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                ToolTipService.ToolTip="Downloads the latest release of Vanilla RTX and Vanilla RTX Normals and deploys them in the target folder (Opus and Pure must be downloaded manually!)">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <FontIcon Glyph="&#xEBD3;"
+                          FontSize="18"
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="Reinstall Latest Packages"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <!-- TuneButton -->
+        <Button x:Name="TuneSelection"
+                Click="TuneSelection_Click"
+                Width="280"
+                FontWeight="SemiBold"
+                Margin="380,0,0,15"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                ToolTipService.ToolTip="Begins the tuning process. Do not tamper with the program while it finishes.">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <FontIcon Glyph="&#xE9F5;"
+                          FontSize="18"
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="Tune Selection"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+
+
+
+        <!-- Export Selection Button -->
+        <Button x:Name="ExportPackages"
+                Click="ExportPackages_Click"
+                Width="280"
+                FontWeight="SemiBold"
+                Margin="670,0,0,55"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                ToolTipService.ToolTip="Exports selected packages.">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <FontIcon Glyph="&#xEDE2;"
+                          FontSize="18"
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="Export Selection"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+
+        <!-- Launch MCRTX button -->
+        <Button x:Name="LaunchMCRTX"
+                Click="LaunchMinecraftRTX_Click"
+                Width="280"
+                FontWeight="SemiBold"
+                Margin="670,0,0,15"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Disables VSync for better performance.">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <FontIcon Glyph="&#xE78B;"
+                          FontSize="18"
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Center" />
+                <TextBlock Text="Launch Minecraft RTX"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+
+
+    </Grid>
+
+
+</Window>
