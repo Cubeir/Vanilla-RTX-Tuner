@@ -10,7 +10,7 @@
   <Identity
     Name="5ef27ded-91e3-45a2-935e-f37f04a38f42"
     Publisher="CN=Cubeir"
-    Version="1.0.13.0" />
+    Version="1.0.17.0" />
 
   <mp:PhoneIdentity PhoneProductId="5ef27ded-91e3-45a2-935e-f37f04a38f42" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

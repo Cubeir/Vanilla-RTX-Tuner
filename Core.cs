@@ -13,10 +13,12 @@ using static Vanilla_RTX_Tuner_WinUI.TuningHelpers;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
-/* Netherite dev
---- CORE FIXES ---
+/* Netherite
+### CORE FIXES ###
 - Make your grainy-noise method apply the SAME noise throughout stages of flipbook textures
   This is to prevent grainy PBR changes throughout animations entirely
+- Also have to figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
+  Possibly by using the same noise seed, or taking the same values to apply -- the application will have the rules applied to it so it should be fine
 
 - Read UUIDs from config.json, wherever you want them -- this is necessary if you hook extensions, 
   and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
@@ -25,7 +27,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
   You're wasting power, slowing things down, though it is more manageable this way so perhaps.. rethink?
   It could still be refactored.
 
---- FEATURES TO ADD ---
+### FEATURES TO ADD ###
 - Convert for Vibrant Visuals Button (Vibrant Visualizer for short? so it fits in a button)
   Still uses mostly default vibrant visuals assets:
   wipes water-related assets, runs MERs through an automated SSS adder, scales MERs as needed to match vanilla VV style (more rough, a little grainy, and possibly more intense?)
@@ -42,7 +44,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
   the ones that have individual variants (opus/normals) need the button AND to have their packs selected for 
   modification to work
 
---- IDEAS TO CONSIDER ---
+### IDEAS TO CONSIDER ###
 - Make locating tell user if a new version is available by comparing against github manifests?
   If you did make sure it doesn't waste user's time if remote is unreachable. Not everyone's internets have 100% uptime, remember?
 

@@ -56,11 +56,23 @@ Below you'll find a comprehensive list of features and functionalities included 
 
 ## Installation Guide
 
-There are two options:
+There are 3 options:
 
-### Option 1: Install the MSIX package (Certificate Import Required)
+### Option 1: Quick Install (Recommended)
 
-1. Download the latest .msix package.
+1. Download and extract the latest `.zip` package.
+2. **Right-click** `Installer.bat` and select **Run as administrator**.
+3. The script will:
+   - Automatically install the required certificate to the Trusted People store (Local Machine).
+   - Launch the `.msix` package for installation.
+
+You’ll be prompted with the MSIX installer UI.  
+Future `.msix` packages signed by Cubeir will be be automatically trusted, allowing you to open the `.msix` directly.
+
+
+### Option 2: Manual Certificate Import
+
+1. Download and extract the latest `.zip` package.
 2. Open the accompanying certificate file.
 3. Click **Install Certificate**.
 4. Select **Local Machine** > Next.
@@ -68,13 +80,13 @@ There are two options:
 6. Select **Trusted People**, then OK.
 7. Click Next > Finish.
 
-You can now install the .msix package. Future .msix packages signed by me will also remain trusted.
+You can now install the .msix package.
 
-### Option 2: Build It Yourself
+### Option 3: Build It Yourself
 
 1. Clone this repository.
-2. Open the solution in **Visual Studio 2022**.
-3. Enable **Developer Mode** in Windows (if not already).
+2. Open the solution in Visual Studio 2022.
+3. Enable Developer Mode in Windows (if not already).
 4. Build — the app should auto-install.
 
 
