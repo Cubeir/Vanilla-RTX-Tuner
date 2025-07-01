@@ -64,9 +64,8 @@ There are 3 options:
 2. **Right-click** `Installer.bat` and select **Run as administrator**.
 3. The script will:
    - Automatically install the required certificate to the Trusted People store (Local Machine).
-   - Launch the `.msix` package for installation.
+   - Launch the `.msix` package for installation. Here click `install`.
 
-You’ll be prompted with the MSIX installer UI.  
 Future `.msix` packages signed by Cubeir will be be automatically trusted, allowing you to open the `.msix` directly.
 
 
