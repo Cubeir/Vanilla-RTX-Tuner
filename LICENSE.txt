@@ -4,10 +4,7 @@ This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, version 3.
 
-However, commercial use and redistribution of this program or its derivatives is prohibited.
-This includes selling, licensing, or distributing it for a fee, in part or in whole.
-
-Files generated, downloaded, or modified by this software retain their original license as defined by their respective owners.
+Files downloaded or modified by this software retain their original license as defined by their respective owners.
 
 This software is provided "as is", without any warranty.
 See the GNU General Public License for more details.
