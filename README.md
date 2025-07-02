@@ -56,7 +56,8 @@ Below you'll find a comprehensive list of features and functionalities included 
 
 ## Installation Guide
 
-There are 3 options:
+> **Note:** This app requires the [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) for Windows (64-bit).  
+> In most cases, it installs automatically with the `.msix`. If it fails, install it manually from the link above.
 
 ### Option 1: Quick Install (Recommended)
 
@@ -68,7 +69,6 @@ There are 3 options:
 
 Future `.msix` packages signed by Cubeir will be be automatically trusted, allowing you to open the `.msix` directly.
 
-
 ### Option 2: Manual Certificate Import
 
 1. Download and extract the latest `.zip` package.
@@ -78,24 +78,25 @@ Future `.msix` packages signed by Cubeir will be be automatically trusted, allow
 5. Choose **Place all certificates in the following store**, click **Browse**.
 6. Select **Trusted People**, then OK.
 7. Click Next > Finish.
-
-You can now install the .msix package.
+8. You can now install the .msix package.
 
 ### Option 3: Build It Yourself
 
-1. Clone this repository.
+1. Clone this repository or download the source code.
 2. Open the solution in Visual Studio 2022.
 3. Enable Developer Mode in Windows (if not already).
-4. Build — the app should auto-install.
+4. Build — the app should auto-install. 
 
-
-## Want to help?
-
-The scope of this project as it stands is quite small, though contributions are still welcome.
-You can find TODO lists in the code files.
-
-## Need help?
+### Need help?
 
 Join the Vanilla RTX community on Discord & ask away! [https://discord.gg/A4wv4wwYud](https://discord.gg/A4wv4wwYud)
 
+### Want to help?
 
+The scope of this project as it stands is small, but contributions are welcome.
+You’ll find TODOs scattered in the code if you’re looking for a place to start.
+
+## Known Issues
+- Initial window size may be off on displays with scaling other than 100%; just resize manually.
+- Title bar buttons stay white in Light Mode.
+- Grainy materials produced by Material Noise Offset slider don't carry over the same noise to textures (e.g. currently noise varies between redstone lamp off and on)
