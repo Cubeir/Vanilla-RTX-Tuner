@@ -89,6 +89,13 @@ You can now install the .msix package.
 4. Build — the app should auto-install.
 
 
+## Want to help?
+
+The scope of this project as it stands is quite small, though contributions are still welcome.
+You can find TODO lists in the code files.
+
 ## Need help?
 
-Join the Vanilla RTX community on Discord: [https://discord.gg/A4wv4wwYud](https://discord.gg/A4wv4wwYud)
+Join the Vanilla RTX community on Discord & ask away! [https://discord.gg/A4wv4wwYud](https://discord.gg/A4wv4wwYud)
+
+
