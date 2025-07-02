@@ -107,32 +107,12 @@ public sealed partial class MainWindow : Window
         appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
         if (appWindow.Presenter is OverlappedPresenter presenter)
         {
-            
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            /* Don't apply hard defaults for now, doesn't do well with varying scaling settings
-            presenter.PreferredMinimumHeight = sizeMin.Height;
-            presenter.PreferredMinimumWidth = sizeMin.Width;
-            presenter.PreferredMaximumHeight = sizeMax.Height;
-            presenter.PreferredMaximumWidth = sizeMax.Width;
-            */
         }
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "netherite.ico");
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
-
-        // Title bar (assuming legacy is used when ExtendsContentIntoTitleBar fails)
-        var titleBar = appWindow.TitleBar;
-        var barColor = ColorHelper.FromArgb(255, 36, 34, 32);
-        var inactiveBarColor = ColorHelper.FromArgb(255, 32, 31, 30);
-        titleBar.BackgroundColor = barColor;
-        titleBar.InactiveBackgroundColor = inactiveBarColor;
-        titleBar.ForegroundColor = Colors.White;
-        titleBar.InactiveForegroundColor = Colors.LightGray;
-        titleBar.ButtonBackgroundColor = barColor;
-        titleBar.ButtonInactiveBackgroundColor = inactiveBarColor;
-        titleBar.ButtonForegroundColor = Colors.White;
-        titleBar.ButtonInactiveForegroundColor = Colors.White;
     }
     public static void PushLog(string message)
     {
