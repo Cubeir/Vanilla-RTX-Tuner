@@ -327,7 +327,7 @@
                 Margin="380,0,0,55"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Downloads the latest release of Vanilla RTX and Vanilla RTX Normals and deploys them in the target folder (Opus and Pure must be downloaded manually!)">
+                ToolTipService.ToolTip="Downloads the latest releases and deploys them in the target folder (Opus must be downloaded manually!)">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <FontIcon Glyph="&#xEBD3;"
