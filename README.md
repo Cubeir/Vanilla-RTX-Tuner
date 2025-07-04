@@ -52,7 +52,10 @@ Below you'll find a comprehensive list of features and functionalities included 
   Exports selected packs. Useful for sharing your tuned packs with friends or backing up before making more changes.
 
 - **`Launch Minecraft RTX`**  
-  Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance.
+  Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance.  
+
+  ![street-default-vanilla-rtx](https://github.com/user-attachments/assets/bc5af2b1-8dd3-47fc-8344-15bce477ba5d)
+  ![street-3x-emissivity-tuned-vanilla-rtx](https://github.com/user-attachments/assets/a545d9c2-2890-46b3-b5f6-3cea7d98e13e)
 
 ## Installation Guide
 
