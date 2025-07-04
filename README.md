@@ -1,6 +1,6 @@
 # Vanilla-RTX-Tuner
 
-An all-in-one app to automatically update Vanilla RTX, tune various aspects to your preferences, launch Minecraft RTX with ease, and more!
+An all-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update packages & launch Minecraft RTX with ease, and more!
 
 ⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)
 
@@ -97,6 +97,5 @@ The scope of this project as it stands is small, but contributions are welcome.
 You’ll find TODOs scattered in the code if you’re looking for a place to start.
 
 ## Known Issues
-- Initial window size may be off on displays with scaling other than 100%; just resize manually.
-- Title bar buttons stay white in Light Mode.
+- Initial window size may be off with windows scaling setting other than 100%; resize manually.
 - Grainy materials produced by Material Noise Offset slider don't carry over the same noise to textures (e.g. currently noise varies between redstone lamp off and on)
