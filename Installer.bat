@@ -14,12 +14,11 @@ echo.
 REM --- Check for Admin Privileges
 net session >nul 2>&1
 if %errorLevel% neq 0 (
-    echo Administrator privileges are required
-    echo .
+    echo Administrator privileges are required.
     echo Please close this window and follow these steps:
     echo 1. Right-click on this batch file
-    echo 2. Select "Run as administrator"
-    echo.
+    echo 2. Select "Run as administrator".
+    echo .
     pause
     exit /b 1
 )
