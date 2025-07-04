@@ -2,7 +2,7 @@
   "data": {
     "remote_URL": "https://github.com/Cubeir/Vanilla-RTX/archive/refs/heads/master.zip",
 
-    // These remain hardcoded for now, read w GetConfig later.
+    // These remain hardcoded for now, read later.
     "vanilla_rtx_uuid_header": "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b",
     "vanilla_rtx_uuid_module": "af805084-fafa-4124-9ae2-00be4bc202dc",
     "vanilla_rtx_normals_uuid_header": "bbe2b225-b45b-41c2-bd3b-465cd83e6071",
@@ -15,8 +15,8 @@
     // Not shown in the UI, if set to true should make all fog uniform across all heights
     "remove_height_based_fog": false,
 
-    // Excess of multipliers is multiplied by this constant before being applied to pixel, a fifth is somehow just about right for both, feel free to adjust.
-    "excess_emissive_intensity_dampening_constant": 0.2,
+    // Excess of multipliers is multiplied by this constant before being applied to pixel
+    "excess_emissive_intensity_dampening_constant": 0.1,
     "excess_normal_intensity_dampening_constant": 0.2
   }
 }
