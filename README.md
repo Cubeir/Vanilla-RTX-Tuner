@@ -49,10 +49,10 @@ Below you'll find a comprehensive list of features and functionalities included 
   ![roughenup-slider](https://github.com/user-attachments/assets/fa365641-ec26-4a51-b519-c25c6af33843)
 
 - **`Butcher Heightmaps`**  
-  Uses the colormap to make the heightmaps less refined and more noisy. The given number determines effectiveness (`0 = no change`, `255 = fully lazy heightmaps`).
+  Uses a modified color texture to make the heightmaps less refined and more noisy. The given number determines effectiveness (0 = no change`, `255 = fully lazy heightmaps).
 
 - **`Tune Selection`**  
-  Begins the tuning process. Packages are processed locally.
+  Begins the tuning process with your current settings. Packages are processed locally.
   Changes you make are permanent unless the pack is updated or freshly reinstalled.
 
 - **`Reinstall Latest Packages`**  
@@ -64,7 +64,7 @@ Below you'll find a comprehensive list of features and functionalities included 
 - **`Launch Minecraft RTX`**  
   Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance. Direct workaround for:  
   [MCPE-191513](https://bugs.mojang.com/browse/MCPE/issues/MCPE-191513): Ray tracing can no longer be enabled while in the main menu.  
-  [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
+  [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/MCPE-153053): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
   [MCPE-121850](https://bugs.mojang.com/browse/MCPE/issues/MCPE-121850): Ray Tracing performance starvation when VSync is enabled.  
 
 
