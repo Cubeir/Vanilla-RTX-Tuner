@@ -112,4 +112,6 @@ You’ll find TODOs scattered in the code if you’re looking for a place to sta
 
 ## Known Issues
 - Initial window size may be off with windows scaling setting other than 100%; resize manually.
+- The app doesn't adapt if windows text size is set too large.
+- The app's window may restore to a non-existent place and become invisible if the monitor it was previously closed on is turned off or unplugged; Temp solution: Reset app's data.
 - Grainy materials produced by Material Noise Offset slider don't carry over the same noise to textures (e.g. currently noise varies between redstone lamp off and on)
