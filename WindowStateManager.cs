@@ -4,6 +4,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 
+// TODO: Do something for if user unplugs monitor -- currently it causes that annoying case of window opening in a non-existent position?
 public class WindowStateManager
 {
     private AppWindow _appWindow;

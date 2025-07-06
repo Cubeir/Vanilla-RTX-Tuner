@@ -34,6 +34,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 - Convert for Vibrant Visuals Button (Vibrant Visualizer for short? so it fits in a button)
   Still uses mostly default vibrant visuals assets:
   wipes water-related assets, runs MERs through an automated SSS adder, scales MERs as needed to match vanilla VV style (more rough, a little grainy, and possibly more intense?)
+  also wipe Fog, use vanilla vv assets wherever possible, and don't forget to properly scale emissives
+  It'll be a combination of a preset of tuning + some special passes, the result should be a fully fledged tunable VV pack
 
 - Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
   to be tuned and queue those for tuning alongside it.
@@ -61,6 +63,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
   A button that backs up all currently-installed Vanilla RTX packs and their extensions, and then restores them from backup
   Keep it simple, only one backup can exist at a time to restore from, also good to keep user from downloading the pack 
   too many times and possibly rate limiting themselves (git)
+ 
 
 */
 

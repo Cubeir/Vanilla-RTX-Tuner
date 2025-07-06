@@ -60,33 +60,58 @@ public static class TunerVariables
     // Tuning variables
     public static double FogMultiplier = 1.0;
     public static double EmissivityMultiplier = 1.0;
-    public static int  NormalIntensity = 100;
+    public static int NormalIntensity = 100;
     public static int MaterialNoiseOffset = 0;
     public static int RoughenUpIntensity = 0;
     public static int ButcheredHeightmapAlpha = 0;
 
+    public static void SaveSettings()
+    {
+        var localSettings = ApplicationData.Current.LocalSettings;
+
+        localSettings.Values["FogMultiplier"] = FogMultiplier;
+        localSettings.Values["EmissivityMultiplier"] = EmissivityMultiplier;
+        localSettings.Values["NormalIntensity"] = NormalIntensity;
+        localSettings.Values["MaterialNoiseOffset"] = MaterialNoiseOffset;
+        localSettings.Values["RoughenUpIntensity"] = RoughenUpIntensity;
+        localSettings.Values["ButcheredHeightmapAlpha"] = ButcheredHeightmapAlpha;
+    }
+    public static void LoadSettings()
+    {
+        var localSettings = ApplicationData.Current.LocalSettings;
+        // load with fallback to initialised values
+        FogMultiplier = (double)(localSettings.Values["FogMultiplier"] ?? FogMultiplier);
+        EmissivityMultiplier = (double)(localSettings.Values["EmissivityMultiplier"] ?? EmissivityMultiplier);
+        NormalIntensity = (int)(localSettings.Values["NormalIntensity"] ?? NormalIntensity);
+        MaterialNoiseOffset = (int)(localSettings.Values["MaterialNoiseOffset"] ?? MaterialNoiseOffset);
+        RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
+        ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
+    }
 }
 
-public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : Window
 {
     public static MainWindow? Instance { get; private set; }
     private WindowStateManager _windowStateManager;
 
     public MainWindow()
     {
+        // put something here later to keep the app from running multiple instances
 
         SetMainWindowProperties();
         InitializeComponent();
+        LoadSettings();
         Activate();
-        ExtendsContentIntoTitleBar = true;
+        UpdateUI();
 
-        Title = "Vanilla RTX Tuner";
         Instance = this;
-
-
-        PushLog($"Initialized Tuner App\nVersion: {appVersion}" + new string('\n', 2) +
-               "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to third-party modifications of your Minecraft data folder."); // shockers!
         TitleBarText.Text = "Vanilla RTX Tuner " + appVersion;
+        PushLog($"App Version: {appVersion}" + new string('\n', 2) +
+               "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to third-party modifications of your Minecraft data folder."); // shockers!
+        this.Closed += (s, e) =>
+        {
+            SaveSettings();
+        };
     }
 
     #region Main Window properties and essential components used throughout the app
@@ -94,6 +119,8 @@ public sealed partial class MainWindow : Window
     {
         // Initialize the window state manager
         _windowStateManager = new WindowStateManager(this, PushLog);
+
+        ExtendsContentIntoTitleBar = true;
 
         var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -157,6 +184,64 @@ public sealed partial class MainWindow : Window
     {
         foreach (var control in controls)
             control.IsEnabled = enabled;
+    }
+    public async void UpdateUI(double animationDurationSeconds = 0.33)
+    {
+        // We don't use bindings since there won't be many more sliders, but it allows us to easily get a cool animation.
+        // This method should be called whenever tuning variables change.
+
+        // store slider variable, slider and box configs, add new ones here 🍝
+        var sliderConfigs = new[]
+        {
+            (FogMultiplierSlider, FogMultiplierBox, FogMultiplier, false),
+            (EmissivityMultiplierSlider, EmissivityMultiplierBox, EmissivityMultiplier, false),
+            (NormalIntensitySlider, NormalIntensityBox, (double)NormalIntensity, true),
+            (MaterialNoiseSlider, MaterialNoiseBox, (double)MaterialNoiseOffset, true),
+            (RoughenUpSlider, RoughenUpBox, (double)RoughenUpIntensity, true),
+            (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)ButcheredHeightmapAlpha, true)
+        };
+
+        double Lerp(double start, double end, double t)
+        {
+            return start + (end - start) * t;
+        }
+        // handles a single slider/textbox pair
+        void UpdateControl(Microsoft.UI.Xaml.Controls.Slider slider, Microsoft.UI.Xaml.Controls.TextBox textBox,
+                          double startValue, double targetValue, double progress, bool isInteger = false)
+        {
+            var currentValue = Lerp(startValue, targetValue, progress);
+            slider.Value = currentValue;
+            textBox.Text = isInteger ? Math.Round(currentValue).ToString() : currentValue.ToString("0.0");
+        }
+
+
+        // Store starting values
+        var startValues = sliderConfigs.Select(config => config.Item1.Value).ToArray();
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var totalMs = animationDurationSeconds * 1000;
+
+        while (stopwatch.ElapsedMilliseconds < totalMs)
+        {
+            var progress = stopwatch.ElapsedMilliseconds / totalMs;
+            var easeProgress = 1 - Math.Pow(1 - progress, 3); // Smooth easing
+
+            // Update all controls
+            for (int i = 0; i < sliderConfigs.Length; i++)
+            {
+                var config = sliderConfigs[i];
+                UpdateControl(config.Item1, config.Item2, startValues[i], config.Item3, easeProgress, config.Item4);
+            }
+
+            await Task.Delay(8); // 16 = roughly 60 FPS, but 120hz is the norm these days and it runs for less than a sec so its ok
+        }
+
+        // making sure final values are exact
+        for (int i = 0; i < sliderConfigs.Length; i++)
+        {
+            var config = sliderConfigs[i];
+            UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
+        }
     }
     public void FlushTheseVariables(bool FlushLocations = true, bool FlushCheckBoxes = true, bool FlushPackVersions = false)
     {
@@ -517,6 +602,18 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void ResetButton_Click(object sender, RoutedEventArgs e)
+    {
+        FogMultiplier = 1.0;
+        EmissivityMultiplier = 1.0;
+        NormalIntensity = 100;
+        MaterialNoiseOffset = 0;
+        RoughenUpIntensity = 0;
+        ButcheredHeightmapAlpha = 0;
+
+        UpdateUI();
+    }
+
 
 
 
@@ -802,7 +899,5 @@ public sealed partial class MainWindow : Window
             PushLog($"Error: {ex.Message}");
         }
     }
+
 }
-
-
-
