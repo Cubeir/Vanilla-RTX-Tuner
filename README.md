@@ -70,22 +70,22 @@ Below you'll find a comprehensive list of features and functionalities included 
 
 ## Installation Guide
 
-> **Note:** This app requires the [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) for Windows (64-bit).  
-> In most cases, it installs automatically with the `.msix`. If it fails, install it manually from the link above.
+> **Note:** Requires [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) for Windows (64-bit).  
+> In most cases, it installs automatically with the `.msix`. If that fails, just install it manually from the link above.
 
 ### Option 1: Quick Install (Recommended)
 
-1. Download and extract the latest `.zip` package.
+1. [Download the latest package](https://github.com/Cubeir/Vanilla-RTX-Tuner/releases) from releases and unzip the `Vanilla.RTX.Tuner.WinUI_[version].zip` file.
 2. **Right-click** `Installer.bat` and select **Run as administrator**.
 3. The script will:
    - Automatically install the required certificate to the Trusted People store (Local Machine).
-   - Launch the `.msix` package for installation. Here click `install`.
+   - Launch the `.msix` package for installation. Once here, in the windows app installer click `Install`.
 
-Future `.msix` packages signed by Cubeir will be be automatically trusted, allowing you to open the `.msix` directly.
+> Future `.msix` packages signed by Cubeir should remain trusted, allowing you to open the `.msix` directly.
 
 ### Option 2: Manual Certificate Import
 
-1. Download and extract the latest `.zip` package.
+1. Download and extract the latest release `.zip` package from [here](https://github.com/Cubeir/Vanilla-RTX-Tuner/releases).
 2. Open the accompanying certificate file.
 3. Click **Install Certificate**.
 4. Select **Local Machine** > Next.
