@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
-title Installing Vanilla RTX Tuner
+title Vanilla RTX Tuner Installation Helper
 
-REM -- Working dir to script's folder
+REM --- Working dir to script's folder
 pushd "%~dp0"
 
 echo.
@@ -11,16 +11,14 @@ echo  Vanilla RTX Tuner Installation Helper
 echo ========================================
 echo.
 
-REM --- Check for Admin Privileges
+REM --- Get admin privileges if not already elevated
 net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo Administrator privileges are required.
-    echo Please close this window and follow these steps:
-    echo 1. Right-click on this batch file
-    echo 2. Select "Run as administrator".
-    echo .
-    pause
-    exit /b 1
+if %errorlevel% neq 0 (
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+    echo UAC.ShellExecute "%~fs0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
+    "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
+    exit /b
 )
 
 REM --- Find the .cer file
