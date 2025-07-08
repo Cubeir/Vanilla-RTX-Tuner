@@ -16,7 +16,7 @@ using static Vanilla_RTX_Tuner_WinUI.MainWindow;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
-public static class TuningHelpers
+public static class Helpers
 {
     // TODO: These are copied over from the Toolkit, we only deal with Vanilla RTX files here, simplify
     public static Bitmap ReadImage(string imagePath, bool maxOpacity = false)
@@ -227,7 +227,7 @@ public static class TuningHelpers
 
                 using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
-                PushLog("Initiating Download.");
+                PushLog("Starting Download.");
 
                 long? totalBytes = response.Content.Headers.ContentLength;
                 if (!totalBytes.HasValue)

@@ -9,12 +9,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using static Vanilla_RTX_Tuner_WinUI.TuningHelpers;
+using static Vanilla_RTX_Tuner_WinUI.Helpers;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
 /* Netherite
 ### CORE FIXES ###
+- Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
+For example, sliders must definitely be binded, make the code cleaner.
+
 - Make your grainy-noise method apply the SAME noise throughout stages of flipbook textures
   This is to prevent grainy PBR changes throughout animations entirely
 - Also have to figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)

@@ -34,10 +34,9 @@ using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 namespace Vanilla_RTX_Tuner_WinUI;
 
 
+
 public static class TunerVariables
 {
-    public static string appVersion = "1.0";
-
     public static string downloadSaveLocation = string.Empty;
 
     // Pack save locations in MC folders + versions, variables are flushed and reused for Preview
@@ -52,12 +51,12 @@ public static class TunerVariables
     // Used throughout the app let functionalities know to target MC preview or not
     public static bool IsTargetingPreview = false;
 
-    // Checkboxes, whichever is enabled is tuned or exported
+    // For checkboxes, whichever is enabled is impacted by various functionalities of the app
     public static bool IsVanillaRTXEnabled = false;
     public static bool IsNormalsEnabled = false;
     public static bool IsOpusEnabled = false;
 
-    // Tuning variables
+    // Tuning variables TODO: Bind these
     public static double FogMultiplier = 1.0;
     public static double EmissivityMultiplier = 1.0;
     public static int NormalIntensity = 100;
@@ -96,21 +95,22 @@ public static class TunerVariables
 
     public MainWindow()
     {
-        // put something here later to keep the app from running multiple instances
-
         SetMainWindowProperties();
         InitializeComponent();
         LoadSettings();
-        Activate();
         UpdateUI();
 
         Instance = this;
-        TitleBarText.Text = "Vanilla RTX Tuner " + appVersion;
-        PushLog($"App Version: {appVersion}" + new string('\n', 2) +
+
+        var version = Windows.ApplicationModel.Package.Current.Id.Version; var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
+        PushLog($"App Version: {versionString}" + new string('\n', 2) +
                "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to third-party modifications of your Minecraft data folder."); // shockers!
+
         this.Closed += (s, e) =>
         {
             SaveSettings();
+            App.CleanupMutex();
         };
     }
 
@@ -281,6 +281,17 @@ public static class TunerVariables
     {
         OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
     }
+
+
+
+    private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
+    {
+    
+    }
+
+
+
+
 
 
 
@@ -638,7 +649,7 @@ public static class TunerVariables
                 exportQueue.Add((VanillaRTXOpusLocation, "Vanilla_RTX_Opus_" + VanillaRTXOpusVersion + suffix));
 
             foreach (var (path, name) in exportQueue)
-                await TuningHelpers.MCPackExporter(path, name);
+                await Helpers.MCPackExporter(path, name);
 
         }
         catch (Exception ex)
@@ -682,7 +693,7 @@ public static class TunerVariables
 
                 await Task.Run(Core.TuneSelectedPacks);
 
-                PushLog("Tuning completed.");
+                PushLog("Completed tuning.");
 
                 UpdateControlStatus(true, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, ExportPackages, LaunchMCRTX,
                                      EmissivityMultiplierSlider, FogMultiplierSlider, NormalIntensitySlider, ButcherHeightmapsSlider, RoughenUpSlider, MaterialNoiseSlider, FogMultiplierBox, EmissivityMultiplierBox, NormalIntensityBox, ButcherHeightmapsBox, RoughenUpBox, MaterialNoiseBox, 
@@ -692,7 +703,7 @@ public static class TunerVariables
         }
         finally
         {
-
+            FlushTheseVariables(false, true);
         }
     }
 
@@ -707,19 +718,19 @@ public static class TunerVariables
 
 
 
-            string remoteUrl = TuningHelpers.GetConfig<string>("remote_URL")?.Trim();
+            string remoteUrl = Helpers.GetConfig<string>("remote_URL")?.Trim();
             if (string.IsNullOrWhiteSpace(remoteUrl))
             {
                 PushLog("remote URL is missing or invalid.");
             }
 
 
-            (bool downloadSuccess, string? downloadedSaveLocation) = await TuningHelpers.Download(remoteUrl!);
+            (bool downloadSuccess, string? downloadedSaveLocation) = await Helpers.Download(remoteUrl!);
 
             TunerVariables.downloadSaveLocation = downloadedSaveLocation;
             if (downloadSuccess)
             {
-                await TuningHelpers.ExtractAndDeployPacks(downloadSaveLocation);
+                await Helpers.ExtractAndDeployPacks(downloadSaveLocation);
             }
         }
         finally

@@ -14,22 +14,36 @@
 
     <Grid x:Name="MainGrid">
 
-
         <!-- Title bar -->
         <Button x:Name="HelpButton"
                 Content="&#xE9CE;"
                 FontFamily="Segoe MDL2 Assets"
                 Width="40"
-                CornerRadius="0"
                 Height="32"
+                CornerRadius="0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Margin="15, 0, 138, 15"
-                FontSize="17"
+                FontSize="16"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="HelpButton_Click"
                 ToolTipService.ToolTip="Help" />
+
+        <Button x:Name="AppUpdaterButton"
+                Content="&#xE895;"
+                FontFamily="Segoe MDL2 Assets"
+                Width="40"
+                Height="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="15, 0, 179, 15"
+                CornerRadius="0"
+                FontSize="15"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Click="AppUpdaterButton_Click"
+                ToolTipService.ToolTip="Check for updates"/>
 
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Top"
@@ -63,10 +77,10 @@
                  VerticalAlignment="Stretch"
                  HorizontalAlignment="Left"
                  TextWrapping="Wrap"
-                 IsTabStop="True"
+                 IsTabStop="False"
                  AcceptsReturn="True"
-                 AllowFocusOnInteraction="True"
                  IsReadOnly="True"
+                 AllowFocusOnInteraction="True"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ToolTipService.ToolTip="All relevant logs appear here." />
 

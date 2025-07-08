@@ -1,0 +1,1 @@
+﻿/* Previous implementation was a train wreck, rewrite here later */
