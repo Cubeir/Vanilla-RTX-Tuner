@@ -207,7 +207,7 @@ public class Core
                     // Only update files if the value meaningfully changed
                     if (Math.Abs(newDensity - currentDensity) >= 0.000001)
                     {
-                        section["max_density"] = newDensity;
+                        section["max_density"] = Math.Round(newDensity, 7);
                         sectionModified = true;
                     }
                 }
