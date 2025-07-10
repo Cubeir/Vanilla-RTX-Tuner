@@ -27,8 +27,6 @@ For example, sliders must definitely be binded, make the code cleaner.
 
 ### FEATURES TO ADD ###
 
-- Reset values of sliders to original, above material noise offset, top-right empty area will be a good place for it.
-
 - Convert for Vibrant Visuals Button (Vibrant Visualizer for short? so it fits in a button)
   Still uses mostly default vibrant visuals assets:
   wipes water-related assets, runs MERs through an automated SSS adder, scales MERs as needed to match vanilla VV style (more rough, a little grainy, and possibly more intense?)

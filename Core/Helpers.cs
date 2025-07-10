@@ -357,7 +357,7 @@ public static class Helpers
     }
 
 
-    // TODO: Make it smarter, don't clean up and redownload every time, cache the zip, compare versions, and download a new version only if the one on github is higher.
+    // TODO: Make it smarter, don't clean up and redownload every time, cache the zip, compare versions, and download a new version only if the one on github is higher OR with a 30 minute delay
     // The logic for Vanilla RTX reinstallation (0-100, dl to deploy) could be handled in a cleaner way, move it to a separate file -- for now this works.
     // Use this API call for downloading the repo: https://api.github.com/repos/Cubeir/Vanilla-RTX/zipball/master
     public static async Task ExtractAndDeployPacks(string saveLocation)

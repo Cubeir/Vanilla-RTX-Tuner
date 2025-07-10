@@ -181,8 +181,8 @@ public static class TunerVariables
     }
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
-        // We don't use bindings since there won't be many more sliders, but it allows us to easily get a cool animation.
-        // This method should be called whenever tuning variables change.
+        // individual stuff
+        TargetPreviewToggle.IsChecked = IsTargetingPreview;
 
         // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
@@ -236,9 +236,6 @@ public static class TunerVariables
             var config = sliderConfigs[i];
             UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
         }
-
-
-        TargetPreviewToggle.IsChecked = IsTargetingPreview;
     }
     public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
     {
@@ -547,7 +544,7 @@ public static class TunerVariables
     {
         if (int.TryParse(MaterialNoiseBox.Text, out int val))
         {
-            val = Math.Clamp(val, 0, 20);
+            val = Math.Clamp(val, 0, 25);
             MaterialNoiseOffset = val;
             MaterialNoiseSlider.Value = val;
         }
@@ -562,7 +559,7 @@ public static class TunerVariables
     {
         if (int.TryParse(RoughenUpBox.Text, out int val))
         {
-            val = Math.Clamp(val, 0, 15);
+            val = Math.Clamp(val, 0, 20);
             RoughenUpIntensity = val;
             RoughenUpSlider.Value = val;
         }
