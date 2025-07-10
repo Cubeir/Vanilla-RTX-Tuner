@@ -252,18 +252,18 @@ public static class Helpers
                 string savingLocation = null;
                 var fallbackLocations = new Func<string>[]
                 {
-                () => Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner", fileName),
+                () => Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner_cache", fileName),
                 
                 () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Downloads", "vanilla_rtx_tuner", fileName),
+                    "Downloads", "vanilla_rtx_tuner_cache", fileName),
                 
                 () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "vanilla_rtx_tuner", fileName),
+                    "vanilla_rtx_tuner_cache", fileName),
 
-                () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner", fileName),
+                () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner_cache", fileName),
                 
                 () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    "vanilla_rtx_tuner", fileName)
+                    "vanilla_rtx_tuner_cache", fileName)
                 };
 
                 foreach (var getPath in fallbackLocations)
@@ -360,6 +360,7 @@ public static class Helpers
 
     // TODO: Make it smarter, don't clean up and redownload every time, cache the zip, compare versions, and download a new version only if the one on github is higher.
     // The logic for Vanilla RTX reinstallation (0-100, dl to deploy) could be handled in a cleaner way, move it to a separate file -- for now this works.
+    // Use this API call for downloading the repo: https://api.github.com/repos/Cubeir/Vanilla-RTX/zipball/master
     public static async Task ExtractAndDeployPacks(string saveLocation)
     {
         await Task.Run(() =>

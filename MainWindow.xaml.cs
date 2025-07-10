@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
+using Microsoft.UI.Xaml.Media;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -21,6 +21,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json;
 using Windows.ApplicationModel.Calls.Background;
+using Windows.ApplicationModel.Store.Preview.InstallControl;
 using Windows.Devices.Display.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -29,6 +30,7 @@ using Windows.Graphics.Display;
 using Windows.Graphics.Display.Core;
 using Windows.Storage;
 using WinRT.Interop;
+using static Vanilla_RTX_Tuner_WinUI.ControlToggler;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 
 namespace Vanilla_RTX_Tuner_WinUI;
@@ -58,7 +60,8 @@ public static class TunerVariables
     public static bool IsNormalsEnabled = false;
     public static bool IsOpusEnabled = false;
 
-    // Tuning variables TODO: Bind these
+    // Tuning variables 
+    // TODO: Bind these
     public static double FogMultiplier = 1.0;
     public static double EmissivityMultiplier = 1.0;
     public static int NormalIntensity = 100;
@@ -183,11 +186,6 @@ public static class TunerVariables
             PushLog($"Details: {ex.Message}");
         }
     }
-    public static void UpdateControlStatus(bool enabled, params Control[] controls)
-    {
-        foreach (var control in controls)
-            control.IsEnabled = enabled;
-    }
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
         // We don't use bindings since there won't be many more sliders, but it allows us to easily get a cool animation.
@@ -246,7 +244,7 @@ public static class TunerVariables
             UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
         }
     }
-    public void FlushTheseVariables(bool FlushLocations = true, bool FlushCheckBoxes = true, bool FlushPackVersions = false)
+    public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
     {
         if (FlushLocations)
         {
@@ -289,18 +287,83 @@ public static class TunerVariables
 
     private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
     {
-    
+        // Downloading department: Check if we already found an update and should proceed with download/install
+        if (!string.IsNullOrEmpty(Updater.latestAppVersion) && !string.IsNullOrEmpty(Updater.latestAppRemote_URL))
+        {
+            PushLog("Starting update download and installation...");
+
+            AppUpdaterButton.IsEnabled = false;
+            SidelogProgressBar.IsIndeterminate = true;
+            ToggleControls(this, false);
+
+            var installSucess = await Updater.InstallAppUpdate();
+            if (installSucess.Item1)
+            {
+                PushLog("Update Completed. Relaunch the app.");
+            }
+            else
+            {
+                PushLog($"Automatic failed, reason: {installSucess.Item2} - Visit the repository and download the update manually.");
+            }
+
+            AppUpdaterButton.IsEnabled = true;
+            SidelogProgressBar.IsIndeterminate = false;
+
+            // Button Visuals -> default (we're done with the update)
+            AppUpdaterButton.Content = "\uE895";
+            ToolTipService.SetToolTip(AppUpdaterButton, "Check for updates");
+            AppUpdaterButton.Background = new SolidColorBrush(Colors.Transparent);
+            AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
+
+            // Clear these for the next time
+            Updater.latestAppVersion = null;
+            Updater.latestAppRemote_URL = null;
+
+        }
+
+        // Checking department: If versoin and URL aren't both present, try to get them, check for updates.
+        else
+        {
+            AppUpdaterButton.IsEnabled = false;
+            SidelogProgressBar.IsIndeterminate = true;
+            try
+            {
+                var updateAvailable = await Updater.CheckGitHubForUpdates();
+
+                if (updateAvailable.Item1)
+                {
+                    // Button Visuals -> Download Available
+                    // Set icon to a "download" glyph (listed in WinUI 3.0 gallery as a part of Segoe font)
+                    AppUpdaterButton.Content = "\uE896";
+                    ToolTipService.SetToolTip(AppUpdaterButton, "Update available! Click again to install");
+                    var accent = (SolidColorBrush)Application.Current.Resources["SystemControlHighlightAccentBrush"];
+                    AppUpdaterButton.Background = accent;
+                    AppUpdaterButton.BorderBrush = accent;
+
+                    PushLog(updateAvailable.Item2);
+                }
+                else
+                {
+                    PushLog(updateAvailable.Item2);
+                }
+            }
+            catch (Exception ex)
+            {
+                PushLog($"Error during update check: {ex.Message}");
+            }
+            finally
+            {
+                AppUpdaterButton.IsEnabled = true;
+                SidelogProgressBar.IsIndeterminate = false;
+            }
+        }
     }
-
-
-
-
 
 
 
     private void LocatePacks_Click(object sender, RoutedEventArgs e)
     {
-        FlushTheseVariables(true, true);
+        FlushTheseVariables(true, true, true);
         try
         {
             var resolvedPath = Path.Combine(
@@ -523,7 +586,7 @@ public static class TunerVariables
     }
 
 
-
+    // TODO: Bind values and rid yourself of this mess and the UpdateUI method.
     private void FogMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         FogMultiplier = Math.Round(e.NewValue, 2);
@@ -634,14 +697,14 @@ public static class TunerVariables
     private async void ExportPackages_Click(object sender, RoutedEventArgs e)
     {
         SidelogProgressBar.IsIndeterminate = true;
-        UpdateControlStatus(false, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, LaunchMCRTX, ExportPackages]);
+        ToggleControls(this, false);
         try
         {
 
 
             var exportQueue = new List<(string path, string name)>();
 
-            var suffix = $"_export_{DateTime.Now:yyyyMMdd_HHmmss}";
+            var suffix = $"_tuner_export_{appVersion}";
             if (IsVanillaRTXEnabled && Directory.Exists(VanillaRTXLocation))
                 exportQueue.Add((VanillaRTXLocation, "Vanilla_RTX_" + VanillaRTXVersion + suffix));
 
@@ -670,7 +733,7 @@ public static class TunerVariables
                 PushLog("Export Queue Finished.");
             }
                 SidelogProgressBar.IsIndeterminate = false;
-            UpdateControlStatus(true, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, LaunchMCRTX, ExportPackages]);
+            ToggleControls(this, true);
         }
 
     }
@@ -690,23 +753,19 @@ public static class TunerVariables
             else
             {
                 SidelogProgressBar.IsIndeterminate = true;
-                UpdateControlStatus(false, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, ExportPackages, LaunchMCRTX,
-                                     EmissivityMultiplierSlider, FogMultiplierSlider, NormalIntensitySlider, ButcherHeightmapsSlider, RoughenUpSlider, MaterialNoiseSlider, FogMultiplierBox, EmissivityMultiplierBox, NormalIntensityBox, ButcherHeightmapsBox, RoughenUpBox, MaterialNoiseBox,
-                                     VanillaRTXCheckBox, NormalsCheckBox, OpusCheckBox, OptionsAllCheckBox]);
+
+                ToggleControls(this, false);
 
                 await Task.Run(Core.TuneSelectedPacks);
-
                 PushLog("Completed tuning.");
 
-                UpdateControlStatus(true, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, ExportPackages, LaunchMCRTX,
-                                     EmissivityMultiplierSlider, FogMultiplierSlider, NormalIntensitySlider, ButcherHeightmapsSlider, RoughenUpSlider, MaterialNoiseSlider, FogMultiplierBox, EmissivityMultiplierBox, NormalIntensityBox, ButcherHeightmapsBox, RoughenUpBox, MaterialNoiseBox, 
-                                     VanillaRTXCheckBox, NormalsCheckBox, OpusCheckBox, OptionsAllCheckBox]);
-                SidelogProgressBar.IsIndeterminate = false;
+
             }
         }
         finally
         {
-            FlushTheseVariables(false, true);
+            ToggleControls(this, true);
+            SidelogProgressBar.IsIndeterminate = false;
         }
     }
 
@@ -716,7 +775,7 @@ public static class TunerVariables
     {
         try
         {
-            UpdateControlStatus(false, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, ExportPackages, LaunchMCRTX]);
+            ToggleControls(this, false);
             SidelogProgressBar.IsIndeterminate = true;
 
 
@@ -733,13 +792,13 @@ public static class TunerVariables
             TunerVariables.downloadSaveLocation = downloadedSaveLocation;
             if (downloadSuccess)
             {
-                // pass in file path only if DL was a success
+                // Pass in file path only if download was a success
                 await Helpers.ExtractAndDeployPacks(downloadSaveLocation);
             }
         }
         finally
         {
-            UpdateControlStatus(true, [LocatePack, TargetPreviewToggle, UpdateCoreVanillaRTX, TuneSelection, ExportPackages, LaunchMCRTX]);
+            ToggleControls(this, true);
             SidelogProgressBar.IsIndeterminate = false;
 
             downloadSaveLocation = string.Empty;

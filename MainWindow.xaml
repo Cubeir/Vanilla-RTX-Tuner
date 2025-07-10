@@ -77,7 +77,7 @@
                  VerticalAlignment="Stretch"
                  HorizontalAlignment="Left"
                  TextWrapping="Wrap"
-                 IsTabStop="False"
+                 IsTabStop="True"
                  AcceptsReturn="True"
                  IsReadOnly="True"
                  AllowFocusOnInteraction="True"

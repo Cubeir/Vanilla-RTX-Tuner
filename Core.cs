@@ -74,6 +74,8 @@ For example, sliders must definitely be binded, make the code cleaner.
 
 public class Core
 {
+
+    // TODO: Don't log what's not processed, log what's processed, and refactor this mess.
     public static void TuneSelectedPacks()
     {
         MainWindow.PushLog("Tuning selected packages...");
@@ -146,7 +148,7 @@ public class Core
 
 
     }
-    #region -------------------------------------- Processors --------------------------------------
+    #region ------------------- Processors
     private static void ProcessFog(string packPath, bool isEnabled, string packName)
     {
         bool uniformDensity = GetConfig<bool>("remove_height_based_fog");
@@ -837,7 +839,7 @@ public class Core
 
 
 
-    #endregion ------------------- Processors -------------------
+    #endregion Processors -------------------
 }
 
 
