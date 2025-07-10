@@ -68,6 +68,8 @@ public static class TunerVariables
         localSettings.Values["MaterialNoiseOffset"] = MaterialNoiseOffset;
         localSettings.Values["RoughenUpIntensity"] = RoughenUpIntensity;
         localSettings.Values["ButcheredHeightmapAlpha"] = ButcheredHeightmapAlpha;
+
+        localSettings.Values["TargetingPreview"] = IsTargetingPreview;
     }
     public static void LoadSettings()
     {
@@ -79,6 +81,8 @@ public static class TunerVariables
         MaterialNoiseOffset = (int)(localSettings.Values["MaterialNoiseOffset"] ?? MaterialNoiseOffset);
         RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
         ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
+
+        IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
     }
 }
 
@@ -232,6 +236,9 @@ public static class TunerVariables
             var config = sliderConfigs[i];
             UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
         }
+
+
+        TargetPreviewToggle.IsChecked = IsTargetingPreview;
     }
     public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
     {
@@ -279,8 +286,6 @@ public static class TunerVariables
         // Downloading department: Check if we already found an update and should proceed with download/install
         if (!string.IsNullOrEmpty(Updater.latestAppVersion) && !string.IsNullOrEmpty(Updater.latestAppRemote_URL))
         {
-            PushLog("Starting update download and installation...");
-
             AppUpdaterButton.IsEnabled = false;
             SidelogProgressBar.IsIndeterminate = true;
             ToggleControls(this, false);
@@ -288,11 +293,11 @@ public static class TunerVariables
             var installSucess = await Updater.InstallAppUpdate();
             if (installSucess.Item1)
             {
-                PushLog("Update Completed. Relaunch the app.");
+                PushLog("Continue in Windows App Installer.");
             }
             else
             {
-                PushLog($"Automatic failed, reason: {installSucess.Item2} - Visit the repository and download the update manually.");
+                PushLog($"Automatic update failed, reason: {installSucess.Item2} - Visit the repository to download the update manually.");
             }
 
             AppUpdaterButton.IsEnabled = true;
@@ -363,7 +368,6 @@ public static class TunerVariables
 
         UpdateCheckboxStates();
     }
-
     private void UpdateCheckboxStates()
     {
         if (!string.IsNullOrEmpty(VanillaRTXLocation))
@@ -486,6 +490,7 @@ public static class TunerVariables
 
 
     // TODO: Bind values and rid yourself of this mess and the UpdateUI method.
+    // TODO: The textbox writing behavior is annoying, figure something.
     private void FogMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         FogMultiplier = Math.Round(e.NewValue, 2);

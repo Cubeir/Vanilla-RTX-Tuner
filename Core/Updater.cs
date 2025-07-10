@@ -17,13 +17,6 @@ public class Updater
     public static string latestAppVersion = null;
     public static string latestAppRemote_URL = null;
 
-    // make a JANITOR method, tries to cleanup after tuner, by checking all potential locations for speicifc folder names, e.g. "Vanilla_RTX_Tuner_AutoUpdater_"
-    // Basically, janitor looks in any possible DOWNLOAD path, and looks for a string input for folder name, and nukes that folder
-
-    // It's very nice and cleanly done. TEST.
-    // THEN do VANILLA RTX UPDATES the same manner, reinstall packages via API, better cleaning, and such.
-
-
     #region ------- App Updater 
     public static async Task<(bool, string)> CheckGitHubForUpdates()
     {
