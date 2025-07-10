@@ -205,7 +205,7 @@ public class Core
                     double newDensity = CalculateNewDensity(currentDensity, FogMultiplier);
 
                     // Only update files if the value meaningfully changed
-                    if (Math.Abs(newDensity - currentDensity) >= 0.000001)
+                    if (Math.Abs(newDensity - currentDensity) >= 0.0000001)
                     {
                         section["max_density"] = Math.Round(newDensity, 7);
                         sectionModified = true;
