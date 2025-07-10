@@ -5,13 +5,13 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 /// <summary>
 /// Universal control toggle utility for WinUI 3 applications
 /// Manages enabling/disabling of controls while preserving original states
 /// </summary>
-public class ControlToggler
+public class WindowControlsManager
 {
     // Static dictionary to track states for multiple windows
     private static readonly Dictionary<Window, Dictionary<Control, bool>> _windowStates = new();
@@ -86,7 +86,7 @@ public class ControlToggler
 
         var childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
 
-        for (int i = 0; i < childCount; i++)
+        for (var i = 0; i < childCount; i++)
         {
             var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
 
@@ -129,7 +129,7 @@ public class ControlToggler
 /// <summary>
 /// Extension methods for convenient usage
 /// </summary>
-public static class ControlTogglerExtensions
+public static class WindowControlsManagerExtensions
 {
     /// <summary>
     /// Toggles all controls in this window
@@ -138,7 +138,7 @@ public static class ControlTogglerExtensions
     /// <param name="enable">True to restore, false to disable</param>
     public static void ToggleControls(this Window window, bool enable)
     {
-        ControlToggler.ToggleControls(window, enable);
+        WindowControlsManager.ToggleControls(window, enable);
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public static class ControlTogglerExtensions
     /// <param name="window">The window to disable controls for</param>
     public static void DisableAllControls(this Window window)
     {
-        ControlToggler.ToggleControls(window, false);
+        WindowControlsManager.ToggleControls(window, false);
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public static class ControlTogglerExtensions
     /// <param name="window">The window to restore controls for</param>
     public static void RestoreAllControls(this Window window)
     {
-        ControlToggler.ToggleControls(window, true);
+        WindowControlsManager.ToggleControls(window, true);
     }
 
     /// <summary>
@@ -165,6 +165,6 @@ public static class ControlTogglerExtensions
     /// <param name="window">The window to clear states for</param>
     public static void ClearControlStates(this Window window)
     {
-        ControlToggler.ClearStates(window);
+        WindowControlsManager.ClearStates(window);
     }
 }

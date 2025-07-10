@@ -362,3 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 PRIVATE.md
+/CubeirSoftware.cer
+/Assets/discord-icon.png
+/Assets/git-icon.png
+/Assets/kofi-icon.png

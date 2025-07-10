@@ -3,15 +3,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using static Vanilla_RTX_Tuner_WinUI.Helpers;
+using static Vanilla_RTX_Tuner_WinUI.Core.Helpers;
 
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 /* Netherite
 ### CORE FIXES ###
@@ -28,7 +24,6 @@ For example, sliders must definitely be binded, make the code cleaner.
 
 - Core functionality could be improved: load images once and process them, instead of doing so in multiple individual passes
   You're wasting power, slowing things down, though it is more manageable this way so perhaps.. rethink?
-  It could still be refactored.
 
 ### FEATURES TO ADD ###
 
@@ -72,7 +67,7 @@ For example, sliders must definitely be binded, make the code cleaner.
 
 
 
-public class Core
+public class Processor
 {
     private struct PackInfo
     {
@@ -104,12 +99,12 @@ public class Core
 
         if (FogMultiplier != 1.0)
         {
-            foreach (var p in packs) ProcessFog(p);
+            foreach (var p in packs) ProcessFog(p); // All
         }
 
         if (EmissivityMultiplier != 1.0)
         {
-            foreach (var p in packs) ProcessEmissivity(p);
+            foreach (var p in packs) ProcessEmissivity(p); // All
         }
 
         if (NormalIntensity != 100)
@@ -137,25 +132,25 @@ public class Core
     #region ------------------- Processors
     private static void ProcessFog(PackInfo pack)
     {
-        bool uniformDensity = GetConfig<bool>("remove_height_based_fog");
+        var uniformDensity = GetConfig<bool>("remove_height_based_fog");
 
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
 
-        string[] files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
         if (!files.Any())
         {
             // MainWindow.PushLog($"{packName}: no fog setting files found.");
             return;
         }
 
-        foreach (string file in files)
+        foreach (var file in files)
         {
             try
             {
-                string text = File.ReadAllText(file);
-                JObject root = JObject.Parse(text);
+                var text = File.ReadAllText(file);
+                var root = JObject.Parse(text);
 
                 // volumetric density
                 var fogSettings = root.SelectToken("minecraft:fog_settings") as JObject;
@@ -168,7 +163,7 @@ public class Core
                     continue;
                 }
 
-                bool modified = false;
+                var modified = false;
 
                 modified |= ProcessDensitySection(density, "air", uniformDensity);
                 modified |= ProcessDensitySection(density, "weather", uniformDensity);
@@ -195,14 +190,14 @@ public class Core
             if (section == null)
                 return false;
 
-            bool sectionModified = false;
+            var sectionModified = false;
             var maxDensityToken = section.SelectToken("max_density");
 
             if (maxDensityToken != null)
             {
-                if (TryGetDensityValue(maxDensityToken, out double currentDensity))
+                if (TryGetDensityValue(maxDensityToken, out var currentDensity))
                 {
-                    double newDensity = CalculateNewDensity(currentDensity, FogMultiplier);
+                    var newDensity = CalculateNewDensity(currentDensity, FogMultiplier);
 
                     // Only update files if the value meaningfully changed
                     if (Math.Abs(newDensity - currentDensity) >= 0.0000001)
@@ -219,7 +214,7 @@ public class Core
                 var maxDensityHeightToken = section.SelectToken("max_density_height");
                 var zeroDensityHeightToken = section.SelectToken("zero_density_height");
 
-                bool isHeightBased = (maxDensityHeightToken != null || zeroDensityHeightToken != null) &&
+                var isHeightBased = (maxDensityHeightToken != null || zeroDensityHeightToken != null) &&
                                    (uniformToken == null || !uniformToken.Value<bool>());
 
                 if (isHeightBased)
@@ -284,7 +279,7 @@ public class Core
 
     private static void ProcessEmissivity(PackInfo pack)
     {
-        double emissiveExcessDampen = GetConfig<double>("excess_emissive_intensity_dampening_constant");
+        var emissiveExcessDampen = GetConfig<double>("excess_emissive_intensity_dampening_constant");
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
@@ -298,14 +293,14 @@ public class Core
         {
             try
             {
-                using Bitmap bmp = ReadImage(file, false);
-                int width = bmp.Width;
-                int height = bmp.Height;
+                using var bmp = ReadImage(file, false);
+                var width = bmp.Width;
+                var height = bmp.Height;
                 // Max green value within image
-                int maxGreen = 0;
-                for (int y = 0; y < height; y++)
+                var maxGreen = 0;
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
                         int g = bmp.GetPixel(x, y).G;
                         if (g > maxGreen) maxGreen = g;
@@ -319,23 +314,23 @@ public class Core
                 }
                 
                 // Excess Multiplier Dampner
-                double ratio = 255.0 / maxGreen;
-                double neededMult = ratio;
-                double effectiveMult = userMult < neededMult ? userMult : neededMult;
-                double excess = Math.Max(0, userMult - effectiveMult);
+                var ratio = 255.0 / maxGreen;
+                var neededMult = ratio;
+                var effectiveMult = userMult < neededMult ? userMult : neededMult;
+                var excess = Math.Max(0, userMult - effectiveMult);
 
                 // Process
-                bool wroteBack = false;
-                for (int y = 0; y < height; y++)
+                var wroteBack = false;
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color origColor = bmp.GetPixel(x, y);
+                        var origColor = bmp.GetPixel(x, y);
                         int origG = origColor.G;
                         if (origG == 0)
                             continue;
                         // Multiply all by "effective" or necessary portion of the multiplier
-                        double newG = origG * effectiveMult;
+                        var newG = origG * effectiveMult;
                         // Apply excess of multiplier to the rest at % effectiveness to partially preserve color composition
                         if (excess > 0)
                         {
@@ -358,7 +353,7 @@ public class Core
                         if (finalG != origG)
                         {
                             wroteBack = true;
-                            Color newColor = Color.FromArgb(origColor.A, origColor.R, finalG, origColor.B);
+                            var newColor = Color.FromArgb(origColor.A, origColor.R, finalG, origColor.B);
                             bmp.SetPixel(x, y, newColor);
                         }
                     }
@@ -385,7 +380,7 @@ public class Core
 
     private static void ProcessNormalIntensity(PackInfo pack)
     {
-        double normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
+        var normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
@@ -394,10 +389,10 @@ public class Core
 
         foreach (var file in allNormalFiles)
         {
-            string fileNameWithoutExt = Path.GetFileNameWithoutExtension(file);
+            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file);
 
             // Check if a double-normal variant exists (some blocks already end with _normal suffix)
-            string doubleNormalPath = Path.Combine(Path.GetDirectoryName(file), fileNameWithoutExt + "_normal.tga");
+            var doubleNormalPath = Path.Combine(Path.GetDirectoryName(file), fileNameWithoutExt + "_normal.tga");
 
             if (File.Exists(doubleNormalPath))
             {
@@ -418,26 +413,26 @@ public class Core
             return;
         }
 
-        double intensityPercent = NormalIntensity / 100.0; // percentage -> multiplier
+        var intensityPercent = NormalIntensity / 100.0; // percentage -> multiplier
 
         foreach (var file in files)
         {
             try
             {
-                using Bitmap bmp = ReadImage(file, false);
-                int width = bmp.Width;
-                int height = bmp.Height;
+                using var bmp = ReadImage(file, false);
+                var width = bmp.Width;
+                var height = bmp.Height;
 
                 // Find maximum deviation from 128 in R and G channels
                 double maxDeviation = 0;
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color pixel = bmp.GetPixel(x, y);
-                        double rDev = Math.Abs(pixel.R - 128.0);
-                        double gDev = Math.Abs(pixel.G - 128.0);
-                        double totalDev = Math.Max(rDev, gDev);
+                        var pixel = bmp.GetPixel(x, y);
+                        var rDev = Math.Abs(pixel.R - 128.0);
+                        var gDev = Math.Abs(pixel.G - 128.0);
+                        var totalDev = Math.Max(rDev, gDev);
                         if (totalDev > maxDeviation)
                             maxDeviation = totalDev;
                     }
@@ -449,26 +444,26 @@ public class Core
                 }
 
                 // Calculate effective multiplier
-                double maxPossibleMult = 127.0 / maxDeviation; // Max we can go without clipping
-                double effectiveMult = Math.Min(intensityPercent, maxPossibleMult);
-                double excess = Math.Max(0, intensityPercent - effectiveMult);
+                var maxPossibleMult = 127.0 / maxDeviation; // Max we can go without clipping
+                var effectiveMult = Math.Min(intensityPercent, maxPossibleMult);
+                var excess = Math.Max(0, intensityPercent - effectiveMult);
 
-                bool wroteBack = false;
+                var wroteBack = false;
 
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color origColor = bmp.GetPixel(x, y);
+                        var origColor = bmp.GetPixel(x, y);
 
                         // Process R (X component) and G (y) channels
-                        int newR = ProcessNormalChannel(origColor.R, effectiveMult, excess);
-                        int newG = ProcessNormalChannel(origColor.G, effectiveMult, excess);
+                        var newR = ProcessNormalChannel(origColor.R, effectiveMult, excess);
+                        var newG = ProcessNormalChannel(origColor.G, effectiveMult, excess);
 
                         if (newR != origColor.R || newG != origColor.G)
                         {
                             wroteBack = true;
-                            Color newColor = Color.FromArgb(origColor.A, newR, newG, origColor.B);
+                            var newColor = Color.FromArgb(origColor.A, newR, newG, origColor.B);
                             bmp.SetPixel(x, y, newColor);
                         }
                     }
@@ -493,10 +488,10 @@ public class Core
         int ProcessNormalChannel(int originalValue, double effectiveMult, double excess)
         {
             // Convert to deviation from neutral (128)
-            double deviation = originalValue - 128.0;
+            var deviation = originalValue - 128.0;
 
             // Apply effective multiplier
-            double newDeviation = deviation * effectiveMult;
+            var newDeviation = deviation * effectiveMult;
 
             // Apply excess at lower % effectiveness
             if (excess > 0 && Math.Abs(deviation) > 0.001) // Only if there was meaningful deviation
@@ -505,10 +500,10 @@ public class Core
             }
 
             // Convert back to color value
-            double newValue = 128.0 + newDeviation;
+            var newValue = 128.0 + newDeviation;
 
             // Standard rounding for normal map
-            int finalValue = (int)Math.Round(newValue);
+            var finalValue = (int)Math.Round(newValue);
 
             return Math.Clamp(finalValue, 0, 255);
         }
@@ -535,7 +530,7 @@ public class Core
             try
             {
                 // Find colormap file path (same file name without _heightmap suffix)
-                string colormapFile = heightmapFile.Replace("_heightmap.tga", ".tga");
+                var colormapFile = heightmapFile.Replace("_heightmap.tga", ".tga");
 
                 if (!File.Exists(colormapFile))
                 {
@@ -543,11 +538,11 @@ public class Core
                     continue;
                 }
 
-                using Bitmap heightmapBmp = ReadImage(heightmapFile, false);
-                using Bitmap colormapBmp = ReadImage(colormapFile, false);
+                using var heightmapBmp = ReadImage(heightmapFile, false);
+                using var colormapBmp = ReadImage(colormapFile, false);
 
-                int width = heightmapBmp.Width;
-                int height = heightmapBmp.Height;
+                var width = heightmapBmp.Width;
+                var height = heightmapBmp.Height;
 
                 // Ensure dimensions match
                 if (colormapBmp.Width != width || colormapBmp.Height != height)
@@ -557,17 +552,17 @@ public class Core
                 }
 
                 // 1: Convert colormap to greyscale and find min/max values
-                byte[,] greyscaleValues = new byte[width, height];
+                var greyscaleValues = new byte[width, height];
                 byte minValue = 255;
                 byte maxValue = 0;
 
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color color = colormapBmp.GetPixel(x, y);
+                        var color = colormapBmp.GetPixel(x, y);
                         // Standard greyscale conversion
-                        byte greyValue = (byte)(0.299 * color.R + 0.587 * color.G + 0.114 * color.B);
+                        var greyValue = (byte)(0.299 * color.R + 0.587 * color.G + 0.114 * color.B);
                         greyscaleValues[x, y] = greyValue;
 
                         if (greyValue < minValue) minValue = greyValue;
@@ -576,15 +571,15 @@ public class Core
                 }
 
                 // 2: Stretch/Maximize
-                byte[,] stretchedValues = new byte[width, height];
+                var stretchedValues = new byte[width, height];
                 double range = maxValue - minValue;
 
                 if (range == 0)
                 {
                     // All pixels are the same value
-                    for (int y = 0; y < height; y++)
+                    for (var y = 0; y < height; y++)
                     {
-                        for (int x = 0; x < width; x++)
+                        for (var x = 0; x < width; x++)
                         {
                             stretchedValues[x, y] = 128;
                         }
@@ -592,33 +587,33 @@ public class Core
                 }
                 else
                 {
-                    for (int y = 0; y < height; y++)
+                    for (var y = 0; y < height; y++)
                     {
-                        for (int x = 0; x < width; x++)
+                        for (var x = 0; x < width; x++)
                         {
-                            double normalized = (greyscaleValues[x, y] - minValue) / range;
+                            var normalized = (greyscaleValues[x, y] - minValue) / range;
                             stretchedValues[x, y] = (byte)(normalized * 255);
                         }
                     }
                 }
 
                 // Step 3: Overlay stretched heightmap on original heightmap
-                bool wroteBack = false;
-                for (int y = 0; y < height; y++)
+                var wroteBack = false;
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color origColor = heightmapBmp.GetPixel(x, y);
-                        byte newHeightValue = stretchedValues[x, y];
+                        var origColor = heightmapBmp.GetPixel(x, y);
+                        var newHeightValue = stretchedValues[x, y];
 
                         // Alpha blend
-                        int blendedValue = (alpha * newHeightValue + (255 - alpha) * origColor.R) / 255;
-                        byte finalValue = (byte)Math.Clamp(blendedValue, 0, 255);
+                        var blendedValue = (alpha * newHeightValue + (255 - alpha) * origColor.R) / 255;
+                        var finalValue = (byte)Math.Clamp(blendedValue, 0, 255);
 
                         if (finalValue != origColor.R)
                         {
                             wroteBack = true;
-                            Color newColor = Color.FromArgb(origColor.A, finalValue, finalValue, finalValue);
+                            var newColor = Color.FromArgb(origColor.A, finalValue, finalValue, finalValue);
                             heightmapBmp.SetPixel(x, y, newColor);
                         }
                     }
@@ -664,35 +659,35 @@ public class Core
         {
             try
             {
-                using Bitmap bmp = ReadImage(file, false);
-                int width = bmp.Width;
-                int height = bmp.Height;
+                using var bmp = ReadImage(file, false);
+                var width = bmp.Width;
+                var height = bmp.Height;
 
-                bool wroteBack = false;
-                for (int y = 0; y < height; y++)
+                var wroteBack = false;
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color origColor = bmp.GetPixel(x, y);
+                        var origColor = bmp.GetPixel(x, y);
                         int origB = origColor.B;
 
                         // a curve where low values get high boost, high values get minimal boost
-                        double normalized = origB / 255.0; // 0 to 1
-                        double power = 3.0; // Higher power = a more aggressive curve
-                        double inverseFactor = 1.0 - Math.Pow(normalized, power);
+                        var normalized = origB / 255.0; // 0 to 1
+                        var power = 3.0; // Higher power = a more aggressive curve
+                        var inverseFactor = 1.0 - Math.Pow(normalized, power);
 
                         // At intensity 10: value 1 gets ~+20, value 40 gets ~+18, value 128 gets ~+5, value 190 gets ~+1
-                        double maxBoost = 20.0;
-                        double boost = (amount / 10.0) * maxBoost * inverseFactor;
+                        var maxBoost = 20.0;
+                        var boost = amount / 10.0 * maxBoost * inverseFactor;
 
-                        double newB = origB + boost;
-                        int finalB = (int)Math.Round(newB);
+                        var newB = origB + boost;
+                        var finalB = (int)Math.Round(newB);
                         finalB = Math.Clamp(finalB, 0, 255);
 
                         if (finalB != origB)
                         {
                             wroteBack = true;
-                            Color newColor = Color.FromArgb(origColor.A, origColor.R, origColor.G, finalB);
+                            var newColor = Color.FromArgb(origColor.A, origColor.R, origColor.G, finalB);
                             bmp.SetPixel(x, y, newColor);
                         }
                     }
@@ -733,7 +728,7 @@ public class Core
             else
             {
                 // Linear fall-off from 128 to 255: 100% at 128, 67% at 255
-                return 1.0 - ((colorValue - 128) * 0.33 / 127.0);
+                return 1.0 - (colorValue - 128) * 0.33 / 127.0;
             }
         }
 
@@ -747,49 +742,49 @@ public class Core
             return;
         }
 
-        int materialNoiseOffset = MaterialNoiseOffset;
+        var materialNoiseOffset = MaterialNoiseOffset;
         if (materialNoiseOffset <= 0)
             return;
 
-        Random random = new Random();
+        var random = new Random();
 
         foreach (var file in files)
         {
             try
             {
-                using Bitmap bmp = ReadImage(file, false);
-                int width = bmp.Width;
-                int height = bmp.Height;
+                using var bmp = ReadImage(file, false);
+                var width = bmp.Width;
+                var height = bmp.Height;
 
-                bool wroteBack = false;
-                for (int y = 0; y < height; y++)
+                var wroteBack = false;
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color origColor = bmp.GetPixel(x, y);
+                        var origColor = bmp.GetPixel(x, y);
                         int r = origColor.R;
                         int g = origColor.G;
                         int b = origColor.B;
 
                         // unique random offsets
-                        int redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                        int greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                        int blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                        var redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                        var greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                        var blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
 
                         // effectiveness based on current color values
-                        double redEffectiveness = CalculateEffectiveness(r);
-                        double greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
-                        double blueEffectiveness = CalculateEffectiveness(b);
+                        var redEffectiveness = CalculateEffectiveness(r);
+                        var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
+                        var blueEffectiveness = CalculateEffectiveness(b);
 
                         // set effectiveness of offsets, rounded
-                        int effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
-                        int effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
-                        int effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
+                        var effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
+                        var effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
+                        var effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
 
                         
-                        int newR = r + effectiveRedOffset;
-                        int newG = g + effectiveGreenOffset;
-                        int newB = b + effectiveBlueOffset;
+                        var newR = r + effectiveRedOffset;
+                        var newG = g + effectiveGreenOffset;
+                        var newB = b + effectiveBlueOffset;
 
                         // anti-clipping rule: discard if would cause clipping, keep original colors!
                         if (newR < 0 || newR > 255) newR = r;
@@ -799,7 +794,7 @@ public class Core
                         if (newR != r || newG != g || newB != b)
                         {
                             wroteBack = true;
-                            Color newColor = Color.FromArgb(origColor.A, newR, newG, newB);
+                            var newColor = Color.FromArgb(origColor.A, newR, newG, newB);
                             bmp.SetPixel(x, y, newColor);
                         }
                     }

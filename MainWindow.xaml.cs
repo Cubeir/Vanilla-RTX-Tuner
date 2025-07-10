@@ -15,23 +15,12 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json;
-using Windows.ApplicationModel.Calls.Background;
-using Windows.ApplicationModel.Store.Preview.InstallControl;
-using Windows.Devices.Display.Core;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Graphics;
-using Windows.Graphics.Display;
-using Windows.Graphics.Display.Core;
 using Windows.Storage;
-using WinRT.Interop;
-using static Vanilla_RTX_Tuner_WinUI.ControlToggler;
+using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
+using Vanilla_RTX_Tuner_WinUI.Core;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
@@ -61,7 +50,7 @@ public static class TunerVariables
     public static bool IsOpusEnabled = false;
 
     // Tuning variables 
-    // TODO: Bind these
+    // TODO: Bind these (if you can do so cleanly, two-way binding seems a little boilerplate-heavy)
     public static double FogMultiplier = 1.0;
     public static double EmissivityMultiplier = 1.0;
     public static int NormalIntensity = 100;
@@ -361,105 +350,22 @@ public static class TunerVariables
 
 
 
-    private void LocatePacks_Click(object sender, RoutedEventArgs e)
+    private void LocatePacksButton_Click(object sender, RoutedEventArgs e)
     {
         FlushTheseVariables(true, true, true);
-        try
-        {
-            var resolvedPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Packages",
-                IsTargetingPreview ? "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-                "LocalState",
-                "games",
-                "com.mojang",
-                "resource_packs"
-            );
 
-            if (!Directory.Exists(resolvedPath))
-            {
-                PushLog("Resource pack directory not found, is the correct version of Minecraft installed?");
-                return;
-            }
+        var statusMessage = PackLocator.LocatePacks(IsTargetingPreview,
+            out VanillaRTXLocation, out VanillaRTXVersion,
+            out VanillaRTXNormalsLocation, out VanillaRTXNormalsVersion,
+            out VanillaRTXOpusLocation, out VanillaRTXOpusVersion);
 
-            var manifestFiles = Directory.GetFiles(resolvedPath, "manifest.json", SearchOption.AllDirectories);
+        PushLog(statusMessage);
 
-            var results = new List<string>();
+        UpdateCheckboxStates();
+    }
 
-            foreach (var file in manifestFiles)
-            {
-                try
-                {
-                    var json = File.ReadAllText(file);
-                    dynamic data = JsonConvert.DeserializeObject(json);
-
-                    string headerUUID = data?.header?.uuid;
-                    string moduleUUID = data?.modules?[0]?.uuid;
-                    string folder = Path.GetDirectoryName(file)!;
-
-                    static string FormatVersion(dynamic verArray)
-                    {
-                        try
-                        {
-                            int major = verArray[0], minor = verArray[1], patch = verArray[2];
-                            return $"v{major}.{minor}.{patch}";
-                        }
-                        catch
-                        {
-                            return "";
-                        }
-                    }
-
-                    string version = FormatVersion(data?.header?.version);
-
-                    if (string.Equals(headerUUID, "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b", StringComparison.OrdinalIgnoreCase) &&
-                        string.Equals(moduleUUID, "af805084-fafa-4124-9ae2-00be4bc202dc", StringComparison.OrdinalIgnoreCase))
-                    {
-                        VanillaRTXLocation = folder;
-                        results.Add($"Found: Vanilla RTX — {version}");
-                        VanillaRTXVersion = version;
-                    }
-                    else if (string.Equals(headerUUID, "bbe2b225-b45b-41c2-bd3b-465cd83e6071", StringComparison.OrdinalIgnoreCase) &&
-                             string.Equals(moduleUUID, "b2eef2c6-d893-467e-b31d-cda7bf643eaa", StringComparison.OrdinalIgnoreCase))
-                    {
-                        VanillaRTXNormalsLocation = folder;
-                        results.Add($"Found: Vanilla RTX Normals — {version}");
-                        VanillaRTXNormalsVersion = version;
-                    }
-                    else if (string.Equals(headerUUID, "7c87f859-4d79-4d51-8887-bf450b2b2bfa", StringComparison.OrdinalIgnoreCase) &&
-                             string.Equals(moduleUUID, "be0b22f0-ad13-4bbd-81ba-b457fd9e38b8", StringComparison.OrdinalIgnoreCase))
-                    {
-                        VanillaRTXOpusLocation = folder;
-                        results.Add($"Found: Vanilla RTX Opus — {version}");
-                        VanillaRTXOpusVersion = version;
-                    }
-
-                    if (!string.IsNullOrEmpty(VanillaRTXLocation) &&
-                        !string.IsNullOrEmpty(VanillaRTXNormalsLocation) &&
-                        !string.IsNullOrEmpty(VanillaRTXOpusLocation))
-                    {
-                        break;
-                    }
-                        
-                }
-                catch
-                {
-                    PushLog("Malformed manifest.");
-                }
-            }
-
-            if (VanillaRTXLocation == string.Empty) results.Add("Not found: Vanilla RTX");
-            if (VanillaRTXNormalsLocation == string.Empty) results.Add("Not found: Vanilla RTX Normals");
-            if (VanillaRTXOpusLocation == string.Empty) results.Add("Not found: Vanilla RTX Opus");
-
-            PushLog(string.Join(Environment.NewLine, results));
-        }
-        catch (Exception ex)
-        {
-            PushLog($"Error: {ex.Message}");
-        }
-
-        // Update States of Which Packs to Modify
+    private void UpdateCheckboxStates()
+    {
         if (!string.IsNullOrEmpty(VanillaRTXLocation))
         {
             VanillaRTXCheckBox.IsEnabled = true;
@@ -481,19 +387,12 @@ public static class TunerVariables
             IsOpusEnabled = true;
         }
 
-
-        // If any pack was found, we updated checkbox states, use checkboxes to know to enable export, tuning and selecting all checkboxes 
         if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
         {
             OptionsAllCheckBox.IsEnabled = true;
-            ExportPackages.IsEnabled = true;
-            TuneSelection.IsEnabled = true;
             UpdateSelectAllState();
         }
-
-
     }
-
 
 
 
@@ -694,14 +593,12 @@ public static class TunerVariables
 
 
 
-    private async void ExportPackages_Click(object sender, RoutedEventArgs e)
+    private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
         SidelogProgressBar.IsIndeterminate = true;
         ToggleControls(this, false);
         try
         {
-
-
             var exportQueue = new List<(string path, string name)>();
 
             var suffix = $"_tuner_export_{appVersion}";
@@ -740,7 +637,7 @@ public static class TunerVariables
 
 
 
-    private async void TuneSelection_Click(object sender, RoutedEventArgs e)
+    private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -756,7 +653,7 @@ public static class TunerVariables
 
                 ToggleControls(this, false);
 
-                await Task.Run(Core.TuneSelectedPacks);
+                await Task.Run(Processor.TuneSelectedPacks);
                 PushLog("Completed tuning.");
 
 
@@ -771,7 +668,7 @@ public static class TunerVariables
 
 
 
-    private async void UpdateCoreVanillaRTX_Click(object sender, RoutedEventArgs e)
+    private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -810,168 +707,10 @@ public static class TunerVariables
 
 
 
-    private void LaunchMinecraftRTX_Click(object sender, RoutedEventArgs e)
+    private void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            string optionsFilePath, protocol, versionName;
-
-            if (IsTargetingPreview)
-            {
-                optionsFilePath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Packages", "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe",
-                    "LocalState", "games", "com.mojang", "minecraftpe", "options.txt"
-                );
-                protocol = "minecraft-preview://";
-                versionName = "Minecraft Preview";
-            }
-            else
-            {
-                optionsFilePath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Packages", "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-                    "LocalState", "games", "com.mojang", "minecraftpe", "options.txt"
-                );
-                protocol = "minecraft://";
-                versionName = "Minecraft";
-            }
-
-            if (string.IsNullOrEmpty(optionsFilePath))
-            {
-                PushLog("Failed to construct options file path.");
-                return;
-            }
-
-            if (!File.Exists(optionsFilePath))
-            {
-                PushLog($"Options file for {versionName} not found at: {optionsFilePath}");
-                PushLog("Make sure the game is installed and has been launched at least once.");
-                return;
-            }
-
-            try
-            {
-                using (var fileStream = File.Open(optionsFilePath, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    // file is accessible
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                PushLog($"Access denied to options file. Please run as administrator or check file permissions.");
-                return;
-            }
-            catch (IOException ex)
-            {
-                PushLog($"File is in use or inaccessible: {ex.Message}");
-                return;
-            }
-
-            // read-only attribute
-            try
-            {
-                var fileInfo = new FileInfo(optionsFilePath);
-                if (fileInfo.IsReadOnly)
-                {
-                    fileInfo.IsReadOnly = false;
-                    PushLog("Removed read-only attribute from options.txt file.");
-                }
-            }
-            catch (Exception ex)
-            {
-                PushLog($"Failed to remove readonly attribute from options.txt file: {ex.Message}");
-                return;
-            }
-
-            // Update graphics mode
-            try
-            {
-                var lines = File.ReadAllLines(optionsFilePath);
-                bool graphicsModeFound = false;
-
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    if (lines[i].StartsWith("graphics_mode:", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var oldValue = lines[i];
-                        lines[i] = "graphics_mode:3";
-                        graphicsModeFound = true;
-                        PushLog($"Updated graphics mode: {oldValue} -> {lines[i]}");
-                        break;
-                    }
-                }
-
-                if (!graphicsModeFound)
-                {
-                    PushLog("Warning: graphics_mode setting not found in options file. Adding it...");
-                    var linesList = lines.ToList();
-                    linesList.Add("graphics_mode:3");
-                    lines = linesList.ToArray();
-                }
-
-                // Disable VSync too while we're at it
-                bool vsyncFound = false;
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    if (lines[i].StartsWith("gfx_vsync:", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var oldVSyncValue = lines[i];
-                        lines[i] = "gfx_vsync:0";
-                        vsyncFound = true;
-                        PushLog($"Disabled VSync: {oldVSyncValue} -> {lines[i]}");
-                        break;
-                    }
-                }
-                if (!vsyncFound)
-                {
-                    PushLog("Warning: gfx_vsync setting not found. Adding it...");
-                    var linesList = lines.ToList();
-                    linesList.Add("gfx_vsync:0");
-                    lines = linesList.ToArray();
-                }
-
-                // Create backup before writing just in case... so the app won't make people curse me
-                var backupPath = optionsFilePath + ".backup";
-                File.Copy(optionsFilePath, backupPath, true);
-                PushLog("Created backup of options file.");
-
-                File.WriteAllLines(optionsFilePath, lines);
-                PushLog("Options file updated successfully.");
-            }
-            catch (Exception ex)
-            {
-                PushLog($"Failed to update options file: {ex.Message}");
-                return;
-            }
-
-            // Launch Minecraft depending on protocol
-            try
-            {
-                var processInfo = new ProcessStartInfo
-                {
-                    FileName = protocol,
-                    UseShellExecute = true,
-                    ErrorDialog = false
-                };
-
-                Process.Start(processInfo);
-                PushLog($"Ray tracing enabled and {versionName} launch initiated successfully!");
-            }
-            catch (System.ComponentModel.Win32Exception ex)
-            {
-                PushLog($"Failed to launch {versionName}: {ex.Message}");
-                PushLog("Make sure the game is installed and the protocol is registered.");
-            }
-            catch (Exception ex)
-            {
-                PushLog($"Unexpected error launching {versionName}: {ex.Message}");
-            }
-        }
-        catch (Exception ex)
-        {
-            PushLog($"Error: {ex.Message}");
-        }
+        var logs = Launcher.LaunchMinecraftRTX(IsTargetingPreview);
+        PushLog(logs);
     }
 
 }

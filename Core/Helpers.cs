@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using ImageMagick;
 using Newtonsoft.Json;
@@ -14,7 +13,7 @@ using Newtonsoft.Json.Linq;
 using Windows.Storage.Pickers;
 using static Vanilla_RTX_Tuner_WinUI.MainWindow;
 
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 public static class Helpers
 {
@@ -23,18 +22,18 @@ public static class Helpers
     {
         try
         {
-            using (MagickImage sourceImage = new MagickImage(imagePath))
+            using (var sourceImage = new MagickImage(imagePath))
             {
-                int width = (int)sourceImage.Width;
-                int height = (int)sourceImage.Height;
+                var width = (int)sourceImage.Width;
+                var height = (int)sourceImage.Height;
 
 
-                Bitmap bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                var bitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
                 using (var sourcePixels = sourceImage.GetPixels())
                 {
 
-                    for (int y = 0; y < height; y++)
+                    for (var y = 0; y < height; y++)
                     {
                         for (var x = 0; x < width; x++)
                         {
@@ -46,15 +45,15 @@ public static class Helpers
 
                             if (sourceImage.ColorType == ColorType.Grayscale)
                             {
-                                byte gray = (byte)(pixelData[0] >> 8);
+                                var gray = (byte)(pixelData[0] >> 8);
                                 r = g = b = gray;
                                 a = 255;
                             }
                             else if (sourceImage.ColorType == ColorType.GrayscaleAlpha)
                             {
-                                byte gray = (byte)(pixelData[0] >> 8);
+                                var gray = (byte)(pixelData[0] >> 8);
                                 r = g = b = gray;
-                                byte originalAlpha = (byte)(pixelData[1] >> 8);
+                                var originalAlpha = (byte)(pixelData[1] >> 8);
                                 a = maxOpacity ? (byte)255 : originalAlpha;
                             }
                             else if (sourceImage.ColorType == ColorType.TrueColor)
@@ -69,7 +68,7 @@ public static class Helpers
                                 r = (byte)(pixelData[0] >> 8);
                                 g = (byte)(pixelData[1] >> 8);
                                 b = (byte)(pixelData[2] >> 8);
-                                byte originalAlpha = (byte)(pixelData[3] >> 8);
+                                var originalAlpha = (byte)(pixelData[3] >> 8);
                                 a = maxOpacity ? (byte)255 : originalAlpha;
                             }
                             else if (sourceImage.ColorType == ColorType.Palette)
@@ -80,7 +79,7 @@ public static class Helpers
 
                                 if (hasAlpha && sourceImage.ChannelCount > 3)
                                 {
-                                    byte originalAlpha = (byte)(pixelData[3] >> 8);
+                                    var originalAlpha = (byte)(pixelData[3] >> 8);
                                     a = maxOpacity ? (byte)255 : originalAlpha;
                                 }
                                 else
@@ -106,7 +105,7 @@ public static class Helpers
                                     a = 255;
                                 }
                             }
-                            Color pixelColor = Color.FromArgb(a, r, g, b);
+                            var pixelColor = Color.FromArgb(a, r, g, b);
                             bitmap.SetPixel(x, y, pixelColor);
                         }
                     }
@@ -118,11 +117,11 @@ public static class Helpers
         catch (Exception ex)
         {
             // PushLog($"Error reading image {imagePath}: {ex.Message}");
-            Bitmap errorBitmap = new Bitmap(512, 512, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            using (Graphics g = Graphics.FromImage(errorBitmap))
+            var errorBitmap = new Bitmap(512, 512, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(errorBitmap))
             {
                 g.Clear(Color.Transparent);
-                int squareSize = 256;
+                var squareSize = 256;
                 g.FillRectangle(new SolidBrush(Color.FromArgb(255, 77, 172, 255)), 0, 0, squareSize, squareSize);
                 g.FillRectangle(new SolidBrush(Color.FromArgb(255, 0, 35, 66)), squareSize, 0, squareSize, squareSize);
                 g.FillRectangle(new SolidBrush(Color.FromArgb(255, 0, 35, 66)), 0, squareSize, squareSize, squareSize);
@@ -135,8 +134,8 @@ public static class Helpers
     {
         try
         {
-            int width = bitmap.Width;
-            int height = bitmap.Height;
+            var width = bitmap.Width;
+            var height = bitmap.Height;
 
             // Write TGA file format manually for absolute control
             using (var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
@@ -156,11 +155,11 @@ public static class Helpers
                 writer.Write((byte)32);       // Pixel Depth (32-bit RGBA)
                 writer.Write((byte)8);        // Image Descriptor (default origin, 8-bit alpha)
 
-                for (int y = height - 1; y >= 0; y--) // TGA is bottom-up by default
+                for (var y = height - 1; y >= 0; y--) // TGA is bottom-up by default
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        Color pixel = bitmap.GetPixel(x, y);
+                        var pixel = bitmap.GetPixel(x, y);
 
                         writer.Write(pixel.B);
                         writer.Write(pixel.G);
@@ -178,13 +177,13 @@ public static class Helpers
     }
 
 
-
+    // TODO: Get rid of this, use the internal thing, a new method for it.
     public static T GetConfig<T>(string paramName)
     {
         var jsonFilePath = Path.Combine(AppContext.BaseDirectory, "Assets", "config.json");
         var jsonContent = File.ReadAllText(jsonFilePath);
 
-        JObject jsonObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
+        var jsonObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
 
         foreach (var group in jsonObject)
         {
@@ -204,30 +203,30 @@ public static class Helpers
                 }
             }
         }
-        return default(T);
+        return default;
     }
 
 
 
     public static async Task<(bool, string?)> Download(string url)
     {
-        int retries = 3;
+        var retries = 3;
         while (retries-- > 0)
         {
             try
             {
-                using HttpClient client = new HttpClient
+                using var client = new HttpClient
                 {
                     Timeout = TimeSpan.FromSeconds(15)
                 };
-                string userAgent = $"vanilla_rtx_tuner/{TunerVariables.appVersion}";
+                var userAgent = $"vanilla_rtx_tuner/{TunerVariables.appVersion}";
                 client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
                 using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
                 PushLog("Starting Download.");
 
-                long? totalBytes = response.Content.Headers.ContentLength;
+                var totalBytes = response.Content.Headers.ContentLength;
                 if (!totalBytes.HasValue)
                     PushLog("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).");
 
@@ -270,13 +269,13 @@ public static class Helpers
                 {
                     try
                     {
-                        string testPath = getPath();
-                        string testDir = Path.GetDirectoryName(testPath);
+                        var testPath = getPath();
+                        var testDir = Path.GetDirectoryName(testPath);
 
                         Directory.CreateDirectory(testDir);
 
                         // Test write access with a temp file
-                        string testFile = Path.Combine(testDir, $"tuner_write_test_{Guid.NewGuid()}.tmp");
+                        var testFile = Path.Combine(testDir, $"tuner_write_test_{Guid.NewGuid()}.tmp");
                         File.WriteAllText(testFile, "tuner_write_test");
                         File.Delete(testFile);
 
@@ -302,11 +301,11 @@ public static class Helpers
                 using var contentStream = await response.Content.ReadAsStreamAsync();
                 using var fileStream = new FileStream(savingLocation, FileMode.Create, FileAccess.Write, FileShare.None, 8192, useAsync: true);
 
-                byte[] buffer = new byte[8192];
+                var buffer = new byte[8192];
                 long totalRead = 0;
                 int read;
                 double lastLoggedProgress = 0;
-                int lastLoggedMB = 0;
+                var lastLoggedMB = 0;
 
                 while ((read = await contentStream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
                 {
@@ -315,7 +314,7 @@ public static class Helpers
 
                     if (totalBytes.HasValue)
                     {
-                        double progress = (double)totalRead / totalBytes.Value * 100;
+                        var progress = (double)totalRead / totalBytes.Value * 100;
                         if (progress - lastLoggedProgress >= 10 || progress >= 100)
                         {
                             lastLoggedProgress = progress;
@@ -324,7 +323,7 @@ public static class Helpers
                     }
                     else
                     {
-                        int currentMB = (int)(totalRead / (1024 * 1024));
+                        var currentMB = (int)(totalRead / (1024 * 1024));
                         if (currentMB > lastLoggedMB)
                         {
                             lastLoggedMB = currentMB;
@@ -367,9 +366,9 @@ public static class Helpers
         {
             try
             {
-                string saveDir = Path.GetDirectoryName(saveLocation)!;
-                string stagingDir = Path.Combine(saveDir, "_staging");
-                string extractDir = Path.Combine(stagingDir, "extracted");
+                var saveDir = Path.GetDirectoryName(saveLocation)!;
+                var stagingDir = Path.Combine(saveDir, "_staging");
+                var extractDir = Path.Combine(stagingDir, "extracted");
 
                 // Fallback logic is already applied during download, and the final save location is passed to this method
                 // This just guards in case its dir somehow vanishes before we get to deploying
@@ -392,7 +391,7 @@ public static class Helpers
                     ZipFile.ExtractToDirectory(saveLocation, extractDir, overwriteFiles: true);
                 }
                 
-                string resourcePackPath = Path.Combine(
+                var resourcePackPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "Packages",
                     TunerVariables.IsTargetingPreview ? "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
@@ -429,12 +428,12 @@ public static class Helpers
 
                         string headerUUID = data?.header?.uuid;
                         string moduleUUID = data?.modules?[0]?.uuid;
-                        string folder = Path.GetDirectoryName(file)!;
+                        var folder = Path.GetDirectoryName(file)!;
 
-                        if ((headerUUID == "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b" &&
-                             moduleUUID == "af805084-fafa-4124-9ae2-00be4bc202dc") ||
-                            (headerUUID == "bbe2b225-b45b-41c2-bd3b-465cd83e6071" &&
-                             moduleUUID == "b2eef2c6-d893-467e-b31d-cda7bf643eaa"))
+                        if (headerUUID == "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b" &&
+                             moduleUUID == "af805084-fafa-4124-9ae2-00be4bc202dc" ||
+                            headerUUID == "bbe2b225-b45b-41c2-bd3b-465cd83e6071" &&
+                             moduleUUID == "b2eef2c6-d893-467e-b31d-cda7bf643eaa")
                         {
                             ForceWritable(folder);
                             Directory.Delete(folder, true);
@@ -444,24 +443,24 @@ public static class Helpers
                     catch { continue; }
                 }
 
-                string vanillaRoot = Path.Combine(extractDir, "Vanilla-RTX-master");
+                var vanillaRoot = Path.Combine(extractDir, "Vanilla-RTX-master");
 
                 void CopyAndRename(string folderName)
                 {
-                    string src = Path.Combine(vanillaRoot, folderName);
+                    var src = Path.Combine(vanillaRoot, folderName);
                     if (!Directory.Exists(src))
                     {
                         PushLog($"Missing folder: {folderName}");
                         return;
                     }
 
-                    string baseName = folderName.Replace("-", "");
-                    string dst = Path.Combine(resourcePackPath, baseName);
-                    int suffix = 1;
+                    var baseName = folderName.Replace("-", "");
+                    var dst = Path.Combine(resourcePackPath, baseName);
+                    var suffix = 1;
 
                     while (Directory.Exists(dst))
                     {
-                        string manifest = Path.Combine(dst, "manifest.json");
+                        var manifest = Path.Combine(dst, "manifest.json");
                         if (File.Exists(manifest))
                         {
                             try
@@ -472,11 +471,11 @@ public static class Helpers
                                 string headerUUID = data?.header?.uuid;
                                 string moduleUUID = data?.modules?[0]?.uuid;
 
-                                bool isOurPack =
-                                    (headerUUID == "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b" &&
-                                     moduleUUID == "af805084-fafa-4124-9ae2-00be4bc202dc") ||
-                                    (headerUUID == "bbe2b225-b45b-41c2-bd3b-465cd83e6071" &&
-                                     moduleUUID == "b2eef2c6-d893-467e-b31d-cda7bf643eaa");
+                                var isOurPack =
+                                    headerUUID == "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b" &&
+                                     moduleUUID == "af805084-fafa-4124-9ae2-00be4bc202dc" ||
+                                    headerUUID == "bbe2b225-b45b-41c2-bd3b-465cd83e6071" &&
+                                     moduleUUID == "b2eef2c6-d893-467e-b31d-cda7bf643eaa";
 
                                 if (isOurPack)
                                 {
@@ -514,7 +513,7 @@ public static class Helpers
                         PushLog($"Deleted downloaded file: {saveLocation}");
                     }
 
-                    string parent = Path.GetDirectoryName(saveLocation)!;
+                    var parent = Path.GetDirectoryName(saveLocation)!;
                     if (parent.EndsWith("vanilla_rtx_tuner", StringComparison.OrdinalIgnoreCase) ||
                         parent.EndsWith("vanilla_rtx_tuner_fallback", StringComparison.OrdinalIgnoreCase))
                     {
@@ -538,7 +537,7 @@ public static class Helpers
     }
     private static void DirectoryCopy(string sourceDir, string destDir, bool copySubDirs)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDir);
+        var dir = new DirectoryInfo(sourceDir);
         if (!dir.Exists)
             throw new DirectoryNotFoundException($"Source not found: {sourceDir}");
 
@@ -551,7 +550,7 @@ public static class Helpers
         {
             foreach (var subdir in dir.GetDirectories())
             {
-                string dst = Path.Combine(destDir, subdir.Name);
+                var dst = Path.Combine(destDir, subdir.Name);
                 DirectoryCopy(subdir.FullName, dst, true);
             }
         }
@@ -561,7 +560,7 @@ public static class Helpers
 
     public static async Task MCPackExporter(string packFolderPath, string suggestedName)
     {
-        var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow.Instance);
+        var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Instance);
         var picker = new FileSavePicker();
         WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
@@ -569,19 +568,21 @@ public static class Helpers
         picker.SuggestedFileName = suggestedName;
         picker.SuggestedStartLocation = PickerLocationId.Desktop;
 
+
+
         var file = await picker.PickSaveFileAsync();
         if (file == null) return;
 
-        string tempZipPath = Path.Combine(Path.GetTempPath(), $"temp_{Guid.NewGuid()}.mcpack");
+        var tempZipPath = Path.Combine(Path.GetTempPath(), $"temp_{Guid.NewGuid()}.mcpack");
 
         try
         {
             using (var zip = ZipFile.Open(tempZipPath, ZipArchiveMode.Create))
             {
-                string baseFolder = Path.GetFileName(packFolderPath.TrimEnd(Path.DirectorySeparatorChar));
-                foreach (string filePath in Directory.GetFiles(packFolderPath, "*", SearchOption.AllDirectories))
+                var baseFolder = Path.GetFileName(packFolderPath.TrimEnd(Path.DirectorySeparatorChar));
+                foreach (var filePath in Directory.GetFiles(packFolderPath, "*", SearchOption.AllDirectories))
                 {
-                    string relativePath = Path.Combine(baseFolder, Path.GetRelativePath(packFolderPath, filePath));
+                    var relativePath = Path.Combine(baseFolder, Path.GetRelativePath(packFolderPath, filePath));
                     zip.CreateEntryFromFile(filePath, relativePath, CompressionLevel.Optimal);
                 }
             }

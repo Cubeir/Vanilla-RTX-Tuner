@@ -95,8 +95,8 @@
                      HorizontalAlignment="Left" />
 
         <!-- Locate Pack Button -->
-        <Button x:Name="LocatePack"
-                Click="LocatePacks_Click"
+        <Button x:Name="LocatePacksButton"
+                Click="LocatePacksButton_Click"
                 Width="220"
                 Margin="15,40,0,15"
                 HorizontalAlignment="Left"
@@ -357,8 +357,8 @@
 
 
         <!-- Update Button -->
-        <Button x:Name="UpdateCoreVanillaRTX"
-                Click="UpdateCoreVanillaRTX_Click"
+        <Button x:Name="UpdateVanillaRTXButton"
+                Click="UpdateVanillaRTXButton_Click"
                 Width="280"
                 FontWeight="SemiBold"
                 Margin="380,0,0,55"
@@ -377,8 +377,8 @@
         </Button>
 
         <!-- TuneButton -->
-        <Button x:Name="TuneSelection"
-                Click="TuneSelection_Click"
+        <Button x:Name="TuneSelectionButton"
+                Click="TuneSelectionButton_Click"
                 Width="280"
                 FontWeight="SemiBold"
                 Margin="380,0,0,15"
@@ -400,8 +400,8 @@
 
 
         <!-- Export Selection Button -->
-        <Button x:Name="ExportPackages"
-                Click="ExportPackages_Click"
+        <Button x:Name="ExportButton"
+                Click="ExportButton_Click"
                 Width="280"
                 FontWeight="SemiBold"
                 Margin="670,0,0,55"
@@ -421,8 +421,8 @@
 
 
         <!-- Launch MCRTX button -->
-        <Button x:Name="LaunchMCRTX"
-                Click="LaunchMinecraftRTX_Click"
+        <Button x:Name="LaunchButton"
+                Click="LaunchButton_Click"
                 Width="280"
                 FontWeight="SemiBold"
                 Margin="670,0,0,15"

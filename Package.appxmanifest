@@ -8,7 +8,7 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="5ef27ded-91e3-45a2-935e-f37f04a38f42"
+    Name="Cubeir.VanillaRTX.Tuner"
     Publisher="CN=Cubeir"
     Version="1.0.1.0" />
 
@@ -41,7 +41,7 @@
         Square44x44Logo="Assets\icons\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\icons\Wide310x150Logo.png"  Square71x71Logo="Assets\icons\SmallTile.png" Square310x310Logo="Assets\icons\LargeTile.png"/>
         <uap:SplashScreen Image="Assets\icons\SplashScreen.png" />
-        <uap:LockScreen BadgeLogo="Assets\icons\BadgeLogo.png" Notification="badge"/>
+        <uap:LockScreen BadgeLogo="Assets\icons\BadgeLogo.png"  Notification="badge"/>
       </uap:VisualElements>
     </Application>
   </Applications>

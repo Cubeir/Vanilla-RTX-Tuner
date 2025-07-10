@@ -7,9 +7,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Vanilla_RTX_Tuner_WinUI;
+using Vanilla_RTX_Tuner_WinUI.Core;
 
 public class Updater
 {
