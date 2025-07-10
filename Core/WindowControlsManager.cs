@@ -13,6 +13,14 @@ namespace Vanilla_RTX_Tuner_WinUI.Core;
 /// </summary>
 public class WindowControlsManager
 {
+    // Global exclusion list - controls with these names are always ignored
+    private static readonly HashSet<string> _globalExclusions = new()
+        {
+            "HelpButton",
+            "SidebarLog",
+            "SidelogProgressBar"
+        };
+
     // Static dictionary to track states for multiple windows
     private static readonly Dictionary<Window, Dictionary<Control, bool>> _windowStates = new();
 
@@ -21,12 +29,24 @@ public class WindowControlsManager
     /// </summary>
     /// <param name="window">The window containing controls to toggle</param>
     /// <param name="enable">True to restore original states, false to disable all</param>
-    public static void ToggleControls(Window window, bool enable)
+    /// <param name="excludeNames">Optional list of control names to exclude from toggling</param>
+    public static void ToggleControls(Window window, bool enable, params string[] excludeNames)
     {
         if (window?.Content == null) return;
 
         EnsureWindowStateExists(window);
         var states = _windowStates[window];
+        var exclusions = new HashSet<string>(_globalExclusions);
+
+        // Add any additional exclusions
+        if (excludeNames != null)
+        {
+            foreach (var name in excludeNames)
+            {
+                if (!string.IsNullOrEmpty(name))
+                    exclusions.Add(name);
+            }
+        }
 
         if (enable)
         {
@@ -34,8 +54,40 @@ public class WindowControlsManager
         }
         else
         {
-            StoreAndDisableControls(window, states);
+            StoreAndDisableControls(window, states, exclusions);
         }
+    }
+
+    /// <summary>
+    /// Adds a control name to the global exclusion list
+    /// </summary>
+    /// <param name="controlName">Name of the control to always exclude</param>
+    public static void AddGlobalExclusion(string controlName)
+    {
+        if (!string.IsNullOrEmpty(controlName))
+        {
+            _globalExclusions.Add(controlName);
+        }
+    }
+
+    /// <summary>
+    /// Removes a control name from the global exclusion list
+    /// </summary>
+    /// <param name="controlName">Name of the control to remove from exclusions</param>
+    public static void RemoveGlobalExclusion(string controlName)
+    {
+        if (!string.IsNullOrEmpty(controlName))
+        {
+            _globalExclusions.Remove(controlName);
+        }
+    }
+
+    /// <summary>
+    /// Clears all global exclusions
+    /// </summary>
+    public static void ClearGlobalExclusions()
+    {
+        _globalExclusions.Clear();
     }
 
     /// <summary>
@@ -59,10 +111,10 @@ public class WindowControlsManager
         }
     }
 
-    private static void StoreAndDisableControls(Window window, Dictionary<Control, bool> states)
+    private static void StoreAndDisableControls(Window window, Dictionary<Control, bool> states, HashSet<string> exclusions)
     {
         states.Clear();
-        var controls = GetAllSupportedControls(window.Content);
+        var controls = GetAllSupportedControls(window.Content, exclusions);
 
         foreach (var control in controls)
         {
@@ -80,22 +132,28 @@ public class WindowControlsManager
         states.Clear();
     }
 
-    private static IEnumerable<Control> GetAllSupportedControls(DependencyObject parent)
+    private static IEnumerable<Control> GetAllSupportedControls(DependencyObject parent, HashSet<string> exclusions = null)
     {
         if (parent == null) yield break;
 
         var childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
 
-        for (var i = 0; i < childCount; i++)
+        for (int i = 0; i < childCount; i++)
         {
             var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
 
             if (IsSupportedControl(child))
             {
-                yield return (Control)child;
+                var control = (Control)child;
+
+                // Check if this control should be excluded
+                if (exclusions == null || !exclusions.Contains(control.Name))
+                {
+                    yield return control;
+                }
             }
 
-            foreach (var grandChild in GetAllSupportedControls(child))
+            foreach (var grandChild in GetAllSupportedControls(child, exclusions))
             {
                 yield return grandChild;
             }
@@ -136,18 +194,20 @@ public static class WindowControlsManagerExtensions
     /// </summary>
     /// <param name="window">The window to toggle controls for</param>
     /// <param name="enable">True to restore, false to disable</param>
-    public static void ToggleControls(this Window window, bool enable)
+    /// <param name="excludeNames">Optional list of control names to exclude</param>
+    public static void ToggleControls(this Window window, bool enable, params string[] excludeNames)
     {
-        WindowControlsManager.ToggleControls(window, enable);
+        WindowControlsManager.ToggleControls(window, enable, excludeNames);
     }
 
     /// <summary>
     /// Disables all controls in this window
     /// </summary>
     /// <param name="window">The window to disable controls for</param>
-    public static void DisableAllControls(this Window window)
+    /// <param name="excludeNames">Optional list of control names to exclude</param>
+    public static void DisableAllControls(this Window window, params string[] excludeNames)
     {
-        WindowControlsManager.ToggleControls(window, false);
+        WindowControlsManager.ToggleControls(window, false, excludeNames);
     }
 
     /// <summary>
