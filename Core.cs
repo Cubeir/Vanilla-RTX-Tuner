@@ -74,89 +74,76 @@ For example, sliders must definitely be binded, make the code cleaner.
 
 public class Core
 {
+    private struct PackInfo
+    {
+        public string Name;
+        public string Path;
+        public bool Enabled;
+
+        public PackInfo(string name, string path, bool enabled)
+        {
+            Name = name;
+            Path = path;
+            Enabled = enabled;
+        }
+    }
+
 
     // TODO: Don't log what's not processed, log what's processed, and refactor this mess.
     public static void TuneSelectedPacks()
     {
+        MainWindow.PushLog("Options left at 0 will be skipped.");
         MainWindow.PushLog("Tuning selected packages...");
 
+        var packs = new[]
+        {
+        new PackInfo("Vanilla RTX", VanillaRTXLocation, IsVanillaRTXEnabled),               // 0
+        new PackInfo("Vanilla RTX Normals", VanillaRTXNormalsLocation, IsNormalsEnabled),   // 1
+        new PackInfo("Vanilla RTX Opus", VanillaRTXOpusLocation, IsOpusEnabled)             // 2
+    };
 
         if (FogMultiplier != 1.0)
         {
-            ProcessFog(VanillaRTXLocation, IsVanillaRTXEnabled, "Vanilla RTX");
-            ProcessFog(VanillaRTXNormalsLocation, IsNormalsEnabled, "Vanilla RTX Normals");
-            ProcessFog(VanillaRTXOpusLocation, IsOpusEnabled, "Vanilla RTX Opus");
-        }
-        else
-        {
-            MainWindow.PushLog("Fog multiplier is 1.0; skipped fog processing.");
+            foreach (var p in packs) ProcessFog(p);
         }
 
         if (EmissivityMultiplier != 1.0)
         {
-            ProcessEmissivity(VanillaRTXLocation, IsVanillaRTXEnabled, "Vanilla RTX");
-            ProcessEmissivity(VanillaRTXNormalsLocation, IsNormalsEnabled, "Vanilla RTX Normals");
-            ProcessEmissivity(VanillaRTXOpusLocation, IsOpusEnabled, "Vanilla RTX Opus");
-        }
-        else
-        {
-            MainWindow.PushLog("Emissivity multiplier is 1; skipped emissivity processing.");
+            foreach (var p in packs) ProcessEmissivity(p);
         }
 
         if (NormalIntensity != 100)
         {
-            ProcessNormalIntensity(VanillaRTXNormalsLocation, IsNormalsEnabled, "Vanilla RTX Normals");
-            ProcessNormalIntensity(VanillaRTXOpusLocation, IsOpusEnabled, "Vanilla RTX Opus");
-        }
-        else
-        {
-            MainWindow.PushLog("Normal Intensity at 100%; skipped Normal Map processing.");
+            foreach (var p in packs.Skip(1)) ProcessNormalIntensity(p); // Normals & Opus only (Skip first)
         }
 
         if (MaterialNoiseOffset != 0)
         {
-            ProcessMaterialNoise(VanillaRTXLocation, IsVanillaRTXEnabled, "Vanilla RTX");
-            ProcessMaterialNoise(VanillaRTXNormalsLocation, IsNormalsEnabled, "Vanilla RTX Normals");
-            ProcessMaterialNoise(VanillaRTXOpusLocation, IsOpusEnabled, "Vanilla RTX Opus");
-        }
-        else
-        {
-            MainWindow.PushLog("Material Noise Maximum Offset at 0; skipped noise processing");
+            foreach (var p in packs) ProcessMaterialNoise(p); // All
         }
 
         if (RoughenUpIntensity != 0)
         {
-            ProcessRoughingUp(VanillaRTXLocation, IsVanillaRTXEnabled, "Vanilla RTX");
-            ProcessRoughingUp(VanillaRTXNormalsLocation, IsNormalsEnabled, "Vanilla RTX Normals");
-            ProcessRoughingUp(VanillaRTXOpusLocation, IsOpusEnabled, "Vanilla RTX Opus");
+            foreach (var p in packs) ProcessRoughingUp(p); // All
         }
-        else
-        {
-            MainWindow.PushLog("Roughen Up intensity at 0; skipped roughness processing");
-        }
-
 
         if (ButcheredHeightmapAlpha != 0)
         {
-            ProcessHeightmaps(VanillaRTXLocation, IsVanillaRTXEnabled, "Vanilla RTX");
+            ProcessHeightmaps(packs[0]); // Only Vanilla RTX
         }
-        else
-        {
-            MainWindow.PushLog("Butcherd Heightmap Alpha at 0; skipped heightmap processing");
-        }
-
-
-
     }
+
+
     #region ------------------- Processors
-    private static void ProcessFog(string packPath, bool isEnabled, string packName)
+    private static void ProcessFog(PackInfo pack)
     {
         bool uniformDensity = GetConfig<bool>("remove_height_based_fog");
 
-        if (!isEnabled || string.IsNullOrEmpty(packPath) || !Directory.Exists(packPath))
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        string[] files = Directory.GetFiles(packPath, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
+
+        string[] files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
         if (!files.Any())
         {
             // MainWindow.PushLog($"{packName}: no fog setting files found.");
@@ -295,15 +282,15 @@ public class Core
 
 
 
-    private static void ProcessEmissivity(string packPath, bool isEnabled, string packName)
+    private static void ProcessEmissivity(PackInfo pack)
     {
         double emissiveExcessDampen = GetConfig<double>("excess_emissive_intensity_dampening_constant");
-        if (!isEnabled || string.IsNullOrEmpty(packPath) || !Directory.Exists(packPath))
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
-        var files = Directory.GetFiles(packPath, "*_mer.tga", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{packName}: no _mer.tgas files found.");
+            MainWindow.PushLog($"{pack.Name}: no _mer.tgas files found.");
             return;
         }
         var userMult = EmissivityMultiplier;
@@ -388,7 +375,7 @@ public class Core
             }
             catch (Exception ex)
             {
-                  MainWindow.PushLog($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                  MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
                  // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -396,13 +383,13 @@ public class Core
 
 
 
-    private static void ProcessNormalIntensity(string packPath, bool isEnabled, string packName)
+    private static void ProcessNormalIntensity(PackInfo pack)
     {
         double normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
-        if (!isEnabled || string.IsNullOrEmpty(packPath) || !Directory.Exists(packPath))
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var allNormalFiles = Directory.GetFiles(packPath, "*_normal.tga", SearchOption.AllDirectories);
+        var allNormalFiles = Directory.GetFiles(pack.Path, "*_normal.tga", SearchOption.AllDirectories);
         var files = new List<string>();
 
         foreach (var file in allNormalFiles)
@@ -427,7 +414,7 @@ public class Core
 
         if (!files.Any())
         {
-            MainWindow.PushLog($"{packName}: no _normal.tga files found.");
+            MainWindow.PushLog($"{pack.Name}: no _normal.tga files found.");
             return;
         }
 
@@ -529,15 +516,15 @@ public class Core
 
 
 
-    private static void ProcessHeightmaps(string packPath, bool isEnabled, string packName)
+    private static void ProcessHeightmaps(PackInfo pack)
     {
-        if (!isEnabled || string.IsNullOrEmpty(packPath) || !Directory.Exists(packPath))
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(packPath, "*_heightmap.tga", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(pack.Path, "*_heightmap.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{packName}: no _heightmap.tga files found.");
+            MainWindow.PushLog($"{pack.Name}: no _heightmap.tga files found.");
             return;
         }
 
@@ -552,7 +539,7 @@ public class Core
 
                 if (!File.Exists(colormapFile))
                 {
-                    MainWindow.PushLog($"{packName}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.");
+                    MainWindow.PushLog($"{pack.Name}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.");
                     continue;
                 }
 
@@ -565,7 +552,7 @@ public class Core
                 // Ensure dimensions match
                 if (colormapBmp.Width != width || colormapBmp.Height != height)
                 {
-                    MainWindow.PushLog($"{packName}: dimension mismatch between heightmap and colormap for {Path.GetFileName(heightmapFile)}; skipped.");
+                    MainWindow.PushLog($"{pack.Name}: dimension mismatch between heightmap and colormap for {Path.GetFileName(heightmapFile)}; skipped.");
                     continue;
                 }
 
@@ -649,7 +636,7 @@ public class Core
             }
             catch (Exception ex)
             {
-                MainWindow.PushLog($"{packName}: error processing {Path.GetFileName(heightmapFile)} — {ex.Message}");
+                MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(heightmapFile)} — {ex.Message}");
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -657,15 +644,15 @@ public class Core
 
 
 
-    private static void ProcessRoughingUp(string packPath, bool isEnabled, string packName)
+    private static void ProcessRoughingUp(PackInfo pack)
     {
-        if (!isEnabled || string.IsNullOrEmpty(packPath) || !Directory.Exists(packPath))
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(packPath, "*_mer.tga", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{packName}: no _mer.tga files found.");
+            MainWindow.PushLog($"{pack.Name}: no _mer.tga files found.");
             return;
         }
 
@@ -723,7 +710,7 @@ public class Core
             }
             catch (Exception ex)
             {
-                MainWindow.PushLog($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -731,7 +718,7 @@ public class Core
 
 
 
-    private static void ProcessMaterialNoise(string packPath, bool isEnabled, string packName)
+    private static void ProcessMaterialNoise(PackInfo pack)
     {
         double CalculateEffectiveness(int colorValue)
         {
@@ -750,13 +737,13 @@ public class Core
             }
         }
 
-        if (!isEnabled || string.IsNullOrEmpty(packPath) || !Directory.Exists(packPath))
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(packPath, "*_mer.tga", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{packName}: no _mer.tga files found.");
+            MainWindow.PushLog($"{pack.Name}: no _mer.tga files found.");
             return;
         }
 
@@ -830,7 +817,7 @@ public class Core
             }
             catch (Exception ex)
             {
-                MainWindow.PushLog($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
