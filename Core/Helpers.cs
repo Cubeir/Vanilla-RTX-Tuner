@@ -568,7 +568,12 @@ public static class Helpers
         picker.SuggestedFileName = suggestedName;
         picker.SuggestedStartLocation = PickerLocationId.Desktop;
 
-
+        var unneededFiles = new[] { "contents.json", "textures_list.json" };
+        foreach (var unneededFile in Directory.GetFiles(packFolderPath, "*", SearchOption.TopDirectoryOnly))
+        {
+            if (unneededFiles.Contains(Path.GetFileName(unneededFile), StringComparer.OrdinalIgnoreCase))
+                File.Delete(unneededFile);
+        }
 
         var file = await picker.PickSaveFileAsync();
         if (file == null) return;
