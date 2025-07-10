@@ -37,6 +37,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 public static class TunerVariables
 {
+    public static string appVersion = null;
+
     public static string downloadSaveLocation = string.Empty;
 
     // Pack save locations in MC folders + versions, variables are flushed and reused for Preview
@@ -104,6 +106,7 @@ public static class TunerVariables
 
         var version = Windows.ApplicationModel.Package.Current.Id.Version; var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
+        appVersion = versionString;
         PushLog($"App Version: {versionString}" + new string('\n', 2) +
                "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to third-party modifications of your Minecraft data folder."); // shockers!
 
@@ -730,6 +733,7 @@ public static class TunerVariables
             TunerVariables.downloadSaveLocation = downloadedSaveLocation;
             if (downloadSuccess)
             {
+                // pass in file path only if DL was a success
                 await Helpers.ExtractAndDeployPacks(downloadSaveLocation);
             }
         }

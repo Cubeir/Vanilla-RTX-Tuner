@@ -220,10 +220,8 @@ public static class Helpers
                 {
                     Timeout = TimeSpan.FromSeconds(15)
                 };
-                client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/90.0.4430.212 Safari/537.36");
+                string userAgent = $"vanilla_rtx_tuner/{TunerVariables.appVersion}";
+                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
                 using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
@@ -231,22 +229,74 @@ public static class Helpers
 
                 long? totalBytes = response.Content.Headers.ContentLength;
                 if (!totalBytes.HasValue)
-                    PushLog("Total file size unknown. Progress will be logged as total downloaded (in MB).");
+                    PushLog("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).");
 
-                string fileName = Path.GetFileName(new Uri(url).AbsolutePath);
-                string saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vanilla_rtx_tuner");
-                string savingLocation = Path.Combine(saveDir, fileName);
-
-                try
+                // Get filename
+                string fileName;
+                if (response.Content.Headers.ContentDisposition?.FileName != null)
                 {
-                    Directory.CreateDirectory(saveDir);
+                    fileName = response.Content.Headers.ContentDisposition.FileName.Trim('"');
                 }
-                catch
+                else
                 {
-                    saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "vanilla_rtx_tuner_temp");
-                    savingLocation = Path.Combine(saveDir, fileName);
-                    Directory.CreateDirectory(saveDir);
-                    PushLog($"Fallback - Save location has been changed to: {savingLocation}");
+                    fileName = Path.GetFileName(new Uri(url).AbsolutePath);
+                    if (string.IsNullOrEmpty(fileName))
+                        fileName = "downloaded_file";
+                    PushLog("File name: " + fileName);
+                }
+
+                // Sanitize filename
+                fileName = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
+
+                // fallback locations in order: temp dir, user dl folder, app's data dir, app's dir, desktop as last resort
+                string savingLocation = null;
+                var fallbackLocations = new Func<string>[]
+                {
+                () => Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner", fileName),
+                
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Downloads", "vanilla_rtx_tuner", fileName),
+                
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "vanilla_rtx_tuner", fileName),
+
+                () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner", fileName),
+                
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    "vanilla_rtx_tuner", fileName)
+                };
+
+                foreach (var getPath in fallbackLocations)
+                {
+                    try
+                    {
+                        string testPath = getPath();
+                        string testDir = Path.GetDirectoryName(testPath);
+
+                        Directory.CreateDirectory(testDir);
+
+                        // Test write access with a temp file
+                        string testFile = Path.Combine(testDir, $"tuner_write_test_{Guid.NewGuid()}.tmp");
+                        File.WriteAllText(testFile, "tuner_write_test");
+                        File.Delete(testFile);
+
+                        savingLocation = testPath;
+                        if (testPath != fallbackLocations[2]())
+                        {
+                            PushLog($"Using save location: {savingLocation}");
+                        }
+                        break;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+
+                if (savingLocation == null)
+                {
+                    PushLog("No writable location found for download.");
+                    return (false, null);
                 }
 
                 using var contentStream = await response.Content.ReadAsStreamAsync();
@@ -306,6 +356,10 @@ public static class Helpers
         PushLog("Download failed after multiple attempts.");
         return (false, null);
     }
+
+
+    // TODO: Make it smarter, don't clean up and redownload every time, cache the zip, compare versions, and download a new version only if the one on github is higher.
+    // The logic for Vanilla RTX reinstallation (0-100, dl to deploy) could be handled in a cleaner way, move it to a separate file -- for now this works.
     public static async Task ExtractAndDeployPacks(string saveLocation)
     {
         await Task.Run(() =>
@@ -316,8 +370,9 @@ public static class Helpers
                 string stagingDir = Path.Combine(saveDir, "_staging");
                 string extractDir = Path.Combine(stagingDir, "extracted");
 
-                // Fallback logic is already applied during download, and the download location is passed to this method
+                // Fallback logic is already applied during download, and the final save location is passed to this method
                 // This just guards in case its dir somehow vanishes before we get to deploying
+                // It likely won't be used, but if it is desktop is good -- makes it easy to notice.
                 if (!Directory.Exists(saveDir))
                 {
                     saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "vanilla_rtx_tuner_fallback");
