@@ -64,7 +64,7 @@ For example, sliders must definitely be binded, make the code cleaner.
 */
 
 
-
+// TODO: make processors return reasons of their failure for easier debugging at the end without touching UI thread directly.
 public class Processor
 {
     private struct PackInfo
@@ -81,8 +81,6 @@ public class Processor
         }
     }
 
-
-    // TODO: Don't log what's not processed, log what's processed, and refactor this mess.
     public static void TuneSelectedPacks()
     {
         MainWindow.PushLog("Options left at 0 will be skipped.");
@@ -139,7 +137,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            // MainWindow.PushLog($"{packName}: no fog setting files found.");
+            // MainWindow.PushLog($"{pack.Name}: no fog setting files found.");
             return;
         }
 

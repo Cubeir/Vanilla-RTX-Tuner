@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
-namespace Vanilla_RTX_Tuner_WinUI.Core;
+namespace Vanilla_RTX_Tuner_WinUI;
 
 /// <summary>
 /// Universal control toggle utility for WinUI 3 applications
@@ -138,7 +138,7 @@ public class WindowControlsManager
 
         var childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
 
-        for (int i = 0; i < childCount; i++)
+        for (var i = 0; i < childCount; i++)
         {
             var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
 

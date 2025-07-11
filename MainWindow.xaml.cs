@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Numerics; 
+using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +15,9 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Newtonsoft.Json;
 using Windows.Graphics;
 using Windows.Storage;
-using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
+using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using Vanilla_RTX_Tuner_WinUI.Core;
 
@@ -29,8 +28,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 public static class TunerVariables
 {
     public static string appVersion = null;
-
-    public static string downloadSaveLocation = string.Empty;
 
     // Pack save locations in MC folders + versions, variables are flushed and reused for Preview
     public static string VanillaRTXLocation = string.Empty;
@@ -181,9 +178,6 @@ public static class TunerVariables
     }
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
-        // individual stuff
-        TargetPreviewToggle.IsChecked = IsTargetingPreview;
-
         // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
         {
@@ -236,6 +230,9 @@ public static class TunerVariables
             var config = sliderConfigs[i];
             UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
         }
+
+
+        TargetPreviewToggle.IsChecked = IsTargetingPreview;
     }
     public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
     {
@@ -281,13 +278,13 @@ public static class TunerVariables
     private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
     {
         // Downloading department: Check if we already found an update and should proceed with download/install
-        if (!string.IsNullOrEmpty(Updater.latestAppVersion) && !string.IsNullOrEmpty(Updater.latestAppRemote_URL))
+        if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
             AppUpdaterButton.IsEnabled = false;
             SidelogProgressBar.IsIndeterminate = true;
             ToggleControls(this, false);
 
-            var installSucess = await Updater.InstallAppUpdate();
+            var installSucess = await AppUpdater.InstallAppUpdate();
             if (installSucess.Item1)
             {
                 PushLog("Continue in Windows App Installer.");
@@ -307,8 +304,8 @@ public static class TunerVariables
             AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
             // Clear these for the next time
-            Updater.latestAppVersion = null;
-            Updater.latestAppRemote_URL = null;
+            AppUpdater.latestAppVersion = null;
+            AppUpdater.latestAppRemote_URL = null;
 
         }
 
@@ -319,7 +316,7 @@ public static class TunerVariables
             SidelogProgressBar.IsIndeterminate = true;
             try
             {
-                var updateAvailable = await Updater.CheckGitHubForUpdates();
+                var updateAvailable = await AppUpdater.CheckGitHubForUpdates();
 
                 if (updateAvailable.Item1)
                 {
@@ -364,36 +361,39 @@ public static class TunerVariables
         PushLog(statusMessage);
 
         UpdateCheckboxStates();
+
+        // Update checkboxes depending on which packs were found
+        void UpdateCheckboxStates()
+        {
+            if (!string.IsNullOrEmpty(VanillaRTXLocation))
+            {
+                VanillaRTXCheckBox.IsEnabled = true;
+                VanillaRTXCheckBox.IsChecked = true;
+                IsVanillaRTXEnabled = true;
+            }
+
+            if (!string.IsNullOrEmpty(VanillaRTXNormalsLocation))
+            {
+                NormalsCheckBox.IsEnabled = true;
+                NormalsCheckBox.IsChecked = true;
+                IsNormalsEnabled = true;
+            }
+
+            if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
+            {
+                OpusCheckBox.IsEnabled = true;
+                OpusCheckBox.IsChecked = true;
+                IsOpusEnabled = true;
+            }
+
+            if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
+            {
+                OptionsAllCheckBox.IsEnabled = true;
+                UpdateSelectAllState();
+            }
+        }
     }
-    private void UpdateCheckboxStates()
-    {
-        if (!string.IsNullOrEmpty(VanillaRTXLocation))
-        {
-            VanillaRTXCheckBox.IsEnabled = true;
-            VanillaRTXCheckBox.IsChecked = true;
-            IsVanillaRTXEnabled = true;
-        }
 
-        if (!string.IsNullOrEmpty(VanillaRTXNormalsLocation))
-        {
-            NormalsCheckBox.IsEnabled = true;
-            NormalsCheckBox.IsChecked = true;
-            IsNormalsEnabled = true;
-        }
-
-        if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
-        {
-            OpusCheckBox.IsEnabled = true;
-            OpusCheckBox.IsChecked = true;
-            IsOpusEnabled = true;
-        }
-
-        if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
-        {
-            OptionsAllCheckBox.IsEnabled = true;
-            UpdateSelectAllState();
-        }
-    }
 
 
 
@@ -677,34 +677,21 @@ public static class TunerVariables
             ToggleControls(this, false);
             SidelogProgressBar.IsIndeterminate = true;
 
+            var updater = new PackUpdater();
+            var (success, log) = await updater.UpdatePacksWithLogAsync();
+            PushLog(log);
 
-
-            string remoteUrl = Helpers.GetConfig<string>("remote_URL")?.Trim();
-            if (string.IsNullOrWhiteSpace(remoteUrl))
-            {
-                PushLog("remote URL is missing or invalid.");
-            }
-
-
-            (bool downloadSuccess, string? downloadedSaveLocation) = await Helpers.Download(remoteUrl!);
-
-            TunerVariables.downloadSaveLocation = downloadedSaveLocation;
-            if (downloadSuccess)
-            {
-                // Pass in file path only if download was a success
-                await Helpers.ExtractAndDeployPacks(downloadSaveLocation);
-            }
+            if (success)
+                PushLog("Pack update completed successfully!");
+            else
+                PushLog("Pack update failed!");
         }
         finally
         {
             ToggleControls(this, true);
             SidelogProgressBar.IsIndeterminate = false;
-
-            downloadSaveLocation = string.Empty;
-
             FlushTheseVariables(true, true);
         }
-
     }
 
 
