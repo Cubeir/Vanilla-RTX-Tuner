@@ -55,7 +55,7 @@
 
             <Image x:Name="iconImageBox"
                    Grid.Column="0"
-                   Source="/Assets/tuner.redstone.lamp.1024.png"
+                   Source="/Assets/tuner.lamp.on.png"
                    Margin="0,0,7,0"
                    Height="20"
                    Width="Auto"

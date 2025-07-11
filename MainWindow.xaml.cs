@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using Microsoft.UI.Xaml.Media;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -15,11 +14,13 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Graphics;
 using Windows.Storage;
-using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using Vanilla_RTX_Tuner_WinUI.Core;
+using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
@@ -89,6 +90,7 @@ public sealed partial class MainWindow : Window
 {
     public static MainWindow? Instance { get; private set; }
     private WindowStateManager _windowStateManager;
+    private static CancellationTokenSource _lampBlinkCts;
 
     public MainWindow()
     {
@@ -135,7 +137,7 @@ public sealed partial class MainWindow : Window
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
         }
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.redstone.lamp.icon.ico");
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
     }
@@ -178,6 +180,88 @@ public sealed partial class MainWindow : Window
             PushLog($"Details: {ex.Message}");
         }
     }
+    public void BlinkingLamp(bool enable)
+    {
+        var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.png");
+        var offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.png");
+
+        var random = new Random();
+        CancellationTokenSource localCts = null;
+
+        async Task BlinkLoop(CancellationToken token)
+        {
+            const double initialDelayMs = 1150;
+            const double decayFactor = 0.925;
+            const double decayIntervalSeconds = 0.75;
+            const double minDelayMs = 150;
+
+            bool state = true;
+            var startTime = DateTime.UtcNow;
+            var nexterraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 6 + 3);
+            // next erratic flash a few seconds.                                        3 to 9 seconds from now
+
+            while (!token.IsCancellationRequested)
+            {
+                var now = DateTime.UtcNow;
+
+                if (now >= nexterraticFlash)
+                {
+                    // erratic flash burst (duration 500-1000 ms)
+                    var erraticDuration = random.Next(500, 1001);
+                    var erraticEnd = now.AddMilliseconds(erraticDuration);
+
+                    while (DateTime.UtcNow < erraticEnd && !token.IsCancellationRequested)
+                    {
+                        iconImageBox.Source = new BitmapImage(new Uri(state ? onPath : offPath));
+                        state = !state;
+                        await Task.Delay(random.Next(33, 100), token); // flicker ms
+                    }
+
+                    iconImageBox.Source = new BitmapImage(new Uri(onPath));
+                    state = true;
+
+                    // schedule next erratic flash randomly for 5-15 seconds later
+                    nexterraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 5);
+                    startTime = DateTime.UtcNow; // reset decay timer for normal blinking after
+                }
+                else
+                {
+                    await SetImageAsync(state ? onPath : offPath);
+                    state = !state;
+
+                    var elapsedSeconds = (DateTime.UtcNow - startTime).TotalSeconds;
+                    var decaySteps = elapsedSeconds / decayIntervalSeconds;
+                    var delay = Math.Max(minDelayMs, initialDelayMs * Math.Pow(decayFactor, decaySteps));
+
+                    await Task.Delay((int)delay, token);
+                }
+            }
+
+            await SetImageAsync(onPath);
+        }
+
+        async Task SetImageAsync(string path)
+        {
+            using var stream = File.OpenRead(path);
+            var bmp = new BitmapImage();
+            await bmp.SetSourceAsync(stream.AsRandomAccessStream());
+            iconImageBox.Source = bmp;
+        }
+
+        _lampBlinkCts?.Cancel();
+        _lampBlinkCts = null;
+
+        if (enable)
+        {
+            _lampBlinkCts = new CancellationTokenSource();
+            _ = BlinkLoop(_lampBlinkCts.Token);
+        }
+        else
+        {
+            _ = SetImageAsync(onPath);
+        }
+    }
+
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
         // store slider variable, slider and box configs, add new ones here 🍝
@@ -285,6 +369,7 @@ public sealed partial class MainWindow : Window
             AppUpdaterButton.IsEnabled = false;
             SidelogProgressBar.IsIndeterminate = true;
             ToggleControls(this, false);
+            BlinkingLamp(true);
 
             var installSucess = await AppUpdater.InstallAppUpdate();
             if (installSucess.Item1)
@@ -298,6 +383,7 @@ public sealed partial class MainWindow : Window
 
             AppUpdaterButton.IsEnabled = true;
             SidelogProgressBar.IsIndeterminate = false;
+            BlinkingLamp(false);
 
             // Button Visuals -> default (we're done with the update)
             AppUpdaterButton.Content = "\uE895";
@@ -316,6 +402,7 @@ public sealed partial class MainWindow : Window
         {
             AppUpdaterButton.IsEnabled = false;
             SidelogProgressBar.IsIndeterminate = true;
+            BlinkingLamp(true);
             try
             {
                 var updateAvailable = await AppUpdater.CheckGitHubForUpdates();
@@ -343,6 +430,7 @@ public sealed partial class MainWindow : Window
             }
             finally
             {
+                BlinkingLamp(false);
                 AppUpdaterButton.IsEnabled = true;
                 SidelogProgressBar.IsIndeterminate = false;
             }
@@ -598,6 +686,7 @@ public sealed partial class MainWindow : Window
 
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
+        BlinkingLamp(true);
         SidelogProgressBar.IsIndeterminate = true;
         ToggleControls(this, false);
         try
@@ -632,7 +721,8 @@ public sealed partial class MainWindow : Window
             {
                 PushLog("Export Queue Finished.");
             }
-                SidelogProgressBar.IsIndeterminate = false;
+            BlinkingLamp(false);
+            SidelogProgressBar.IsIndeterminate = false;
             ToggleControls(this, true);
         }
 
@@ -653,7 +743,7 @@ public sealed partial class MainWindow : Window
             else
             {
                 SidelogProgressBar.IsIndeterminate = true;
-
+                BlinkingLamp(true);
                 ToggleControls(this, false);
 
                 await Task.Run(Processor.TuneSelectedPacks);
@@ -664,6 +754,7 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
+            BlinkingLamp(true);
             ToggleControls(this, true);
             SidelogProgressBar.IsIndeterminate = false;
         }
@@ -677,6 +768,7 @@ public sealed partial class MainWindow : Window
         {
             ToggleControls(this, false);
             SidelogProgressBar.IsIndeterminate = true;
+            BlinkingLamp(true);
 
             var updater = new PackUpdater();
 
@@ -708,6 +800,7 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
+            BlinkingLamp(false);
             ToggleControls(this, true);
             SidelogProgressBar.IsIndeterminate = false;
             FlushTheseVariables(true, true);
