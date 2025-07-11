@@ -364,7 +364,7 @@
                 Margin="380,0,0,55"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Downloads the latest releases and deploys them in the target folder (Opus must be downloaded manually!)">
+                ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are deployed from cache unless an update is available.">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <FontIcon Glyph="&#xEBD3;"

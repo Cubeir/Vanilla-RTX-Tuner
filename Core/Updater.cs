@@ -78,7 +78,7 @@ public class AppUpdater
                 // See if we need updates
                 if (IsVersionHigher(extractedVersion, TunerVariables.appVersion))
                 {
-                    return (true, $"A New Version is Available! Latest: {extractedVersion} - Click again to begin download & installation.");
+                    return (true, $"A New App Version is Available! Latest: {extractedVersion} - Click again to begin download & installation.");
                 }
                 else
                 {
@@ -229,7 +229,32 @@ public class AppUpdater
 
 /// 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱
 
-
+/// <summary>
+/// Updates packs and returns a detailed log of what happeneded:
+/*
+ * Try to use cached zipball if available
+ * Check cache against remote manifest
+ * If remote manifest shows higher version than cache, update the cache before deploying. Otherwise deploy the cache normally.
+ * 
+ * But if the cache is missing or corrupt for whatever the reason, get the latest zipball and update cache, deploy.
+ * If unable to get latest manifest from remote, just download latest and update cache anyway.
+ * If unable to get latest zipball from remote, and we already have a cache, use the cache for deployment anyway.
+ * 
+ * If no cached zipball and no access to remote, that's when you can't reinstall -- so Reinstall button needs to run with internet at least once.
+ * 
+ * The code could absolutely be refactored, it works, but the design is incremental because I thought of it on the fly
+ * A cleaner way to go about it would be something to first determine what to do in one go, and deploy from there
+ * 
+ * The logging copilot added is garbage, do something clearer
+ * 
+ * There are 7 execution paths with all edge cases
+ * 
+ * Chopped up the logic, it starts diverging based on existence of a Cache
+ * If a cache exists, it checks if an update is needed, if can't update or update isn't needed, use the current one
+ * If a cache doesn't exist, proceed as normal -- manifest version is only relevant when we have a cache to compare against
+ * So the previous "decision maker" method based on the situation was just making it worse.
+*/
+/// </summary>
 public class PackUpdater
 {
     public const string VanillaRTX_Manifest_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
@@ -241,185 +266,205 @@ public class PackUpdater
     private string vanillaRTXNormalsHeaderUUID => PackLocator.vanillaRTXNormalsHeaderUUID;
     private string vanillaRTXNormalsModuleUUID => PackLocator.vanillaRTXNormalsModuleUUID;
 
-    private JObject remoteVanillaRTXManifest;
-    private JObject remoteVanillaRTXNormalsManifest;
+    // Event for progress updates to avoid UI thread blocking
+    public event Action<string> ProgressUpdate;
 
-    /// <summary>
-    /// Updates packs and returns a detailed log of what happeneded:
-    /*
-     * Try to use cached zipball if available
-     * Check cache against remote manifest
-     * If remote manifest shows higher version than cache, update the cache before deploying. Otherwise deploy the cache normally.
-     * 
-     * But if the cache is missing or corrupt for whatever the reason, get the latest zipball and update cache, deploy.
-     * If unable to get latest manifest from remote, just download latest and update cache anyway.
-     * If unable to get latest zipball from remote, and we already have a cache, use the cache for deployment anyway.
-     * 
-     * If no cached zipball and no access to remote, that's when you can't reinstall -- so Reinstall button needs to run with internet at least once.
-     * 
-     * The code could absolutely be refactored, it works, but the design is incremental because I thought of it on the fly
-     * A cleaner way to go about it would be something to first determine what to do in one go, and deploy from there
-    */
-    /// </summary>
-    public async Task<(bool Success, string Log)> UpdatePacksWithLogAsync()
+    private readonly List<string> _logMessages = new List<string>();
+
+    public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
     {
-        var log = new List<string>();
-        log.Add("Starting pack update...");
+        _logMessages.Clear();
 
-        bool networkAvailable = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
-        string cachedZipballPath = GetCachedZipballPath();
-
-        // 1. No network
-        if (!networkAvailable)
+        try
         {
-            if (string.IsNullOrEmpty(cachedZipballPath) || !System.IO.File.Exists(cachedZipballPath))
+            var cacheInfo = GetCacheInfo();
+            if (!cacheInfo.exists)
             {
-                log.Add("No internet connection and no cached package available.");
-                return (false, string.Join('\n', log));
+                return await HandleNoCacheScenario();
             }
-            log.Add("No internet connection, deploying from cache.");
-            bool deployed = await DeployPacksAsync(cachedZipballPath, log);
-            return (deployed, string.Join('\n', log));
+            else
+            {
+                return await HandleCacheExistsScenario(cacheInfo.path);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogMessage($"Unexpected error: {ex.Message}");
+            return (false, new List<string>(_logMessages));
+        }
+    }
+
+    private async Task<(bool Success, List<string> Logs)> HandleNoCacheScenario()
+    {
+        LogMessage("No cache found - downloading latest version");
+
+        var (downloadSuccess, downloadPath) = await DownloadLatestPackage();
+        if (!downloadSuccess || string.IsNullOrEmpty(downloadPath))
+        {
+            LogMessage("Download failed and no cache available");
+            return (false, new List<string>(_logMessages));
         }
 
-        // 2. Try to fetch remote manifests
-        bool fetchedRemote = await FetchRemoteManifestsAsync(log);
-        if (!fetchedRemote)
-        {
-            if (string.IsNullOrEmpty(cachedZipballPath) || !System.IO.File.Exists(cachedZipballPath))
-            {
-                log.Add("Failed to fetch remote manifests and no cached pack available. Can't update.");
-                return (false, string.Join('\n', log));
-            }
-            log.Add("Failed to fetch remote manifests, downloading latest and updating cache.");
-            var (downloaded, downloadPath) = await Helpers.Download(zipball_URL);
-            if (!downloaded || string.IsNullOrEmpty(downloadPath))
-            {
-                log.Add("Failed to download latest pack, using cache.");
-                bool deployed = await DeployPacksAsync(cachedZipballPath, log);
-                return (deployed, string.Join('\n', log));
-            }
-            SaveCachedZipballPath(downloadPath);
-            bool deployed2 = await DeployPacksAsync(downloadPath, log);
-            return (deployed2, string.Join('\n', log));
-        }
+        SaveCachedZipballPath(downloadPath);
+        LogMessage("Package downloaded and cached");
 
-        // 3. Check cache
-        bool needsDownload = false;
-        if (string.IsNullOrEmpty(cachedZipballPath) || !System.IO.File.Exists(cachedZipballPath))
+        var deploySuccess = await DeployPackage(downloadPath);
+        LogMessage(deploySuccess ? "Deployment successful" : "Deployment failed");
+
+        return (deploySuccess, new List<string>(_logMessages));
+    }
+
+    private async Task<(bool Success, List<string> Logs)> HandleCacheExistsScenario(string cachePath)
+    {
+        LogMessage("Cache found - checking for updates");
+
+        var needsUpdate = await CheckIfUpdateNeeded(cachePath);
+
+        if (needsUpdate)
         {
-            log.Add("No cache found, downloading latest.");
-            needsDownload = true;
+            LogMessage("Update needed - downloading latest version");
+            var (downloadSuccess, downloadPath) = await DownloadLatestPackage();
+
+            if (downloadSuccess && !string.IsNullOrEmpty(downloadPath))
+            {
+                SaveCachedZipballPath(downloadPath);
+                LogMessage("New version downloaded and cached");
+
+                var deploySuccess = await DeployPackage(downloadPath);
+                LogMessage(deploySuccess ? "Update deployment successful" : "Update deployment failed");
+                return (deploySuccess, new List<string>(_logMessages));
+            }
+            else
+            {
+                LogMessage("Download failed - falling back to cached version");
+                var deploySuccess = await DeployPackage(cachePath);
+                LogMessage(deploySuccess ? "Cached version deployed successfully" : "Cached version deployment failed");
+                return (deploySuccess, new List<string>(_logMessages));
+            }
         }
         else
         {
-            bool shouldDownload = await ShouldDownloadNewVersion(cachedZipballPath, log);
-            if (shouldDownload)
-            {
-                log.Add("Cache found, a newer version is available, downloading and re-caching latest version.");
-                needsDownload = true;
-            }
-            else
-            {
-                log.Add("Cache found, current version is latest, deploying.");
-            }
+            LogMessage("Cache is up to date - deploying cached version");
+            var deploySuccess = await DeployPackage(cachePath);
+            LogMessage(deploySuccess ? "Cached version deployed successfully" : "Cached version deployment failed");
+            return (deploySuccess, new List<string>(_logMessages));
         }
-
-        string zipballPath = cachedZipballPath;
-        if (needsDownload)
-        {
-            var (downloaded, downloadPath) = await Helpers.Download(zipball_URL);
-            if (!downloaded || string.IsNullOrEmpty(downloadPath))
-            {
-                if (string.IsNullOrEmpty(cachedZipballPath) || !System.IO.File.Exists(cachedZipballPath))
-                {
-                    log.Add("Failed to download pack and no cached version available.");
-                    return (false, string.Join('\n', log));
-                }
-                log.Add("Download failed, using cached pack.");
-                zipballPath = cachedZipballPath;
-            }
-            else
-            {
-                zipballPath = downloadPath;
-                SaveCachedZipballPath(zipballPath);
-            }
-        }
-
-        bool deployedFinal = await DeployPacksAsync(zipballPath, log);
-        return (deployedFinal, string.Join('\n', log));
     }
 
-    private async Task<bool> FetchRemoteManifestsAsync(List<string> log)
+    private async Task<bool> CheckIfUpdateNeeded(string cachePath)
+    {
+        if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+        {
+            LogMessage("No network available - using cached version");
+            return false;
+        }
+
+        try
+        {
+            var remoteManifests = await FetchRemoteManifests();
+            if (remoteManifests == null)
+            {
+                LogMessage("Cannot fetch remote manifests - assuming update needed");
+                return true;
+            }
+
+            var cacheNeedsUpdate = await DoesCacheNeedUpdate(cachePath, remoteManifests.Value);
+            LogMessage(cacheNeedsUpdate ? "Remote version is newer" : "Cache is current");
+            return cacheNeedsUpdate;
+        }
+        catch (Exception ex)
+        {
+            LogMessage($"Error checking for updates: {ex.Message} - assuming update needed");
+            return true;
+        }
+    }
+
+    private async Task<(JObject rtx, JObject normals)?> FetchRemoteManifests()
     {
         try
         {
             using var client = new HttpClient();
-            string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion}";
-            client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+            client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion}");
 
-            var rtxResponse = await client.GetStringAsync(VanillaRTX_Manifest_URL);
-            remoteVanillaRTXManifest = JObject.Parse(rtxResponse);
+            var rtxTask = client.GetStringAsync(VanillaRTX_Manifest_URL);
+            var normalsTask = client.GetStringAsync(VanillaRTXNormals_Manifest_URL);
 
-            var normalsResponse = await client.GetStringAsync(VanillaRTXNormals_Manifest_URL);
-            remoteVanillaRTXNormalsManifest = JObject.Parse(normalsResponse);
+            var rtxResponse = await rtxTask;
+            var normalsResponse = await normalsTask;
 
-            return true;
+            return (JObject.Parse(rtxResponse), JObject.Parse(normalsResponse));
         }
-        catch (Exception ex)
+        catch
         {
-            log.Add($"Failed to fetch remote manifests: {ex.Message}");
-            return false;
+            return null;
         }
     }
 
-    private async Task<bool> ShouldDownloadNewVersion(string cachedZipballPath, List<string> log)
+    private async Task<(bool Success, string Path)> DownloadLatestPackage()
     {
         try
         {
-            var tempDir = Path.Combine(Path.GetTempPath(), "rtx_version_check");
-            if (Directory.Exists(tempDir))
-                Directory.Delete(tempDir, true);
-
-            Directory.CreateDirectory(tempDir);
-
-            ZipFile.ExtractToDirectory(cachedZipballPath, tempDir);
-
-            var rootDir = Directory.GetDirectories(tempDir).FirstOrDefault();
-            if (rootDir == null)
-            {
-                log.Add("Cache corrupt or missing root folder, will download new version.");
-                return true;
-            }
-
-            var rtxManifestPath = Path.Combine(rootDir, "Vanilla-RTX", "manifest.json");
-            if (System.IO.File.Exists(rtxManifestPath))
-            {
-                var cachedRtxManifest = JObject.Parse(System.IO.File.ReadAllText(rtxManifestPath));
-                if (IsRemoteVersionNewer(cachedRtxManifest, remoteVanillaRTXManifest))
-                {
-                    log.Add("Remote Vanilla-RTX version is newer than cache.");
-                    return true;
-                }
-            }
-
-            var normalsManifestPath = Path.Combine(rootDir, "Vanilla-RTX-Normals", "manifest.json");
-            if (System.IO.File.Exists(normalsManifestPath))
-            {
-                var cachedNormalsManifest = JObject.Parse(System.IO.File.ReadAllText(normalsManifestPath));
-                if (IsRemoteVersionNewer(cachedNormalsManifest, remoteVanillaRTXNormalsManifest))
-                {
-                    log.Add("Remote Vanilla-RTX-Normals version is newer than cache.");
-                    return true;
-                }
-            }
-
-            return false;
+            return await Helpers.Download(zipball_URL);
         }
         catch (Exception ex)
         {
-            log.Add($"Error checking versions: {ex.Message}");
-            return true;
+            LogMessage($"Download error: {ex.Message}");
+            return (false, null);
+        }
+    }
+
+    private (bool exists, string path) GetCacheInfo()
+    {
+        var cachedPath = GetCachedZipballPath();
+        var exists = !string.IsNullOrEmpty(cachedPath) && System.IO.File.Exists(cachedPath);
+        return (exists, cachedPath);
+    }
+
+    private async Task<bool> DoesCacheNeedUpdate(string cachedPath, (JObject rtx, JObject normals) remoteManifests)
+    {
+        try
+        {
+            var tempDir = Path.Combine(Path.GetTempPath(), "rtx_version_check", Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
+
+            try
+            {
+                ZipFile.ExtractToDirectory(cachedPath, tempDir);
+                var rootDir = Directory.GetDirectories(tempDir).FirstOrDefault();
+                if (rootDir == null) return true;
+
+                // Check Vanilla RTX version
+                var rtxManifestPath = Path.Combine(rootDir, "Vanilla-RTX", "manifest.json");
+                if (System.IO.File.Exists(rtxManifestPath))
+                {
+                    var cachedManifest = JObject.Parse(await System.IO.File.ReadAllTextAsync(rtxManifestPath));
+                    if (IsRemoteVersionNewer(cachedManifest, remoteManifests.rtx))
+                        return true;
+                }
+
+                // Check Vanilla RTX Normals version
+                var normalsManifestPath = Path.Combine(rootDir, "Vanilla-RTX-Normals", "manifest.json");
+                if (System.IO.File.Exists(normalsManifestPath))
+                {
+                    var cachedManifest = JObject.Parse(await System.IO.File.ReadAllTextAsync(normalsManifestPath));
+                    if (IsRemoteVersionNewer(cachedManifest, remoteManifests.normals))
+                        return true;
+                }
+
+                return false;
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(tempDir, true);
+                }
+                catch { }
+            }
+        }
+        catch
+        {
+            return true; // If we can't check, assume we need update
         }
     }
 
@@ -430,18 +475,15 @@ public class PackUpdater
             var cachedVersion = cachedManifest["header"]?["version"]?.ToObject<int[]>();
             var remoteVersion = remoteManifest["header"]?["version"]?.ToObject<int[]>();
 
-            if (cachedVersion == null || remoteVersion == null)
-                return true;
+            if (cachedVersion == null || remoteVersion == null) return true;
 
             for (int i = 0; i < Math.Max(cachedVersion.Length, remoteVersion.Length); i++)
             {
                 int cached = i < cachedVersion.Length ? cachedVersion[i] : 0;
                 int remote = i < remoteVersion.Length ? remoteVersion[i] : 0;
 
-                if (remote > cached)
-                    return true;
-                if (remote < cached)
-                    return false;
+                if (remote > cached) return true;
+                if (remote < cached) return false;
             }
 
             return false;
@@ -452,58 +494,66 @@ public class PackUpdater
         }
     }
 
-    private async Task<bool> DeployPacksAsync(string zipballPath, List<string> log)
+    private async Task<bool> DeployPackage(string packagePath)
     {
         try
         {
-            var saveDir = Path.GetDirectoryName(zipballPath)!;
-            var stagingDir = Path.Combine(saveDir, "_staging");
+            LogMessage("Starting deployment...");
+
+            var saveDir = Path.GetDirectoryName(packagePath);
+            var stagingDir = Path.Combine(saveDir, "_staging", Guid.NewGuid().ToString());
             var extractDir = Path.Combine(stagingDir, "extracted");
 
-            if (Directory.Exists(extractDir))
-                Directory.Delete(extractDir, true);
+            Directory.CreateDirectory(extractDir);
 
-            ZipFile.ExtractToDirectory(zipballPath, extractDir, overwriteFiles: true);
-
-            var resourcePackPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Packages",
-                TunerVariables.IsTargetingPreview ? "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-                "LocalState", "games", "com.mojang", "resource_packs");
-
-            if (!Directory.Exists(resourcePackPath))
+            try
             {
-                log.Add("Resource pack directory not found. Is the correct Minecraft version installed?");
-                return false;
+                LogMessage("Extracting package...");
+                ZipFile.ExtractToDirectory(packagePath, extractDir, overwriteFiles: true);
+
+                var resourcePackPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Packages",
+                    TunerVariables.IsTargetingPreview ? "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
+                    "LocalState", "games", "com.mojang", "resource_packs");
+
+                if (!Directory.Exists(resourcePackPath))
+                {
+                    LogMessage("Resource pack directory not found");
+                    return false;
+                }
+
+                LogMessage("Preparing resource pack directory...");
+                ForceWritable(resourcePackPath);
+                await RemoveExistingPacks(resourcePackPath);
+
+                var vanillaRoot = Directory.GetDirectories(extractDir).FirstOrDefault();
+                if (vanillaRoot == null)
+                {
+                    LogMessage("No content found in package");
+                    return false;
+                }
+
+                LogMessage("Copying pack files...");
+                CopyPackFolder(vanillaRoot, resourcePackPath, "Vanilla-RTX");
+                CopyPackFolder(vanillaRoot, resourcePackPath, "Vanilla-RTX-Normals");
+
+                LogMessage("Deployment completed");
+                return true;
             }
-
-            ForceWritable(resourcePackPath);
-
-            await RemoveExistingPacksAsync(resourcePackPath);
-
-            var vanillaRoot = Directory.GetDirectories(extractDir).FirstOrDefault();
-            if (vanillaRoot == null)
+            finally
             {
-                log.Add("Could not find extracted repository root.");
-                return false;
+                CleanupStaging(stagingDir);
             }
-
-            CopyAndRename(vanillaRoot, resourcePackPath, "Vanilla-RTX", log);
-            CopyAndRename(vanillaRoot, resourcePackPath, "Vanilla-RTX-Normals", log);
-
-            CleanupStaging(stagingDir, log);
-
-            log.Add("Pack deployment complete!");
-            return true;
         }
         catch (Exception ex)
         {
-            log.Add($"Deployment failed: {ex.Message}");
+            LogMessage($"Deployment error: {ex.Message}");
             return false;
         }
     }
 
-    private async Task RemoveExistingPacksAsync(string resourcePackPath)
+    private async Task RemoveExistingPacks(string resourcePackPath)
     {
         var manifestFiles = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories);
 
@@ -516,32 +566,25 @@ public class PackUpdater
 
                 string headerUUID = data["header"]?["uuid"]?.ToString();
                 string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
-                var folder = Path.GetDirectoryName(file)!;
 
                 bool isOurPack = (headerUUID == vanillaRTXHeaderUUID && moduleUUID == vanillaRTXModuleUUID) ||
                                 (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID);
 
                 if (isOurPack)
                 {
+                    var folder = Path.GetDirectoryName(file);
                     ForceWritable(folder);
                     Directory.Delete(folder, true);
                 }
             }
-            catch
-            {
-                continue;
-            }
+            catch { }
         }
     }
 
-    private void CopyAndRename(string vanillaRoot, string resourcePackPath, string folderName, List<string> log)
+    private void CopyPackFolder(string vanillaRoot, string resourcePackPath, string folderName)
     {
         var src = Path.Combine(vanillaRoot, folderName);
-        if (!Directory.Exists(src))
-        {
-            log.Add($"Missing folder: {folderName}");
-            return;
-        }
+        if (!Directory.Exists(src)) return;
 
         var baseName = folderName.Replace("-", "");
         var dst = Path.Combine(resourcePackPath, baseName);
@@ -582,14 +625,13 @@ public class PackUpdater
     private void ForceWritable(string path)
     {
         var di = new DirectoryInfo(path);
-        if (di.Exists)
-        {
-            di.Attributes &= ~System.IO.FileAttributes.ReadOnly;
-            foreach (var file in di.GetFiles("*", SearchOption.AllDirectories))
-                file.Attributes &= ~System.IO.FileAttributes.ReadOnly;
-            foreach (var dir in di.GetDirectories("*", SearchOption.AllDirectories))
-                dir.Attributes &= ~System.IO.FileAttributes.ReadOnly;
-        }
+        if (!di.Exists) return;
+
+        di.Attributes &= ~System.IO.FileAttributes.ReadOnly;
+        foreach (var file in di.GetFiles("*", SearchOption.AllDirectories))
+            file.Attributes &= ~System.IO.FileAttributes.ReadOnly;
+        foreach (var dir in di.GetDirectories("*", SearchOption.AllDirectories))
+            dir.Attributes &= ~System.IO.FileAttributes.ReadOnly;
     }
 
     private void DirectoryCopy(string sourceDir, string destDir, bool copySubDirs)
@@ -613,7 +655,7 @@ public class PackUpdater
         }
     }
 
-    private void CleanupStaging(string stagingDir, List<string> log)
+    private void CleanupStaging(string stagingDir)
     {
         try
         {
@@ -623,10 +665,7 @@ public class PackUpdater
                 Directory.Delete(stagingDir, true);
             }
         }
-        catch (Exception ex)
-        {
-            log.Add($"Warning: Cleanup failed – {ex.Message}");
-        }
+        catch { }
     }
 
     private string GetCachedZipballPath()
@@ -639,5 +678,11 @@ public class PackUpdater
     {
         var localSettings = ApplicationData.Current.LocalSettings;
         localSettings.Values["CachedZipballPath"] = path;
+    }
+
+    private void LogMessage(string message)
+    {
+        _logMessages.Add($"{message}");
+        ProgressUpdate?.Invoke(message);
     }
 }

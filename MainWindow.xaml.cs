@@ -323,7 +323,7 @@ public static class TunerVariables
                     // Button Visuals -> Download Available
                     // Set icon to a "download" glyph (listed in WinUI 3.0 gallery as a part of Segoe font)
                     AppUpdaterButton.Content = "\uE896";
-                    ToolTipService.SetToolTip(AppUpdaterButton, "Update available! Click again to install");
+                    ToolTipService.SetToolTip(AppUpdaterButton, "App Update available! Click again to install");
                     var accent = (SolidColorBrush)Application.Current.Resources["SystemControlHighlightAccentBrush"];
                     AppUpdaterButton.Background = accent;
                     AppUpdaterButton.BorderBrush = accent;
@@ -678,13 +678,33 @@ public static class TunerVariables
             SidelogProgressBar.IsIndeterminate = true;
 
             var updater = new PackUpdater();
-            var (success, log) = await updater.UpdatePacksWithLogAsync();
-            PushLog(log);
 
+            updater.ProgressUpdate += (message) =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    PushLog($"{message}");
+                });
+            };
+
+            // Run the update operation
+            var (success, logs) = await Task.Run(() => updater.UpdatePacksAsync());
+
+            // foreach (var log in logs) PushLog(log);
+
+            // Final status message
             if (success)
-                PushLog("Pack update completed successfully!");
+            {
+                PushLog("Reinstallation completed successfully!");
+            }
             else
-                PushLog("Pack update failed!");
+            {
+                PushLog("Reinstallation failed!");
+            }
+        }
+        catch (Exception ex)
+        {
+            PushLog($"Unexpected error: {ex.Message}");
         }
         finally
         {
