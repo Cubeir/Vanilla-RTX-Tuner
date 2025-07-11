@@ -70,15 +70,17 @@ public class AppUpdater
                 string extractedVersion = versionMatch.Groups[1].Value;
 
                 // Store the extracted data (if either fails, updating won't hapepn)
-                latestAppVersion = extractedVersion;
-                latestAppRemote_URL = downloadUrl;
+
 
                 // MainWindow.PushLog($"Latest Version: {extractedVersion}");
+
 
                 // See if we need updates
                 if (IsVersionHigher(extractedVersion, TunerVariables.appVersion))
                 {
                     return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
+                    latestAppVersion = extractedVersion;
+                    latestAppRemote_URL = downloadUrl;
                 }
                 else
                 {
