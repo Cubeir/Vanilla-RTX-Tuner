@@ -10,6 +10,6 @@
   "options": {
     "remove_height_based_fog": false, // Not shown in the UI, if set to true should make all fog uniform across all heights
     "excess_emissive_intensity_dampening_constant": 0.1, // Excess of multipliers is multiplied by this constant before being applied to pixel
-    "excess_normal_intensity_dampening_constant": 0.2 // Excess of multipliers is multiplied by this constant before being applied to pixel
+    "excess_normal_intensity_dampening_constant": 0.1 // Excess of multipliers is multiplied by this constant before being applied to pixel
   }
 }

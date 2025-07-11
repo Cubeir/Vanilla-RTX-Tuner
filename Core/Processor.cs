@@ -81,7 +81,7 @@ public class Processor
 
     public static void TuneSelectedPacks()
     {
-        MainWindow.PushLog("Options left at 0 will be skipped.");
+        MainWindow.PushLog("Options left at 0 will be skipped ℹ️");
         MainWindow.PushLog("Tuning selected packages...");
 
         var packs = new[]
@@ -103,7 +103,7 @@ public class Processor
 
         if (NormalIntensity != 100)
         {
-            foreach (var p in packs.Skip(1)) ProcessNormalIntensity(p); // Normals & Opus only (Skip first)
+            foreach (var p in packs) ProcessNormalIntensity(p); // All
         }
 
         if (MaterialNoiseOffset != 0)
@@ -382,6 +382,10 @@ public class Processor
         var allNormalFiles = Directory.GetFiles(pack.Path, "*_normal.tga", SearchOption.AllDirectories);
         var files = new List<string>();
 
+        // For Vanilla RTX
+        var allHeightmapFiles = Directory.GetFiles(pack.Path, "*_heightmap.tga", SearchOption.AllDirectories);
+        ProcessHeightmapsIntensity(allHeightmapFiles);
+
         foreach (var file in allNormalFiles)
         {
             var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file);
@@ -502,6 +506,98 @@ public class Processor
 
             return Math.Clamp(finalValue, 0, 255);
         }
+
+
+        // Secondary Pass for Heightmaps
+        void ProcessHeightmapsIntensity(string[] heightmapFiles)
+        {
+            normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
+            intensityPercent = NormalIntensity / 100.0; // percentage -> multiplier
+
+            foreach (var file in heightmapFiles)
+            {
+                try
+                {
+                    using var bmp = ReadImage(file, false);
+                    var width = bmp.Width;
+                    var height = bmp.Height;
+
+                    // Find current min/max values in the heightmap
+                    int minGray = 255, maxGray = 0;
+                    for (var y = 0; y < height; y++)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            var pixel = bmp.GetPixel(x, y);
+                            var gray = pixel.R; // Assuming grayscale, all channels are eqaul
+                            if (gray < minGray) minGray = gray;
+                            if (gray > maxGray) maxGray = gray;
+                        }
+                    }
+
+                    var currentContrast = maxGray - minGray;
+                    if (currentContrast == 0)
+                    {
+                        // Skip flat image, no contrast to work with
+                        continue;
+                    }
+
+                    // Calculate how much contrast increase we can apply before hitting full contrast
+                    var centerPoint = (minGray + maxGray) / 2.0;
+                    var maxRange = Math.Max(centerPoint, 255 - centerPoint);
+                    var maxPossibleMult = 255.0 / (2.0 * maxRange);
+
+                    var effectiveMult = Math.Min(intensityPercent, maxPossibleMult);
+                    var excess = Math.Max(0, intensityPercent - effectiveMult);
+
+                    var wroteBack = false;
+
+                    for (var y = 0; y < height; y++)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            var origColor = bmp.GetPixel(x, y);
+                            var originalGray = origColor.R;
+
+                            // Convert to deviation from center point
+                            var deviation = originalGray - centerPoint;
+
+                            // Effective multiplier
+                            var newDeviation = deviation * effectiveMult;
+
+                            // Apply excess at lower effectiveness (dampener)
+                            if (excess > 0 && Math.Abs(deviation) > 0.001)
+                            {
+                                newDeviation += deviation * excess * normalExcessDampen;
+                            }
+
+                            // Back to gray value
+                            var newGray = centerPoint + newDeviation;
+                            var finalGray = (int)Math.Round(newGray);
+                            finalGray = Math.Clamp(finalGray, 0, 255);
+
+                            if (finalGray != originalGray)
+                            {
+                                wroteBack = true;
+                                var newColor = Color.FromArgb(origColor.A, finalGray, finalGray, finalGray);
+                                bmp.SetPixel(x, y, newColor);
+                            }
+                        }
+                    }
+
+                    if (wroteBack)
+                    {
+                        WriteImageAsTGA(bmp, file);
+                        // MainWindow.PushLog($"{pack.Name}: updated heightmap intensity in {Path.GetFileName(file)}.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // MainWindow.PushLog($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}");
+                }
+            }
+        }
+
     }
 
 
