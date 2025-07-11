@@ -120,6 +120,18 @@
     <Content Update="Assets\tempt-text.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\tuner.lamp.off.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\tuner.lamp.off.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\tuner.lamp.on.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\tuner.lamp.on.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="Assets\tuner.redstone.lamp.1024..png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -272,6 +284,10 @@
     </None>
     <None Update="Assets\StoreLogo.scale-400.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\tuner.lamp.on.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
     <None Update="Assets\tuner.redstone.lamp.1024..png">
       <Pack>True</Pack>
@@ -501,8 +517,8 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <PackageIcon>tuner.redstone.lamp.1024.png</PackageIcon>
-    <ApplicationIcon>Assets\tuner.redstone.lamp.icon.ico</ApplicationIcon>
+    <PackageIcon>tuner.lamp.on.png</PackageIcon>
+    <ApplicationIcon>Assets\tuner.lamp.on.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
