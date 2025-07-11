@@ -10,7 +10,6 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>Assets\netherite.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\BadgeLogo.scale-100.png" />
@@ -119,6 +118,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\tempt-text.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\tuner.redstone.lamp.1024..png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\tuner.redstone.lamp.1024.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\tuner.redstone.lamp.icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -264,6 +272,14 @@
     </None>
     <None Update="Assets\StoreLogo.scale-400.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\tuner.redstone.lamp.1024..png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="Assets\tuner.redstone.lamp.1024.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
     <None Update="Assets\Wide310x150Logo.scale-100.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -466,6 +482,9 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <WebView2WinRTWrapSystemTypes>False</WebView2WinRTWrapSystemTypes>
+  </PropertyGroup>
 
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
@@ -482,8 +501,8 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <PackageIcon>netherite.png</PackageIcon>
-    <ApplicationIcon>Assets\netherite.ico</ApplicationIcon>
+    <PackageIcon>tuner.redstone.lamp.1024.png</PackageIcon>
+    <ApplicationIcon>Assets\tuner.redstone.lamp.icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>

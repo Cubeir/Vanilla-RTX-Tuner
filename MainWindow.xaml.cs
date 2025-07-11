@@ -47,7 +47,7 @@ public static class TunerVariables
     public static bool IsOpusEnabled = false;
 
     // Tuning variables 
-    // TODO: Bind these (if you can do so cleanly, two-way binding seems a little boilerplate-heavy)
+    // TODO: Bind these (if you can do so cleanly, two-way binding seems a little worse than boilerplate-heavy)
     public static double FogMultiplier = 1.0;
     public static double EmissivityMultiplier = 1.0;
     public static int NormalIntensity = 100;
@@ -135,7 +135,7 @@ public sealed partial class MainWindow : Window
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
         }
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "netherite.ico");
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.redstone.lamp.icon.ico");
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
     }

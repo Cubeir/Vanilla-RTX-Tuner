@@ -9,7 +9,7 @@ using static Vanilla_RTX_Tuner_WinUI.Core.Helpers;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
 
-/* Netherite
+/*
 ### CORE FIXES ###
 - Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
 For example, sliders must definitely be binded, make the code cleaner.
@@ -60,6 +60,9 @@ For example, sliders must definitely be binded, make the code cleaner.
   Keep it simple, only one backup can exist at a time to restore from, also good to keep user from downloading the pack 
   too many times and possibly rate limiting themselves (git)
  
+- Don't hardcode api calls and paths, use an improved getconfig method, maybe use internal uwp stuff
+  But if you didn't, update Config.Json from the remote, auto-update it, in case something breaks? though highly unlikely to be necessery.
+  You can push out package updates already automatically which includes the config.json, not too important.
 
 */
 

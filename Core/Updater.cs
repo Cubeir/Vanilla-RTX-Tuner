@@ -324,7 +324,8 @@ public class PackUpdater
         }
         else
         {
-            LogMessage("Current cached package is OK: Redeploying ✅");
+            // Either update failed, or is on cooldown, or no update is available. and this is the latest, but somehow this message calms my brain better
+            LogMessage("Current cached package is up-to-date: Redeploying ✅");
             var deploySuccess = await DeployPackage(cachePath);
             return (deploySuccess, new List<string>(_logMessages));
         }
