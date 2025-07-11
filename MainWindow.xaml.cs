@@ -101,7 +101,7 @@ public static class TunerVariables
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
         appVersion = versionString;
         PushLog($"App Version: {versionString}" + new string('\n', 2) +
-               "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to third-party modifications of your Minecraft data folder."); // shockers!
+               "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder."); // shockers!
 
         this.Closed += (s, e) =>
         {
@@ -692,14 +692,13 @@ public static class TunerVariables
 
             // foreach (var log in logs) PushLog(log);
 
-            // Final status message
             if (success)
             {
-                PushLog("Reinstallation completed successfully!");
+                PushLog("Reinstallation completed ✅");
             }
             else
             {
-                PushLog("Reinstallation failed!");
+                PushLog("Reinstallation failed❗");
             }
         }
         catch (Exception ex)

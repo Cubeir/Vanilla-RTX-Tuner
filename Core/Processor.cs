@@ -63,8 +63,6 @@ For example, sliders must definitely be binded, make the code cleaner.
 
 */
 
-
-// TODO: make processors return reasons of their failure for easier debugging at the end without touching UI thread directly.
 public class Processor
 {
     private struct PackInfo
@@ -125,6 +123,7 @@ public class Processor
     }
 
 
+    // TODO: make processors return reasons of their failure for easier debugging at the end without touching UI thread directly.
     #region ------------------- Processors
     private static void ProcessFog(PackInfo pack)
     {
