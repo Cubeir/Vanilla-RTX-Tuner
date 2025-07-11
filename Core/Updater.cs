@@ -31,7 +31,7 @@ public class AppUpdater
 
             using (HttpClient client = new HttpClient())
             {
-                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion}";
+                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
                 client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
                 // Get the latest release info json
@@ -61,7 +61,7 @@ public class AppUpdater
                 string fileName = targetAsset["name"].ToString();
                 string downloadUrl = targetAsset["browser_download_url"].ToString();
 
-                var versionMatch = Regex.Match(fileName, @"Vanilla\.RTX\.Tuner\.WinUI_(\d+\.\d+\.\d+\.\d+)\.zip");
+                var versionMatch = Regex.Match(fileName, @"Vanilla\.RTX\.Tuner\.WinUI_(\d+(\.\d+){1,3})\.zip");
                 if (!versionMatch.Success)
                 {
                     return (false, $"Could not extract version from filename: {fileName}");
@@ -111,11 +111,12 @@ public class AppUpdater
 
             return false;
         }
-        catch
+        catch (Exception ex)
         {
-            MainWindow.PushLog("Error while comparing versions");
+            MainWindow.PushLog($"Version compare failed: {ex.Message} | new: {newVersion}, current: {currentVersion}");
             return false;
         }
+
     }
 
     public static async Task<(bool, string)> InstallAppUpdate()
@@ -144,7 +145,7 @@ public class AppUpdater
             );
 
             // Extract the zip file
-            ZipFile.ExtractToDirectory(zipFilePath, extractionDir);
+            ZipFile.ExtractToDirectory(zipFilePath, extractionDir, true);
 
             // Search for Installer.bat in the extraction directory
             string[] batFiles = Directory.GetFiles(extractionDir, "Installer.bat", SearchOption.AllDirectories);
@@ -208,7 +209,7 @@ public class AppUpdater
 
                     if (msixProcess != null)
                     {
-                        return (true, "MSIX installer started successfully, continue to update in Windows App Installer ❗ (Installer.bat was not found - possibly removed by antivirus)");
+                        return (true, "MSIX installer started successfully, continue to update in Windows App Installer ❗ (Installer.bat was not found, possibly removed by antivirus)");
                     }
                     else
                     {
@@ -443,7 +444,7 @@ public class PackUpdater
         try
         {
             using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion}");
+            client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)");
 
             var rtxTask = client.GetStringAsync(VanillaRTX_Manifest_URL);
             var normalsTask = client.GetStringAsync(VanillaRTXNormals_Manifest_URL);
