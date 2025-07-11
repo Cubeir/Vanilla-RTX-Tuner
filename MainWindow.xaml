@@ -251,7 +251,7 @@
             <!-- Normalmaps -->
             <TextBlock Text="Normal Intensity (0-600%)"
                        FontWeight="Bold"
-                       ToolTipService.ToolTip="Increases Normal Map Intensity of Normals or Opus variants. 100% = default, 0% = flatten, higher values = more pronounced normals. (Affects: Normals and Opus Only)"/>
+                       ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks (Affects: All)"/>
             <StackPanel Orientation="Horizontal"
                         Spacing="12">
                 <Slider x:Name="NormalIntensitySlider"

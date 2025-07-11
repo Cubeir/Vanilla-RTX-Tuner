@@ -356,6 +356,7 @@ public class PackUpdater
         try
         {
             var remoteManifests = await FetchRemoteManifests();
+
             // Save the check time only if we actually attempted a remote check
             localSettings.Values[LastUpdateCheckKey] = now.ToString("o");
 
@@ -370,13 +371,12 @@ public class PackUpdater
         }
         catch (Exception ex)
         {
-            LogMessage($"Error checking for updates: {ex.Message} - forcing cache update.");
+            LogMessage($"Error checking for updates: forcing cache update - {ex.Message}");
             // Put it on a cooldown even if there was an error, at least user has to worry a little less
             localSettings.Values[LastUpdateCheckKey] = now.ToString("o");
             return true;
         }
     }
-
     private async Task<bool> DoesCacheNeedUpdate(string cachedPath, (JObject rtx, JObject normals) remoteManifests)
     {
         try

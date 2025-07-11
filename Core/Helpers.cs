@@ -358,7 +358,7 @@ public static class Helpers
 
 
 
-    public static async Task MCPackExporter(string packFolderPath, string suggestedName)
+    public static async Task ExportMCPACK(string packFolderPath, string suggestedName)
     {
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Instance);
         var picker = new FileSavePicker();

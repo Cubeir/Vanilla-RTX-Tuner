@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
+using WinRT.Interop;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
 // TODO: Do something for if user unplugs monitor -- currently it causes that annoying case of window opening in a non-existent position?
+// TODO: Prefer max/min window size and proper initial size based on scaling, no clue how figure it out
 public class WindowStateManager
 {
     private AppWindow _appWindow;

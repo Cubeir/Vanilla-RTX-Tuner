@@ -83,7 +83,9 @@ public static class TunerVariables
     }
 }
 
-    public sealed partial class MainWindow : Window
+// ---------------------------------------\                /--------------------------------------------//
+
+public sealed partial class MainWindow : Window
 {
     public static MainWindow? Instance { get; private set; }
     private WindowStateManager _windowStateManager;
@@ -594,7 +596,6 @@ public static class TunerVariables
 
 
 
-
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
         SidelogProgressBar.IsIndeterminate = true;
@@ -614,7 +615,7 @@ public static class TunerVariables
                 exportQueue.Add((VanillaRTXOpusLocation, "Vanilla_RTX_Opus_" + VanillaRTXOpusVersion + suffix));
 
             foreach (var (path, name) in exportQueue)
-                await Helpers.MCPackExporter(path, name);
+                await Helpers.ExportMCPACK(path, name);
 
         }
         catch (Exception ex)
