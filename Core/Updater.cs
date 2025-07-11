@@ -113,7 +113,7 @@ public class AppUpdater
         }
         catch (Exception ex)
         {
-            MainWindow.PushLog($"Version compare failed: {ex.Message} | new: {newVersion}, current: {currentVersion}");
+            MainWindow.PushLog($"Version compare failed ❗ {ex.Message} | new: {newVersion}, current: {currentVersion} ");
             return false;
         }
 
