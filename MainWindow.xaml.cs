@@ -183,7 +183,26 @@ public sealed partial class MainWindow : Window
     public void BlinkingLamp(bool enable)
     {
         var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.png");
-        var offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.png");
+
+        var today = DateTime.Today;
+        string offPath;
+
+        if (today.Month == 4 && today.Day >= 21 && today.Day <= 23) // Birthdays
+        {
+            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "happybirthdayme.png");
+        }
+        else if (today.Month == 10) // October
+        {
+            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.png");
+        }
+        else if (today.Month == 12 && today.Day >= 25) // last week of December (Dec 25–31)
+        {
+            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "gingerman.png");
+        }
+        else
+        {
+            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.png");
+        }
 
         var random = new Random();
         CancellationTokenSource localCts = null;
