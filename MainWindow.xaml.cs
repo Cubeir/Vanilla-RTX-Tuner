@@ -191,10 +191,11 @@ public sealed partial class MainWindow : Window
         {
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "happybirthdayme.png");
         }
-        else if (today.Month == 10) // October
+        else if (today.Month == 10 && (today.DayOfWeek == DayOfWeek.Saturday || today.DayOfWeek == DayOfWeek.Sunday)) // October Weekends
         {
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.png");
         }
+
         else if (today.Month == 12 && today.Day >= 25) // last week of December
         {
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "gingerman.png");
