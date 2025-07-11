@@ -38,13 +38,13 @@ public class Launcher
 
             if (string.IsNullOrEmpty(optionsFilePath))
             {
-                return "Failed to construct options file path.";
+                return "Failed to construct options file path ❗";
             }
 
             if (!File.Exists(optionsFilePath))
             {
                 return $"Options file for {versionName} not found at: {optionsFilePath}\n" +
-                       "Make sure the game is installed and has been launched at least once.";
+                       "Make sure the game is installed and has been launched at least once ❗";
             }
 
             // Check file accessibility
@@ -57,7 +57,7 @@ public class Launcher
             }
             catch (UnauthorizedAccessException)
             {
-                return "Access denied to options file. Please run as administrator or check file permissions.";
+                return "Access denied to options file. Please run as administrator or check file permissions ❗";
             }
             catch (IOException ex)
             {
@@ -75,7 +75,7 @@ public class Launcher
             }
             catch (Exception ex)
             {
-                return $"Failed to remove readonly attribute from options.txt file: {ex.Message}";
+                return $"Failed to remove readonly attribute from options.txt file: {ex.Message} ❗";
             }
 
             // Update graphics mode
@@ -129,10 +129,10 @@ public class Launcher
                 // Create backup before writing
                 var backupPath = optionsFilePath + ".backup";
                 File.Copy(optionsFilePath, backupPath, true);
-                statusMessages.Add("Created backup of options file.");
+                statusMessages.Add("Created backup of options file. ℹ️");
 
                 File.WriteAllLines(optionsFilePath, lines);
-                statusMessages.Add("Options file updated successfully.");
+                statusMessages.Add("Options file updated successfully. ✅");
 
                 // Launch Minecraft depending on protocol
                 try
@@ -145,12 +145,12 @@ public class Launcher
                     };
 
                     Process.Start(processInfo);
-                    statusMessages.Add($"Ray tracing enabled and {versionName} launch initiated successfully!");
+                    statusMessages.Add($"Ray tracing enabled and {versionName} launch initiated successfully ✅");
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
-                    statusMessages.Add($"Failed to launch {versionName}: {ex.Message}");
-                    statusMessages.Add("Make sure the game is installed and the protocol is registered.");
+                    statusMessages.Add($"Failed to launch {versionName}: {ex.Message}❗");
+                    statusMessages.Add("Make sure the game is installed and the minecraft:// protocols are allowed to work.");
                 }
                 catch (Exception ex)
                 {

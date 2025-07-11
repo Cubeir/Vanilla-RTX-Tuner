@@ -41,7 +41,7 @@ public class PackLocator
 
             if (!Directory.Exists(resolvedPath))
             {
-                return "Resource pack directory not found, is the correct version of Minecraft installed?";
+                return "Resource pack directory not found ❌ is the correct version of Minecraft installed?";
             }
 
             var manifestFiles = Directory.GetFiles(resolvedPath, "manifest.json", SearchOption.AllDirectories);

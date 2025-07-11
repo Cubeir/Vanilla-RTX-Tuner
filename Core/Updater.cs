@@ -23,7 +23,7 @@ public class AppUpdater
     public static async Task<(bool, string)> CheckGitHubForUpdates()
     {
         if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
-            return (false, "No Internet Connection");
+            return (false, "No Connection Found 🛜");
 
         try
         {
@@ -78,11 +78,11 @@ public class AppUpdater
                 // See if we need updates
                 if (IsVersionHigher(extractedVersion, TunerVariables.appVersion))
                 {
-                    return (true, $"A New App Version is Available! Latest: {extractedVersion} - Click again to begin download & installation.");
+                    return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
                 }
                 else
                 {
-                    return (false, "Current version is up to date.");
+                    return (false, "Current version is up to date ℹ️");
                 }
             }
         }
@@ -130,7 +130,7 @@ public class AppUpdater
 
             if (!downloadResult.Item1 || string.IsNullOrEmpty(downloadResult.Item2))
             {
-                return (false, "Failed to download update package properly.");
+                return (false, "Failed to download update package properly ❗");
             }
 
             string zipFilePath = downloadResult.Item2;
@@ -167,17 +167,16 @@ public class AppUpdater
 
                     if (installerProcess != null)
                     {
-                        return (true, "Installer started successfully, accept the UAC prompt.");
+                        return (true, "Installer started successfully, accept the UAC prompt ℹ️");
                     }
                     else
                     {
-                        return (false, "Failed to start installer script.");
+                        return (false, "Failed to start installer script ❗");
                     }
                 }
                 catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
                 {
                     // TODO: could probably use this error and keep the updater in limbo, if update button is pressed yet again it tries to reopen this batch script.
-                    // Probably not worth the spaghetti though
                     return (false, "Installation cancelled - Administrator privileges are required. Try updating again.");
                 }
                 catch (Exception ex)
@@ -207,16 +206,16 @@ public class AppUpdater
 
                     if (msixProcess != null)
                     {
-                        return (true, "MSIX installer started successfully, continue to update in Windows App Installer. (Installer.bat was not found - possibly removed by antivirus)");
+                        return (true, "MSIX installer started successfully, continue to update in Windows App Installer ❗ (Installer.bat was not found - possibly removed by antivirus)");
                     }
                     else
                     {
-                        return (false, "Failed to start MSIX installer");
+                        return (false, "Failed to start MSIX installer ❗");
                     }
                 }
                 else
                 {
-                    return (false, "Neither Installer.bat nor .msix file found in update package");
+                    return (false, "Neither Installer.bat nor .msix file found in update package. Please report this error.");
                 }
             }
         }
@@ -636,7 +635,20 @@ public class PackUpdater
     {
         var localSettings = ApplicationData.Current.LocalSettings;
         var cachedPath = localSettings.Values["CachedZipballPath"] as string;
-        var exists = !string.IsNullOrEmpty(cachedPath) && System.IO.File.Exists(cachedPath);
+        bool exists = !string.IsNullOrEmpty(cachedPath) && System.IO.File.Exists(cachedPath);
+        if (exists)
+        {
+            try
+            {
+                using (ZipFile.OpenRead(cachedPath)) { }
+            }
+            catch
+            {
+                LogMessage("Cached package is corrupted, treating as no cache.");
+                exists = false;
+                cachedPath = null;
+            }
+        }
         return (exists, cachedPath);
     }
 
