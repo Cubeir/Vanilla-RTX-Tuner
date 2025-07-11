@@ -81,7 +81,7 @@ public class Processor
 
     public static void TuneSelectedPacks()
     {
-        MainWindow.PushLog("Options left at 0 will be skipped ℹ️");
+        MainWindow.PushLog("Options left at default will be skipped ℹ️");
         MainWindow.PushLog("Tuning selected packages...");
 
         var packs = new[]
@@ -512,7 +512,7 @@ public class Processor
         void ProcessHeightmapsIntensity(string[] heightmapFiles)
         {
             normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
-            intensityPercent = NormalIntensity / 100.0; // percentage -> multiplier
+            double userIntensity = NormalIntensity / 100.0;
 
             foreach (var file in heightmapFiles)
             {
@@ -522,78 +522,97 @@ public class Processor
                     var width = bmp.Width;
                     var height = bmp.Height;
 
-                    // Find current min/max values in the heightmap
+                    // Find min/max values in the heightmap
                     int minGray = 255, maxGray = 0;
                     for (var y = 0; y < height; y++)
-                    {
                         for (var x = 0; x < width; x++)
                         {
-                            var pixel = bmp.GetPixel(x, y);
-                            var gray = pixel.R; // Assuming grayscale, all channels are eqaul
+                            var gray = bmp.GetPixel(x, y).R;
                             if (gray < minGray) minGray = gray;
                             if (gray > maxGray) maxGray = gray;
                         }
-                    }
 
-                    var currentContrast = maxGray - minGray;
+                    double currentContrast = maxGray - minGray;
                     if (currentContrast == 0)
                     {
-                        // Skip flat image, no contrast to work with
+                        // Flat image, nothing to do
                         continue;
                     }
 
-                    // Calculate how much contrast increase we can apply before hitting full contrast
-                    var centerPoint = (minGray + maxGray) / 2.0;
-                    var maxRange = Math.Max(centerPoint, 255 - centerPoint);
-                    var maxPossibleMult = 255.0 / (2.0 * maxRange);
+                    // Center point for contrast
+                    double center = (minGray + maxGray) / 2.0;
 
-                    var effectiveMult = Math.Min(intensityPercent, maxPossibleMult);
-                    var excess = Math.Max(0, intensityPercent - effectiveMult);
+                    // Calculate the multiplier needed to reach full contrast (at least two pixels at 0 and 255)
+                    double maxPossibleMult = 255.0 / (currentContrast);
 
-                    var wroteBack = false;
+                    // If user wants to reduce contrast
+                    if (userIntensity < 1.0)
+                    {
+                        // Linear interpolation to center
+                        for (var y = 0; y < height; y++)
+                            for (var x = 0; x < width; x++)
+                            {
+                                var origColor = bmp.GetPixel(x, y);
+                                var gray = origColor.R;
+                                var newGray = center + (gray - center) * userIntensity;
+                                var finalGray = (int)Math.Round(newGray);
+                                finalGray = Math.Clamp(finalGray, 0, 255);
+                                if (finalGray != gray)
+                                    bmp.SetPixel(x, y, Color.FromArgb(origColor.A, finalGray, finalGray, finalGray));
+                            }
+                        WriteImageAsTGA(bmp, file);
+                        continue;
+                    }
+
+                    // If userIntensity is enough to reach full contrast, but not more
+                    if (userIntensity <= maxPossibleMult)
+                    {
+                        for (var y = 0; y < height; y++)
+                            for (var x = 0; x < width; x++)
+                            {
+                                var origColor = bmp.GetPixel(x, y);
+                                var gray = origColor.R;
+                                var newGray = center + (gray - center) * userIntensity;
+                                var finalGray = (int)Math.Round(newGray);
+                                finalGray = Math.Clamp(finalGray, 0, 255);
+                                if (finalGray != gray)
+                                    bmp.SetPixel(x, y, Color.FromArgb(origColor.A, finalGray, finalGray, finalGray));
+                            }
+                        WriteImageAsTGA(bmp, file);
+                        continue;
+                    }
+
+                    // If userIntensity exceeds maxPossibleMult, apply excess with dampener
+                    double excess = userIntensity - maxPossibleMult;
+                    bool hasFullContrast = minGray == 0 && maxGray == 255;
 
                     for (var y = 0; y < height; y++)
-                    {
                         for (var x = 0; x < width; x++)
                         {
                             var origColor = bmp.GetPixel(x, y);
-                            var originalGray = origColor.R;
+                            var gray = origColor.R;
+                            var deviation = gray - center;
 
-                            // Convert to deviation from center point
-                            var deviation = originalGray - centerPoint;
+                            // First, bring to full contrast
+                            double newDeviation = deviation * maxPossibleMult;
 
-                            // Effective multiplier
-                            var newDeviation = deviation * effectiveMult;
-
-                            // Apply excess at lower effectiveness (dampener)
-                            if (excess > 0 && Math.Abs(deviation) > 0.001)
+                            // If image already has full contrast, or after this pass, apply excess with dampener
+                            if (hasFullContrast || Math.Abs(newDeviation) >= 127.5)
                             {
                                 newDeviation += deviation * excess * normalExcessDampen;
                             }
 
-                            // Back to gray value
-                            var newGray = centerPoint + newDeviation;
+                            var newGray = center + newDeviation;
                             var finalGray = (int)Math.Round(newGray);
                             finalGray = Math.Clamp(finalGray, 0, 255);
-
-                            if (finalGray != originalGray)
-                            {
-                                wroteBack = true;
-                                var newColor = Color.FromArgb(origColor.A, finalGray, finalGray, finalGray);
-                                bmp.SetPixel(x, y, newColor);
-                            }
+                            if (finalGray != gray)
+                                bmp.SetPixel(x, y, Color.FromArgb(origColor.A, finalGray, finalGray, finalGray));
                         }
-                    }
-
-                    if (wroteBack)
-                    {
-                        WriteImageAsTGA(bmp, file);
-                        // MainWindow.PushLog($"{pack.Name}: updated heightmap intensity in {Path.GetFileName(file)}.");
-                    }
+                    WriteImageAsTGA(bmp, file);
                 }
                 catch (Exception ex)
                 {
-                    // MainWindow.PushLog($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}");
+                    // MainWindow.PushLog($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}"); ui thread no touchy
                 }
             }
         }
