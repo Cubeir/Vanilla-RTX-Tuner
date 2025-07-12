@@ -55,19 +55,19 @@ for /r %%f in ("%PROJECT_NAME%*.cer") do (
 )
 
 if not defined cer_file (
-    echo ERROR: No .cer files belonging to %PROJECT_NAME% found in this folder.
-    pause
-    exit /b 1
+    echo WARNING: No .cer files belonging to %PROJECT_NAME% found in this folder.
+    echo Skipping certificate installation...
+    echo.
+) else (
+    echo Installing certificate: !cer_file!
+    certutil -addstore "TrustedPeople" "!cer_file!" >nul
+    if !errorlevel! neq 0 (
+        echo ERROR: Failed to install certificate.
+        goto :ManualCertInstructions
+    )
+    echo SUCCESS: Certificate installed!
+    echo.
 )
-
-echo Installing certificate: !cer_file!
-certutil -addstore "TrustedPeople" "!cer_file!" >nul
-if !errorlevel! neq 0 (
-    echo ERROR: Failed to install certificate.
-    goto :ManualCertInstructions
-)
-echo SUCCESS: Certificate installed!
-echo.
 
 REM --- Find the .msix file recursively
 set "msix_file="
