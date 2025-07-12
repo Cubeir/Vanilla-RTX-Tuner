@@ -1,79 +1,98 @@
 @echo off
 setlocal enabledelayedexpansion
-title Vanilla RTX Tuner Installation Helper
 
+set "PROJECT_NAME=Vanilla RTX Tuner WinUI"
+
+title %PROJECT_NAME% Installation Helper
 REM --- Working dir to script's folder
 pushd "%~dp0"
-
 echo.
-echo ========================================
-echo  Vanilla RTX Tuner Installation Helper
-echo ========================================
+echo =============================================
+echo  %PROJECT_NAME% Installation Helper
+echo =============================================
 echo.
 
 REM --- Get admin privileges if not already elevated
+:RequestAdmin
 net session >nul 2>&1
 if %errorlevel% neq 0 (
+    echo Requesting administrator privileges...
     echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
     echo UAC.ShellExecute "%~fs0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
     "%temp%\getadmin.vbs"
     del "%temp%\getadmin.vbs"
-    exit /b
+    
+    REM --- Wait a moment for the elevated process to start
+    timeout /t 1 >nul
+    
+    REM --- Original window should exit here since new elevated window is running
+    echo.
+    echo An elevated window should have opened. If you see this message,
+    echo either UAC was denied or there was an error.
+    echo.
+    echo Press any key to try requesting admin privileges again, or close this window.
+    pause >nul
+    goto :RequestAdmin
 )
 
-REM --- Find the .cer file
+REM --- We have admin privileges, continue with installation
+echo Running with administrator privileges...
+echo.
+
+REM --- Find the .cer file recursively
 set "cer_file="
-for %%f in (*.cer) do (
+for /r %%f in ("%PROJECT_NAME%*.cer") do (
     if not defined cer_file (
         set "cer_file=%%f"
     ) else (
-        echo ERROR: More than one .cer file found.
+        echo ERROR: More than one matching .cer file found.
+        echo Found: !cer_file!
+        echo Found: %%f
         pause
         exit /b 1
     )
 )
 
 if not defined cer_file (
-    echo ERROR: No .cer file found in this folder.
+    echo ERROR: No .cer files belonging to %PROJECT_NAME% found in this folder.
     pause
     exit /b 1
 )
 
 echo Installing certificate: !cer_file!
 certutil -addstore "TrustedPeople" "!cer_file!" >nul
-
 if !errorlevel! neq 0 (
     echo ERROR: Failed to install certificate.
     goto :ManualCertInstructions
 )
-
 echo SUCCESS: Certificate installed!
 echo.
 
-REM --- Find the .msix file
+REM --- Find the .msix file recursively
 set "msix_file="
-for %%f in (*.msix) do (
+for /r %%f in ("%PROJECT_NAME%*.msix") do (
     if not defined msix_file (
         set "msix_file=%%f"
     ) else (
-        echo ERROR: More than one .msix file found.
+        echo ERROR: More than one matching .msix file found.
+        echo Found: !msix_file!
+        echo Found: %%f
         pause
         exit /b 1
     )
 )
 
 if not defined msix_file (
-    echo ERROR: No .msix file found in this folder.
+    echo ERROR: No .msix file starting with %PROJECT_NAME% found in this folder.
     pause
     exit /b 1
 )
 
 echo Opening MSIX package: !msix_file!
 start "" "!msix_file!"
-
 echo.
-echo This window will close in 5 seconds...
-timeout /t 5 >nul
+echo This window will close in 10 seconds...
+timeout /t 10 >nul
 exit /b 0
 
 :ManualCertInstructions
