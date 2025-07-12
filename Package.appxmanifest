@@ -15,7 +15,7 @@
   <mp:PhoneIdentity PhoneProductId="5ef27ded-91e3-45a2-935e-f37f04a38f42" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Vanilla RTX Tuner</DisplayName>
+    <DisplayName>Tuner</DisplayName>
     <PublisherDisplayName>Cubeir</PublisherDisplayName>
     <Logo>Assets\icons\StoreLogo.png</Logo>
   </Properties>
@@ -34,7 +34,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Vanilla RTX Tuner"
+        DisplayName="Tuner"
         Description="Update Vanilla RTX packages, tune them to your preferences, and launch Minecraft with RTX in one go."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\icons\Square150x150Logo.png"
