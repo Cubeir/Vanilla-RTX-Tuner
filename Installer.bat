@@ -1,6 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
+REM --- Must match your project name, assuming the .cer and .msix files have the same name (which they should) this script can be reused safely.
 set "PROJECT_NAME=Vanilla RTX Tuner WinUI"
 
 title %PROJECT_NAME% Installation Helper
