@@ -97,7 +97,7 @@
         <!-- Locate Pack Button -->
         <Button x:Name="LocatePacksButton"
                 Click="LocatePacksButton_Click"
-                Width="220"
+                Width="210"
                 Margin="15,40,0,15"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
@@ -109,7 +109,7 @@
                           FontSize="18"
                           Margin="0,0,8,0"
                           VerticalAlignment="Center" />
-                <TextBlock Text="Locate Vanilla RTX Projects"
+                <TextBlock Text="Locate Vanilla RTX"
                            VerticalAlignment="Center" />
             </StackPanel>
         </Button>
@@ -117,8 +117,8 @@
         <!-- Target Preview? -->
         <ToggleButton x:Name="TargetPreviewToggle"
                       Content="Target Preview"
-                      Margin="242.5,40,0,15"
-                      Width="122"
+                      Margin="230,40,0,15"
+                      Width="135"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Top"
                       FontWeight="SemiBold"
