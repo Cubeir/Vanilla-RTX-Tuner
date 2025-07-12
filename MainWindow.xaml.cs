@@ -449,6 +449,7 @@ public sealed partial class MainWindow : Window
 
             AppUpdaterButton.IsEnabled = true;
             SidelogProgressBar.IsIndeterminate = false;
+            ToggleControls(this, true);
             BlinkingLamp(false);
 
             // Button Visuals -> default (we're done with the update)
