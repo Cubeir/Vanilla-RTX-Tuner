@@ -84,8 +84,8 @@ public class Processor
 
     public static void TuneSelectedPacks()
     {
-        MainWindow.PushLog("Options left at default will be skipped ℹ️");
-        MainWindow.PushLog("Tuning selected packages...");
+        MainWindow.Log("Options left at default will be skipped ℹ️");
+        MainWindow.Log("Tuning selected packages...");
 
         var packs = new[]
         {
@@ -139,7 +139,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            // MainWindow.PushLog($"{pack.Name}: no fog setting files found.");
+            // MainWindow.Log($"{pack.Name}: no fog setting files found.");
             return;
         }
 
@@ -157,7 +157,7 @@ public class Processor
 
                 if (density == null)
                 {
-                    // MainWindow.PushLog($"{packName}: invalid structure in {Path.GetFileName(file)} - no density section found.");
+                    // MainWindow.Log($"{packName}: invalid structure in {Path.GetFileName(file)} - no density section found.");
                     continue;
                 }
 
@@ -169,16 +169,16 @@ public class Processor
                 if (modified)
                 {
                     File.WriteAllText(file, root.ToString(Newtonsoft.Json.Formatting.Indented));
-                    // MainWindow.PushLog($"{packName}: updated fog densities in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: updated fog densities in {Path.GetFileName(file)}.");
                 }
                 else
                 {
-                    // MainWindow.PushLog($"{packName}: no fog density values to update in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: no fog density values to update in {Path.GetFileName(file)}.");
                 }
             }
             catch (Exception ex)
             {
-                // MainWindow.PushLog($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                // MainWindow.Log($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
             }
         }
 
@@ -283,7 +283,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{pack.Name}: no _mer.tgas files found.");
+            MainWindow.Log($"{pack.Name}: no _mer.tgas files found.");
             return;
         }
         var userMult = EmissivityMultiplier;
@@ -307,7 +307,7 @@ public class Processor
                 // No green pixels? skip processing
                 if (maxGreen == 0)
                 {
-                    // MainWindow.PushLog($"{packName}: {Path.GetFileName(file)} has no emissive pixels; skipped.");
+                    // MainWindow.Log($"{packName}: {Path.GetFileName(file)} has no emissive pixels; skipped.");
                     continue;
                 }
                 
@@ -359,16 +359,16 @@ public class Processor
                 if (wroteBack)
                 {
                     WriteImageAsTGA(bmp, file);
-                    // MainWindow.PushLog($"{packName}: updated emissivity in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: updated emissivity in {Path.GetFileName(file)}.");
                 }
                 else
                 {
-                    // MainWindow.PushLog($"{packName}: no emissivity changes in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: no emissivity changes in {Path.GetFileName(file)}.");
                 }
             }
             catch (Exception ex)
             {
-                  MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                  MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
                  // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -411,7 +411,7 @@ public class Processor
 
         if (!files.Any())
         {
-            MainWindow.PushLog($"{pack.Name}: no _normal.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _normal.tga files found.");
             return;
         }
 
@@ -441,7 +441,7 @@ public class Processor
                 }
                 if (maxDeviation == 0)
                 {
-                    // MainWindow.PushLog($"{packName}: {Path.GetFileName(file)} has no normal data; skipped.");
+                    // MainWindow.Log($"{packName}: {Path.GetFileName(file)} has no normal data; skipped.");
                     continue;
                 }
 
@@ -474,16 +474,16 @@ public class Processor
                 if (wroteBack)
                 {
                     WriteImageAsTGA(bmp, file);
-                    // MainWindow.PushLog($"{packName}: updated normal intensity in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: updated normal intensity in {Path.GetFileName(file)}.");
                 }
                 else
                 {
-                    // MainWindow.PushLog($"{packName}: no normal intensity changes in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: no normal intensity changes in {Path.GetFileName(file)}.");
                 }
             }
             catch (Exception ex)
             {
-                // MainWindow.PushLog($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                // MainWindow.Log($"{packName}: error processing {Path.GetFileName(file)} — {ex.Message}");
             }
         }
 
@@ -615,7 +615,7 @@ public class Processor
                 }
                 catch (Exception ex)
                 {
-                    // MainWindow.PushLog($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}"); ui thread no touchy
+                    // MainWindow.Log($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}"); ui thread no touchy
                 }
             }
         }
@@ -632,7 +632,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_heightmap.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{pack.Name}: no _heightmap.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _heightmap.tga files found.");
             return;
         }
 
@@ -647,7 +647,7 @@ public class Processor
 
                 if (!File.Exists(colormapFile))
                 {
-                    MainWindow.PushLog($"{pack.Name}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.");
+                    MainWindow.Log($"{pack.Name}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.");
                     continue;
                 }
 
@@ -660,7 +660,7 @@ public class Processor
                 // Ensure dimensions match
                 if (colormapBmp.Width != width || colormapBmp.Height != height)
                 {
-                    MainWindow.PushLog($"{pack.Name}: dimension mismatch between heightmap and colormap for {Path.GetFileName(heightmapFile)}; skipped.");
+                    MainWindow.Log($"{pack.Name}: dimension mismatch between heightmap and colormap for {Path.GetFileName(heightmapFile)}; skipped.");
                     continue;
                 }
 
@@ -735,16 +735,16 @@ public class Processor
                 if (wroteBack)
                 {
                     WriteImageAsTGA(heightmapBmp, heightmapFile);
-                    // MainWindow.PushLog($"{packName}: updated heightmap in {Path.GetFileName(heightmapFile)}.");
+                    // MainWindow.Log($"{packName}: updated heightmap in {Path.GetFileName(heightmapFile)}.");
                 }
                 else
                 {
-                    // MainWindow.PushLog($"{packName}: no heightmap changes in {Path.GetFileName(heightmapFile)}.");
+                    // MainWindow.Log($"{packName}: no heightmap changes in {Path.GetFileName(heightmapFile)}.");
                 }
             }
             catch (Exception ex)
             {
-                MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(heightmapFile)} — {ex.Message}");
+                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(heightmapFile)} — {ex.Message}");
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -760,7 +760,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{pack.Name}: no _mer.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _mer.tga files found.");
             return;
         }
 
@@ -809,16 +809,16 @@ public class Processor
                 if (wroteBack)
                 {
                     WriteImageAsTGA(bmp, file);
-                    // MainWindow.PushLog($"{packName}: updated roughness in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: updated roughness in {Path.GetFileName(file)}.");
                 }
                 else
                 {
-                    // MainWindow.PushLog($"{packName}: no roughness changes in {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: no roughness changes in {Path.GetFileName(file)}.");
                 }
             }
             catch (Exception ex)
             {
-                MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -851,7 +851,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.PushLog($"{pack.Name}: no _mer.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _mer.tga files found.");
             return;
         }
 
@@ -916,16 +916,16 @@ public class Processor
                 if (wroteBack)
                 {
                     WriteImageAsTGA(bmp, file);
-                    // MainWindow.PushLog($"{packName}: added material noise to {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: added material noise to {Path.GetFileName(file)}.");
                 }
                 else
                 {
-                    // MainWindow.PushLog($"{packName}: no changes in material noise for {Path.GetFileName(file)}.");
+                    // MainWindow.Log($"{packName}: no changes in material noise for {Path.GetFileName(file)}.");
                 }
             }
             catch (Exception ex)
             {
-                MainWindow.PushLog($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }

@@ -116,7 +116,7 @@ public static class Helpers
         }
         catch (Exception ex)
         {
-            // PushLog($"Error reading image {imagePath}: {ex.Message}");
+            // Log($"Error reading image {imagePath}: {ex.Message}");
             var errorBitmap = new Bitmap(512, 512, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(errorBitmap))
             {
@@ -171,7 +171,7 @@ public static class Helpers
         }
         catch (Exception ex)
         {
-            // PushLog($"Error writing direct TGA to {outputPath}: {ex.Message}");
+            // Log($"Error writing direct TGA to {outputPath}: {ex.Message}");
             throw;
         }
     }
@@ -198,7 +198,7 @@ public static class Helpers
                     }
                     catch (Exception ex)
                     {
-                        PushLog($"Error returning parameter value for '{paramName}' to type {typeof(T)}: {ex.Message}");
+                        Log($"Error returning parameter value for '{paramName}' to type {typeof(T)}: {ex.Message}");
                     }
                 }
             }
@@ -224,11 +224,11 @@ public static class Helpers
 
                 using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
-                PushLog("Starting Download.");
+                Log("Starting Download.");
 
                 var totalBytes = response.Content.Headers.ContentLength;
                 if (!totalBytes.HasValue)
-                    PushLog("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).");
+                    Log("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).");
 
                 // Get filename
                 string fileName;
@@ -241,7 +241,7 @@ public static class Helpers
                     fileName = Path.GetFileName(new Uri(url).AbsolutePath);
                     if (string.IsNullOrEmpty(fileName))
                         fileName = "downloaded_file";
-                    PushLog("File name: " + fileName);
+                    Log("File name: " + fileName);
                 }
 
                 // Sanitize filename
@@ -282,7 +282,7 @@ public static class Helpers
                         savingLocation = testPath;
                         if (testPath != fallbackLocations[2]())
                         {
-                            PushLog($"Using save location: {savingLocation}");
+                            Log($"Using save location: {savingLocation}");
                         }
                         break;
                     }
@@ -294,7 +294,7 @@ public static class Helpers
 
                 if (savingLocation == null)
                 {
-                    PushLog("No writable location found for download.");
+                    Log("No writable location found for download.");
                     return (false, null);
                 }
 
@@ -318,7 +318,7 @@ public static class Helpers
                         if (progress - lastLoggedProgress >= 10 || progress >= 100)
                         {
                             lastLoggedProgress = progress;
-                            PushLog($"Download Progress: {progress:0}%");
+                            Log($"Download Progress: {progress:0}%");
                         }
                     }
                     else
@@ -327,32 +327,32 @@ public static class Helpers
                         if (currentMB > lastLoggedMB)
                         {
                             lastLoggedMB = currentMB;
-                            PushLog($"Download Progress: {currentMB} MB");
+                            Log($"Download Progress: {currentMB} MB");
                         }
                     }
                 }
 
-                PushLog("Download finished successfully.");
+                Log("Download finished successfully.");
                 return (true, savingLocation);
             }
             catch (HttpRequestException ex) when (retries > 0)
             {
-                PushLog($"Transient error: {ex.Message}. Retrying...");
+                Log($"Transient error: {ex.Message}. Retrying...");
                 await Task.Delay(1000);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException && retries > 0)
             {
-                PushLog("Request timed out. Retrying...");
+                Log("Request timed out. Retrying...");
                 await Task.Delay(1000);
             }
             catch (Exception ex)
             {
-                PushLog($"Error during download: {ex.Message}");
+                Log($"Error during download: {ex.Message}");
                 return (false, null);
             }
         }
 
-        PushLog("Download failed after multiple attempts.");
+        Log("Download failed after multiple attempts.");
         return (false, null);
     }
 
@@ -394,7 +394,7 @@ public static class Helpers
 
             if (!File.Exists(tempZipPath))
             {
-                // MainWindow.PushLog($"Temporary .mcpack archive was deleted before writing to output.");
+                // MainWindow.Log($"Temporary .mcpack archive was deleted before writing to output.");
                 return;
             }
 
@@ -402,11 +402,11 @@ public static class Helpers
             using var srcStream = File.OpenRead(tempZipPath);
             await srcStream.CopyToAsync(destStream);
 
-            // MainWindow.PushLog($"{suggestedName}.mcpack exported successfully.");
+            // MainWindow.Log($"{suggestedName}.mcpack exported successfully.");
         }
         catch (Exception ex)
         {
-            // MainWindow.PushLog($"Failed to export {suggestedName}: {ex.Message}");
+            // MainWindow.Log($"Failed to export {suggestedName}: {ex.Message}");
         }
         finally
         {
@@ -417,7 +417,7 @@ public static class Helpers
             }
             catch (Exception ex)
             {
-                // MainWindow.PushLog($"Warning: Couldn't delete temp file: {ex.Message}");
+                // MainWindow.Log($"Warning: Couldn't delete temp file: {ex.Message}");
             }
         }
     }

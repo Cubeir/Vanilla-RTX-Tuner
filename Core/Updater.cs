@@ -27,7 +27,7 @@ public class AppUpdater
 
         try
         {
-            MainWindow.PushLog("Checking GitHub for updates...");
+            MainWindow.Log("Checking GitHub for updates...");
 
             using (HttpClient client = new HttpClient())
             {
@@ -72,7 +72,7 @@ public class AppUpdater
                 // Store the extracted data (if either fails, updating won't hapepn)
 
 
-                // MainWindow.PushLog($"Latest Version: {extractedVersion}");
+                // MainWindow.Log($"Latest Version: {extractedVersion}");
 
 
                 // See if we need updates
@@ -113,7 +113,7 @@ public class AppUpdater
         }
         catch (Exception ex)
         {
-            MainWindow.PushLog($"Version compare failed ❗ {ex.Message} | new: {newVersion}, current: {currentVersion} ");
+            MainWindow.Log($"Version compare failed ❗ {ex.Message} | new: {newVersion}, current: {currentVersion} ");
             return false;
         }
 

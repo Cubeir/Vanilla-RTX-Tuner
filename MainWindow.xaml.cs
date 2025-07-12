@@ -104,7 +104,7 @@ public sealed partial class MainWindow : Window
         var version = Windows.ApplicationModel.Package.Current.Id.Version; var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
         appVersion = versionString;
-        PushLog($"App Version: {versionString}" + new string('\n', 2) +
+        Log($"App Version: {versionString}" + new string('\n', 2) +
                "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder."); // shockers!
 
         this.Closed += (s, e) =>
@@ -118,7 +118,7 @@ public sealed partial class MainWindow : Window
     private void SetMainWindowProperties()
     {
         // Initialize the window state manager
-        _windowStateManager = new WindowStateManager(this, PushLog);
+        _windowStateManager = new WindowStateManager(this, Log);
 
         ExtendsContentIntoTitleBar = true;
 
@@ -141,7 +141,7 @@ public sealed partial class MainWindow : Window
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
     }
-    public static void PushLog(string message)
+    public static void Log(string message)
     {
         void Prepend()
         {
@@ -176,8 +176,8 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            PushLog("Failed to open URL. Make sure you have a browser installed and associated with web links.");
-            PushLog($"Details: {ex.Message}");
+            Log("Failed to open URL. Make sure you have a browser installed and associated with web links.");
+            Log($"Details: {ex.Message}");
         }
     }
     public void BlinkingLamp(bool enable)
@@ -211,14 +211,14 @@ public sealed partial class MainWindow : Window
         async Task BlinkLoop(CancellationToken token)
         {
             const double initialDelayMs = 1150;
-            const double decayFactor = 0.925;
-            const double decayIntervalSeconds = 0.75;
+            const double decayFactor = 0.85;
+            const double decayIntervalSeconds = 0.5;
             const double minDelayMs = 150;
 
             bool state = true;
             var startTime = DateTime.UtcNow;
-            var nexterraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 6 + 3);
-            // next erratic flash a few seconds.                                        3 to 9 seconds from now
+            var nexterraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 7 + 4);
+            // next erratic flash a few seconds.
 
             while (!token.IsCancellationRequested)
             {
@@ -226,15 +226,15 @@ public sealed partial class MainWindow : Window
 
                 if (now >= nexterraticFlash)
                 {
-                    // erratic flash burst (duration 500-1000 ms)
-                    var erraticDuration = random.Next(500, 1001);
+                    // erratic flash burst duration in ms
+                    var erraticDuration = random.Next(500, 2500);
                     var erraticEnd = now.AddMilliseconds(erraticDuration);
 
                     while (DateTime.UtcNow < erraticEnd && !token.IsCancellationRequested)
                     {
                         iconImageBox.Source = new BitmapImage(new Uri(state ? onPath : offPath));
                         state = !state;
-                        await Task.Delay(random.Next(33, 100), token); // flicker ms
+                        await Task.Delay(random.Next(35, 151), token); // flicker ms
                     }
 
                     iconImageBox.Source = new BitmapImage(new Uri(onPath));
@@ -394,11 +394,11 @@ public sealed partial class MainWindow : Window
             var installSucess = await AppUpdater.InstallAppUpdate();
             if (installSucess.Item1)
             {
-                PushLog("Continue in Windows App Installer.");
+                Log("Continue in Windows App Installer.");
             }
             else
             {
-                PushLog($"Automatic update failed, reason: {installSucess.Item2} - Visit the repository to download the update manually.");
+                Log($"Automatic update failed, reason: {installSucess.Item2} - Visit the repository to download the update manually.");
             }
 
             AppUpdaterButton.IsEnabled = true;
@@ -437,16 +437,16 @@ public sealed partial class MainWindow : Window
                     AppUpdaterButton.Background = accent;
                     AppUpdaterButton.BorderBrush = accent;
 
-                    PushLog(updateAvailable.Item2);
+                    Log(updateAvailable.Item2);
                 }
                 else
                 {
-                    PushLog(updateAvailable.Item2);
+                    Log(updateAvailable.Item2);
                 }
             }
             catch (Exception ex)
             {
-                PushLog($"Error during update check: {ex.Message}");
+                Log($"Error during update check: {ex.Message}");
             }
             finally
             {
@@ -468,7 +468,7 @@ public sealed partial class MainWindow : Window
             out VanillaRTXNormalsLocation, out VanillaRTXNormalsVersion,
             out VanillaRTXOpusLocation, out VanillaRTXOpusVersion);
 
-        PushLog(statusMessage);
+        Log(statusMessage);
 
         UpdateCheckboxStates();
 
@@ -510,13 +510,13 @@ public sealed partial class MainWindow : Window
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = true;
-        PushLog("Targeting Minecraft Preview.");
+        Log("Targeting Minecraft Preview.");
         FlushTheseVariables(true, true, true);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = false;
-        PushLog("Targeting regular Minecraft.");
+        Log("Targeting regular Minecraft.");
         FlushTheseVariables(true, true, true);
     }
 
@@ -729,17 +729,17 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            PushLog(ex.ToString());
+            Log(ex.ToString());
         }
         finally
         {
             if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
             {
-                PushLog("Locate and select at least one package to export.");
+                Log("Locate and select at least one package to export.");
             }
             else
             {
-                PushLog("Export Queue Finished.");
+                Log("Export Queue Finished.");
             }
             BlinkingLamp(false);
             SidelogProgressBar.IsIndeterminate = false;
@@ -756,7 +756,7 @@ public sealed partial class MainWindow : Window
         {
             if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
             {
-                PushLog("Locate and select at least one package to tune.");
+                Log("Locate and select at least one package to tune.");
 
                 return;
             }
@@ -767,7 +767,7 @@ public sealed partial class MainWindow : Window
                 ToggleControls(this, false);
 
                 await Task.Run(Processor.TuneSelectedPacks);
-                PushLog("Completed tuning.");
+                Log("Completed tuning.");
 
 
             }
@@ -796,27 +796,27 @@ public sealed partial class MainWindow : Window
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
-                    PushLog($"{message}");
+                    Log($"{message}");
                 });
             };
 
             // Run the update operation
             var (success, logs) = await Task.Run(() => updater.UpdatePacksAsync());
 
-            // foreach (var log in logs) PushLog(log);
+            // foreach (var log in logs) Log(log);
 
             if (success)
             {
-                PushLog("Reinstallation completed ✅");
+                Log("Reinstallation completed ✅");
             }
             else
             {
-                PushLog("Reinstallation failed❗");
+                Log("Reinstallation failed❗");
             }
         }
         catch (Exception ex)
         {
-            PushLog($"Unexpected error: {ex.Message}");
+            Log($"Unexpected error: {ex.Message}");
         }
         finally
         {
@@ -832,7 +832,7 @@ public sealed partial class MainWindow : Window
     private void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
         var logs = Launcher.LaunchMinecraftRTX(IsTargetingPreview);
-        PushLog(logs);
+        Log(logs);
     }
 
 }
