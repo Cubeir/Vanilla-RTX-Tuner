@@ -28,9 +28,9 @@ if %errorlevel% neq 0 (
     REM --- Original window should exit here since new elevated window is running
     echo.
     echo An elevated window should have opened. If you see this message,
-    echo either UAC was denied or there was an error.
+    echo either UAC Admin request was denied or there was an irregularity.
     echo.
-    echo Press any key to try requesting admin privileges again, or close this window.
+    echo Press any key to try requesting admin privileges again. You can also close this window to abort the installation.
     pause >nul
     goto :RequestAdmin
 )
