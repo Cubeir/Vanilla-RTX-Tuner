@@ -119,6 +119,8 @@ public class AppUpdater
 
     }
 
+    // Run .MSIX before trying installer.bat? User had installed the cert to be able to have the app
+    // so chronologically its fine -- maybe have the installer.bat run only for major updates, just to update the cert if needed
     public static async Task<(bool, string)> InstallAppUpdate()
     {
         try
@@ -230,8 +232,8 @@ public class AppUpdater
 }
 
 /// =====================================================================================================================
+/// 
 
-// TODO: Introduce a 30 minute cooldown for checking online again for deciding whether to update the cached zipball or not.
 public class PackUpdater
 {
     public const string VanillaRTX_Manifest_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";

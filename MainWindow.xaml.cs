@@ -90,7 +90,9 @@ public sealed partial class MainWindow : Window
 {
     public static MainWindow? Instance { get; private set; }
     private WindowStateManager _windowStateManager;
+
     private static CancellationTokenSource _lampBlinkCts;
+    private static readonly Dictionary<string, BitmapImage> _imageCache = new();
 
     public MainWindow()
     {
@@ -105,7 +107,7 @@ public sealed partial class MainWindow : Window
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
         appVersion = versionString;
         Log($"App Version: {versionString}" + new string('\n', 2) +
-               "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder."); // shockers!
+             "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder."); // shockers!
 
         this.Closed += (s, e) =>
         {
@@ -113,6 +115,7 @@ public sealed partial class MainWindow : Window
             App.CleanupMutex();
         };
     }
+
 
     #region Main Window properties and essential components used throughout the app
     private void SetMainWindowProperties()
@@ -180,108 +183,151 @@ public sealed partial class MainWindow : Window
             Log($"Details: {ex.Message}");
         }
     }
-    public void BlinkingLamp(bool enable)
+    public async Task BlinkingLamp(bool enable)
     {
-        var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.png");
+        const double initialDelayMs = 1000;
+        const double minDelayMs = 150; // can ramp down to this Ms delay during a normal cycle
+        const double minRampSec = 3; // minimum ramp cycle duration
+        const double maxRampSec = 12; // maximum ...
+        const double minBlinkMs = 25; // minimum erratic flash delay between blinks
+        const double maxBlinkMs = 100; // maximum ...
+
+        var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.small.png");
+        var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png"); // New super on image
 
         var today = DateTime.Today;
         string offPath;
+        bool isSpecial;
 
-        if (today.Month == 4 && today.Day >= 21 && today.Day <= 23) // Birthdays
+        if (today.Month == 4 && today.Day >= 21 && today.Day <= 23)
         {
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "happybirthdayme.png");
+            isSpecial = true;
         }
-        else if (today.Month == 10 && (today.DayOfWeek == DayOfWeek.Saturday || today.DayOfWeek == DayOfWeek.Sunday)) // October Weekends
+        else if (today.Month == 10 && (today.DayOfWeek == DayOfWeek.Saturday || today.DayOfWeek == DayOfWeek.Sunday))
         {
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.png");
+            isSpecial = true;
         }
-
-        else if (today.Month == 12 && today.Day >= 25) // last week of December
+        else if (today.Month == 12 && today.Day >= 25)
         {
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "gingerman.png");
+            isSpecial = true;
         }
         else
         {
-            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.png");
+            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.small.png");
+            isSpecial = false;
         }
 
         var random = new Random();
-        CancellationTokenSource localCts = null;
-
-        async Task BlinkLoop(CancellationToken token)
-        {
-            const double initialDelayMs = 1150;
-            const double decayFactor = 0.85;
-            const double decayIntervalSeconds = 0.5;
-            const double minDelayMs = 150;
-
-            bool state = true;
-            var startTime = DateTime.UtcNow;
-            var nexterraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 7 + 4);
-            // next erratic flash a few seconds.
-
-            while (!token.IsCancellationRequested)
-            {
-                var now = DateTime.UtcNow;
-
-                if (now >= nexterraticFlash)
-                {
-                    // erratic flash burst duration in ms
-                    var erraticDuration = random.Next(500, 2500);
-                    var erraticEnd = now.AddMilliseconds(erraticDuration);
-
-                    while (DateTime.UtcNow < erraticEnd && !token.IsCancellationRequested)
-                    {
-                        iconImageBox.Source = new BitmapImage(new Uri(state ? onPath : offPath));
-                        state = !state;
-                        await Task.Delay(random.Next(35, 151), token); // flicker ms
-                    }
-
-                    iconImageBox.Source = new BitmapImage(new Uri(onPath));
-                    state = true;
-
-                    // schedule next erratic flash randomly for 5-15 seconds later
-                    nexterraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 5);
-                    startTime = DateTime.UtcNow; // reset decay timer for normal blinking after
-                }
-                else
-                {
-                    await SetImageAsync(state ? onPath : offPath);
-                    state = !state;
-
-                    var elapsedSeconds = (DateTime.UtcNow - startTime).TotalSeconds;
-                    var decaySteps = elapsedSeconds / decayIntervalSeconds;
-                    var delay = Math.Max(minDelayMs, initialDelayMs * Math.Pow(decayFactor, decaySteps));
-
-                    await Task.Delay((int)delay, token);
-                }
-            }
-
-            await SetImageAsync(onPath);
-        }
-
-        async Task SetImageAsync(string path)
-        {
-            using var stream = File.OpenRead(path);
-            var bmp = new BitmapImage();
-            await bmp.SetSourceAsync(stream.AsRandomAccessStream());
-            iconImageBox.Source = bmp;
-        }
-
         _lampBlinkCts?.Cancel();
         _lampBlinkCts = null;
 
         if (enable)
         {
             _lampBlinkCts = new CancellationTokenSource();
-            _ = BlinkLoop(_lampBlinkCts.Token);
+
+            if (isSpecial)
+            {
+                await SetImageAsync(offPath);
+                return;
+            }
+
+            await BlinkLoop(_lampBlinkCts.Token, onPath, superOnPath, offPath); // Pass superOnPath to BlinkLoop
         }
         else
         {
-            _ = SetImageAsync(onPath);
+            await SetImageAsync(onPath);
+        }
+
+        async Task BlinkLoop(CancellationToken token, string onPath, string superOnPath, string offPath)
+        {
+            var onImage = await GetCachedImageAsync(onPath);
+            var superOnImage = await GetCachedImageAsync(superOnPath); // Load super on image
+            var offImage = await GetCachedImageAsync(offPath);
+
+            bool state = true;
+            double phaseTime = 0;
+            bool rampingUp = true;
+            double currentRampDuration = GetRandomRampDuration();
+            var rampStartTime = DateTime.UtcNow;
+            var nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 10); // schedule the first erratic flash in 10-20 sec
+
+            while (!token.IsCancellationRequested)
+            {
+                var now = DateTime.UtcNow;
+
+                if (now >= nextErraticFlash)
+                {
+                    var erraticDuration = random.Next(500, 1200);
+                    var erraticEnd = now.AddMilliseconds(erraticDuration);
+
+                    while (DateTime.UtcNow < erraticEnd && !token.IsCancellationRequested)
+                    {
+                        iconImageBox.Source = state ? superOnImage : offImage; // Use superOnImage during erratic flash
+                        state = !state;
+                        await Task.Delay(random.Next((int)minBlinkMs, (int)maxBlinkMs + 1), token);
+                    }
+
+                    iconImageBox.Source = onImage; // Reset to regular on image
+                    state = true;
+                    rampingUp = true;
+                    currentRampDuration = GetRandomRampDuration();
+                    rampStartTime = DateTime.UtcNow;
+                    nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 14); // schedule the next erratic flash (10-24 sec)
+                    continue;
+                }
+
+                iconImageBox.Source = state ? onImage : offImage; // Use regular onImage during normal blinking
+                state = !state;
+
+                phaseTime = (now - rampStartTime).TotalSeconds;
+                double progress = Math.Clamp(phaseTime / currentRampDuration, 0, 1);
+                double eased = EaseInOut(progress);
+
+                double delay = rampingUp
+                    ? initialDelayMs - (initialDelayMs - minDelayMs) * eased
+                    : minDelayMs + (initialDelayMs - minDelayMs) * eased;
+
+                if (progress >= 1.0)
+                {
+                    rampingUp = !rampingUp;
+                    rampStartTime = DateTime.UtcNow;
+                    currentRampDuration = GetRandomRampDuration();
+                }
+
+                await Task.Delay((int)delay, token);
+            }
+
+            iconImageBox.Source = onImage; // Ensure final state is regular on image
+        }
+
+        double GetRandomRampDuration()
+            => random.NextDouble() * (maxRampSec - minRampSec) + minRampSec;
+
+        double EaseInOut(double t)
+            => t < 0.5 ? 2 * t * t : 1 - Math.Pow(-2 * t + 2, 2) / 2;
+
+        async Task<BitmapImage> GetCachedImageAsync(string path)
+        {
+            if (_imageCache.TryGetValue(path, out var cachedImage))
+            {
+                return cachedImage;
+            }
+
+            using var stream = File.OpenRead(path);
+            var bmp = new BitmapImage();
+            await bmp.SetSourceAsync(stream.AsRandomAccessStream());
+            _imageCache[path] = bmp;
+            return bmp;
+        }
+
+        async Task SetImageAsync(string path)
+        {
+            iconImageBox.Source = await GetCachedImageAsync(path);
         }
     }
-
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
         // store slider variable, slider and box configs, add new ones here 🍝
