@@ -78,9 +78,9 @@ public class AppUpdater
                 // See if we need updates
                 if (IsVersionHigher(extractedVersion, TunerVariables.appVersion))
                 {
-                    return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
                     latestAppVersion = extractedVersion;
                     latestAppRemote_URL = downloadUrl;
+                    return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
                 }
                 else
                 {
