@@ -7,7 +7,7 @@ An all-in-one app to tune various aspects of Vanilla RTX to your preferences, au
 [![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud)
 [![Ko-Fi](https://img.shields.io/badge/-support%20my%20work💖-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
 
-![vanilla rtx tuner render](https://github.com/user-attachments/assets/01c6833e-510e-49da-8c4e-d51c94e695bc)
+![vanilla rtx tuner render](https://github.com/user-attachments/assets/785aaf7c-5921-4627-949e-5e1462c7e740)
 
 ## Overview
 
