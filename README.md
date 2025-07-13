@@ -2,20 +2,16 @@
 
 An all-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update packages & launch Minecraft RTX with ease, and more!
 
-⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)
+⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)  
 
 [![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud)
 [![Ko-Fi](https://img.shields.io/badge/-support%20my%20work💖-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
 
-![vanilla-rtx-tuner-banner](https://github.com/user-attachments/assets/75ba9d74-e482-4934-a06f-f7db07992a15)
+![vanilla rtx tuner render](https://github.com/user-attachments/assets/785aaf7c-5921-4627-949e-5e1462c7e740)
 
 ## Overview
 
 Below you'll find a comprehensive list of features and functionalities included in the latest version of the app.   
-
-![vanilla-rtx-tuner-render-1280x720](https://github.com/user-attachments/assets/1b2cf19e-22fb-4ad2-a4f3-1f124f7a3d52)
-
-
 
 - **`Locate Vanilla RTX Projects`**  
   Locates all currently-installed Vanilla RTX versions. Installed packs become selectable. Further changes and exporting affect only the selected packs.
