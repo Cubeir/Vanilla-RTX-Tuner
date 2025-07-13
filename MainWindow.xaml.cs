@@ -24,6 +24,83 @@ using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
+/*
+### MISC TODO ###
+
+- TODO UPDATER: Update app Updater, don't give up the moment user says no to admin prompt.
+Sure the app tries to run it as admin right off the bat, if that fails, run it as non-admin
+The script handles itself well and reprompts user to give admin rights
+
+- Export settings as a .tuner file, register it as belonging to tuner, opening files causes
+slider settings and a few other things to load, a UI refrehs, you're golden
+It's a simpler way of giving a preset system, works just as well -- though users having files scattered may be annoying
+a dual-sided button (2 in 1) one side saying export, one saying import.
+
+- Change SidebarLog into a rich textbox, so it can have links and other formatting:
+ - While updating the app, get link of the latest release page, and put that link in the logs "read changelogs here"
+ - When user checks for updates and its available clicking one the link in sidebar log will allow them to read the changelogs.
+
+- Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
+For example, sliders must definitely be binded, make the code cleaner.
+
+- Make your grainy-noise method apply the SAME noise throughout stages of flipbook textures
+  This is to prevent grainy PBR changes throughout animations entirely
+- Also have to figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
+  Possibly by using the same noise seed, or taking the same values to apply -- the application will have the rules applied to it so it should be fine
+
+- Read UUIDs from config.json, wherever you want them -- this is necessary if you hook extensions, 
+  and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
+
+- Core functionality could be improved: load images once and process them, instead of doing so in multiple individual passes
+  You're wasting power, slowing things down, though it is more manageable this way so perhaps.. rethink?
+
+### FEATURES TO ADD ###
+
+- Convert for Vibrant Visuals Button (Vibrant Visualizer for short? so it fits in a button)
+  Still uses mostly default vibrant visuals assets:
+  wipes water-related assets, runs MERs through an automated SSS adder, scales MERs as needed to match vanilla VV style (more rough, a little grainy, and possibly more intense?)
+  also wipe Fog, use vanilla vv assets wherever possible, and don't forget to properly scale emissives
+  It'll be a combination of a preset of tuning + some special passes, the result should be a fully fledged tunable VV pack
+
+- Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
+  to be tuned and queue those for tuning alongside it.
+  This must be done once addons are updated and properly moved to separate pages with each pack of each variant 
+  becoming standalone.
+  Addons won't be explicitly selected for tuning, try to find them and tune them automatically since they're 
+  natural extensions of base packs.
+  One "Tune Add-Ons & Extensions" button will do, if enabled, the finding and processing of addons and extensions 
+  will be automated
+  Looks for all addons, the ones tagged with "any" only need this button to be modified
+  the ones that have individual variants (opus/normals) need the button AND to have their packs selected for 
+  modification to work
+
+### IDEAS TO CONSIDER ###
+ 
+- Don't hardcode api calls and paths, use an improved getconfig method, maybe use internal uwp stuff
+  But if you didn't, update Config.Json from the remote, auto-update it, in case something breaks? though highly unlikely to be necessery.
+  You can push out package updates already automatically which includes the config.json, not too important.
+### SCRAPPED IDEAS (Feel free to delete) ###
+
+- Heightmap Intensity Maximizer -- a histogram stretch... but should you? there's already that Butcher heightmaps method.. TWO sliders that apply just to one pack? you sure?
+REPLACED BY: Normal Intensity slider now affects Vanilla RTX
+
+- Make locating tell user if a new version is available by comparing against github manifests?
+  If you did make sure it doesn't waste user's time if remote is unreachable. Not everyone's internets have 100% uptime, remember?
+REPLACED BY: Reinstall button now auto-updates if necessery, and caches files, much better.
+
+- Preset system, the empty space near Pack Selection stackpanel is perfect, save current as preset, loading preset 
+  sets the variables as they were, saved somewhere safe
+REPLACED BY: Idea of a simple export/import settings button, much less overwhelming
+
+- A backup and 'Restore from backup' function, let user experiment more freely, especially as more options get added 
+  for tuning.
+  A button that backs up all currently-installed Vanilla RTX packs and their extensions, and then restores them from backup
+  Keep it simple, only one backup can exist at a time to restore from, also good to keep user from downloading the pack 
+  too many times and possibly rate limiting themselves (git)
+REPLACED BY: Export button, user can back up their current installation if they want.
+*/
+
+
 
 
 public static class TunerVariables
@@ -193,7 +270,7 @@ public sealed partial class MainWindow : Window
         const double maxBlinkMs = 100; // maximum ...
 
         var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.small.png");
-        var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png"); // New super on image
+        var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png");
 
         var today = DateTime.Today;
         string offPath;
@@ -206,8 +283,10 @@ public sealed partial class MainWindow : Window
         }
         else if (today.Month == 10 && (today.DayOfWeek == DayOfWeek.Saturday || today.DayOfWeek == DayOfWeek.Sunday))
         {
-            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.png");
-            isSpecial = true;
+            onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.on.png");
+            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.off.png");
+            superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.super.png");
+            isSpecial = false; // is special, but we want to keep the blinking animation (is special is used to disable the animation)
         }
         else if (today.Month == 12 && today.Day >= 25)
         {
@@ -444,7 +523,7 @@ public sealed partial class MainWindow : Window
             }
             else
             {
-                Log($"Automatic update failed, reason: {installSucess.Item2} - Visit the repository to download the update manually.");
+                Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.");
             }
 
             AppUpdaterButton.IsEnabled = true;
@@ -760,7 +839,7 @@ public sealed partial class MainWindow : Window
         {
             var exportQueue = new List<(string path, string name)>();
 
-            var suffix = $"_tuner_export_{appVersion}";
+            var suffix = $"_export_tuner_{appVersion}";
             if (IsVanillaRTXEnabled && Directory.Exists(VanillaRTXLocation))
                 exportQueue.Add((VanillaRTXLocation, "Vanilla_RTX_" + VanillaRTXVersion + suffix));
 

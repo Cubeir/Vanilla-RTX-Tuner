@@ -84,7 +84,7 @@ public class AppUpdater
                 }
                 else
                 {
-                    return (false, "Current version is up to date ℹ️");
+                    return (false, "Current version is the latest ℹ️");
                 }
             }
         }
@@ -119,8 +119,6 @@ public class AppUpdater
 
     }
 
-    // Run .MSIX before trying installer.bat? User had installed the cert to be able to have the app
-    // so chronologically its fine -- maybe have the installer.bat run only for major updates, just to update the cert if needed
     public static async Task<(bool, string)> InstallAppUpdate()
     {
         try
@@ -176,12 +174,12 @@ public class AppUpdater
                     }
                     else
                     {
-                        return (false, "Failed to start installer script ❗");
+                        return (false, "Failed to start installer script as Admin ❗");
                     }
                 }
                 catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
                 {
-                    // TODO: could probably use this error and keep the updater in limbo, if update button is pressed yet again it tries to reopen this batch script.
+                    // TODO UPDATER: from MISC TODO
                     return (false, "Installation cancelled - Administrator privileges are required. Try updating again.");
                 }
                 catch (Exception ex)
@@ -232,7 +230,8 @@ public class AppUpdater
 }
 
 /// =====================================================================================================================
-/// 
+/// Only deals with cache, we don't care if user has Vanilla RTX installed or not, we compare versions of cache to remote
+/// No cache? download latest, cache outdated? download latest, if there's a cache and the rest fails for whatever the reason, fallback to cache
 
 public class PackUpdater
 {
