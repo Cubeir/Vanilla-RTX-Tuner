@@ -84,7 +84,7 @@
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ToolTipService.ToolTip="All relevant logs appear here." />
 
-        <!-- simple progress bar, could improve later to update in real time -->
+        <!-- simple progress bar -->
         <ProgressBar x:Name="SidelogProgressBar"
                      Width="348"
                      IsIndeterminate="False"
@@ -97,7 +97,7 @@
         <!-- Locate Pack Button -->
         <Button x:Name="LocatePacksButton"
                 Click="LocatePacksButton_Click"
-                Width="210"
+                Width="206"
                 Margin="15,40,0,15"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
@@ -117,8 +117,8 @@
         <!-- Target Preview? -->
         <ToggleButton x:Name="TargetPreviewToggle"
                       Content="Target Preview"
-                      Margin="230,40,0,15"
-                      Width="135"
+                      Margin="229,40,0,15"
+                      Width="136"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Top"
                       FontWeight="SemiBold"
