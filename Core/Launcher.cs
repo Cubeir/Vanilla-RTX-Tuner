@@ -145,7 +145,7 @@ public class Launcher
                     };
 
                     Process.Start(processInfo);
-                    statusMessages.Add($"Ray tracing enabled and {versionName} launch initiated successfully ✅");
+                    statusMessages.Add($"Ray tracing enabled and launched {versionName} successfully ✅");
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
