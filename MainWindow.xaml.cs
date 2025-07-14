@@ -25,16 +25,11 @@ using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
-### MISC TODO ###
+### TODO ###
 
 - TODO UPDATER: Update app Updater, don't give up the moment user says no to admin prompt.
 Sure the app tries to run it as admin right off the bat, if that fails, run it as non-admin
 The script handles itself well and reprompts user to give admin rights
-
-- Export settings as a .tuner file, register it as belonging to tuner, opening files causes
-slider settings and a few other things to load, a UI refrehs, you're golden
-It's a simpler way of giving a preset system, works just as well -- though users having files scattered may be annoying
-a dual-sided button (2 in 1) one side saying export, one saying import.
 
 - Change SidebarLog into a rich textbox, so it can have links and other formatting:
  - While updating the app, get link of the latest release page, and put that link in the logs "read changelogs here"
@@ -54,14 +49,6 @@ For example, sliders must definitely be binded, make the code cleaner.
 - Core functionality could be improved: load images once and process them, instead of doing so in multiple individual passes
   You're wasting power, slowing things down, though it is more manageable this way so perhaps.. rethink?
 
-### FEATURES TO ADD ###
-
-- Convert for Vibrant Visuals Button (Vibrant Visualizer for short? so it fits in a button)
-  Still uses mostly default vibrant visuals assets:
-  wipes water-related assets, runs MERs through an automated SSS adder, scales MERs as needed to match vanilla VV style (more rough, a little grainy, and possibly more intense?)
-  also wipe Fog, use vanilla vv assets wherever possible, and don't forget to properly scale emissives
-  It'll be a combination of a preset of tuning + some special passes, the result should be a fully fledged tunable VV pack
-
 - Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
   to be tuned and queue those for tuning alongside it.
   This must be done once addons are updated and properly moved to separate pages with each pack of each variant 
@@ -73,31 +60,6 @@ For example, sliders must definitely be binded, make the code cleaner.
   Looks for all addons, the ones tagged with "any" only need this button to be modified
   the ones that have individual variants (opus/normals) need the button AND to have their packs selected for 
   modification to work
-
-### IDEAS TO CONSIDER ###
- 
-- Don't hardcode api calls and paths, use an improved getconfig method, maybe use internal uwp stuff
-  But if you didn't, update Config.Json from the remote, auto-update it, in case something breaks? though highly unlikely to be necessery.
-  You can push out package updates already automatically which includes the config.json, not too important.
-### SCRAPPED IDEAS (Feel free to delete) ###
-
-- Heightmap Intensity Maximizer -- a histogram stretch... but should you? there's already that Butcher heightmaps method.. TWO sliders that apply just to one pack? you sure?
-REPLACED BY: Normal Intensity slider now affects Vanilla RTX
-
-- Make locating tell user if a new version is available by comparing against github manifests?
-  If you did make sure it doesn't waste user's time if remote is unreachable. Not everyone's internets have 100% uptime, remember?
-REPLACED BY: Reinstall button now auto-updates if necessery, and caches files, much better.
-
-- Preset system, the empty space near Pack Selection stackpanel is perfect, save current as preset, loading preset 
-  sets the variables as they were, saved somewhere safe
-REPLACED BY: Idea of a simple export/import settings button, much less overwhelming
-
-- A backup and 'Restore from backup' function, let user experiment more freely, especially as more options get added 
-  for tuning.
-  A button that backs up all currently-installed Vanilla RTX packs and their extensions, and then restores them from backup
-  Keep it simple, only one backup can exist at a time to restore from, also good to keep user from downloading the pack 
-  too many times and possibly rate limiting themselves (git)
-REPLACED BY: Export button, user can back up their current installation if they want.
 */
 
 
@@ -934,6 +896,8 @@ public sealed partial class MainWindow : Window
             if (success)
             {
                 Log("Reinstallation completed ✅");
+
+                // TODO: Maybe trigger an artificial locate pack button click if packages are installed with success?
             }
             else
             {
