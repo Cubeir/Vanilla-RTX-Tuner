@@ -9,10 +9,10 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Vanilla_RTX_Tuner_WinUI;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Storage;
 
+namespace Vanilla_RTX_Tuner_WinUI;
 
 public class AppUpdater
 {
@@ -33,7 +33,7 @@ public class AppUpdater
             if (now < cooldownEnd)
             {
                 var secondsLeft = (int)Math.Ceiling((cooldownEnd - now).TotalSeconds);
-                return (false, $"Please wait {secondsLeft} seconds before checking for updates again.");
+                return (false, $"Please wait {secondsLeft} seconds before checking for updates again ⏳");
             }
         }
 
@@ -197,7 +197,7 @@ public class AppUpdater
                 }
                 catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
                 {
-                    // TODO UPDATER: from MISC TODO
+                    // TODO UPDATER: see misc, don't fail in this case...
                     return (false, "Installation cancelled - Administrator privileges are required. Try updating again.");
                 }
                 catch (Exception ex)
@@ -255,7 +255,7 @@ public class PackUpdater
 {
     public const string VanillaRTX_Manifest_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
     public const string VanillaRTXNormals_Manifest_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX-Normals/manifest.json";
-    public const string zipball_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX/zipball/master";
+    public const string zipball_URL = "https://github.com/Cubeir/Vanilla-RTX/archive/refs/heads/master.zip";
 
     private string vanillaRTXHeaderUUID => PackLocator.vanillaRTXHeaderUUID;
     private string vanillaRTXModuleUUID => PackLocator.vanillaRTXModuleUUID;
@@ -268,7 +268,7 @@ public class PackUpdater
 
     // For cooldown of checking for update to avoid spamming the API
     private const string LastUpdateCheckKey = "LastUpdateCheckTimeUtc";
-    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(3);
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -334,7 +334,7 @@ public class PackUpdater
             }
             else
             {
-                LogMessage("Download failed: fell back to previous cached version.");
+                LogMessage("Download failed: fell back to previously cached version.");
                 var deploySuccess = await DeployPackage(cachePath);
                 return (deploySuccess, new List<string>(_logMessages));
             }
@@ -347,7 +347,6 @@ public class PackUpdater
             return (deploySuccess, new List<string>(_logMessages));
         }
     }
-
 
 
 
@@ -369,7 +368,7 @@ public class PackUpdater
             if (now < cooldownEnd)
             {
                 var minutesLeft = (int)Math.Ceiling((cooldownEnd - now).TotalMinutes);
-                LogMessage($"Skipped Vanilla RTX update check ⏭️\nCooldown ends in: {minutesLeft} minute{(minutesLeft == 1 ? "" : "s")}");
+                LogMessage($"Skipped update check ⏳\nCooldown ends in: {minutesLeft} minute{(minutesLeft == 1 ? "" : "s")}");
                 return false; // Use cache, skip remote check
             }
         }
@@ -493,6 +492,7 @@ public class PackUpdater
 
 
     // ---------- Deployment methods
+
     private async Task<bool> DeployPackage(string packagePath)
     {
         bool success_status = false;
@@ -509,32 +509,50 @@ public class PackUpdater
             {
                 ZipFile.ExtractToDirectory(packagePath, extractDir, overwriteFiles: true);
 
-                // Hardcoded paths, they've been the same for a decade (might differ if user moves MC to another dir? rare but check later)
-                var resourcePackPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Packages",
-                    TunerVariables.IsTargetingPreview ? "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-                    "LocalState", "games", "com.mojang", "resource_packs");
+                // Find our target folders by comparing manifest UUIDs against what we got here
+                var manifestFiles = Directory.GetFiles(extractDir, "manifest.json", SearchOption.AllDirectories);
 
-                /* 
-                if (!Directory.Exists(resourcePackPath))
+                string vanillaRTXSrc = null;
+                string vanillaRTXNormalsSrc = null;
+
+                foreach (var manifestPath in manifestFiles)
                 {
-                    LogMessage("Resource pack directory not found");
+                    try
+                    {
+                        var json = await File.ReadAllTextAsync(manifestPath);
+                        var data = JObject.Parse(json);
+
+                        string headerUUID = data["header"]?["uuid"]?.ToString();
+                        string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
+
+                        var parentDir = Path.GetDirectoryName(manifestPath);
+
+                        if (headerUUID == vanillaRTXHeaderUUID && moduleUUID == vanillaRTXModuleUUID)
+                            vanillaRTXSrc = parentDir;
+                        else if (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID)
+                            vanillaRTXNormalsSrc = parentDir;
+                    }
+                    catch { }
+                }
+
+                if (vanillaRTXSrc == null && vanillaRTXNormalsSrc == null)
+                {
+                    LogMessage("Vanilla-RTX or Vanilla-RTX-Normals were found in the extracted package ❗");
                     success_status = false;
                     return success_status;
                 }
-                */
+                if (vanillaRTXSrc == null || vanillaRTXNormalsSrc == null)
+                {
+                    LogMessage("Extracted zipball was missing one of the packs ℹ️");
+                }
 
-                // Instead of failing, we give it one last try, this should let the app work in the face unexpected changes to MC data folders 
-
+                // Find the resource pack path, where we wanna deploy
                 var packagesRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
                 string mcFolderPattern = TunerVariables.IsTargetingPreview
                     ? "Microsoft.MinecraftWindowsBeta_"
                     : "Microsoft.MinecraftUWP_";
 
-                // Try to find any matching MC package folder
                 var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
-
                 if (mcRoot == null)
                 {
                     LogMessage("Minecraft data root not found. Please make sure the game is installed or has been launched at least once ❗");
@@ -542,38 +560,31 @@ public class PackUpdater
                     return success_status;
                 }
 
-                // Construct the rest of the path
-                resourcePackPath = Path.Combine(
-                mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
-
-                // If resource_packs doesn't exist, create it (since MC is installed, just not launched)
+                var resourcePackPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
                 if (!Directory.Exists(resourcePackPath))
                 {
                     Directory.CreateDirectory(resourcePackPath);
                     LogMessage("Resource pack directory was missing and has been created ℹ️");
                 }
 
-
-
-                // phase 1: remove all existing packs with matching UUIDs (backward recursive deletion)
+                // Remove all existing packs with matching UUIDs
                 ForceWritable(resourcePackPath);
-                var manifestFiles = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories);
-                foreach (var file in manifestFiles)
+                var existingManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories);
+                foreach (var file in existingManifests)
                 {
                     try
                     {
-                        var json = await System.IO.File.ReadAllTextAsync(file);
+                        var json = await File.ReadAllTextAsync(file);
                         var data = JObject.Parse(json);
 
                         string headerUUID = data["header"]?["uuid"]?.ToString();
                         string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
 
                         bool isOurPack = (headerUUID == vanillaRTXHeaderUUID && moduleUUID == vanillaRTXModuleUUID) ||
-                                        (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID);
+                                         (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID);
 
                         if (isOurPack)
                         {
-                            // Find the top-level folder under resourcePackPath that contains this manifest
                             var topLevelFolder = GetTopLevelFolderForManifest(file, resourcePackPath);
                             if (topLevelFolder != null && Directory.Exists(topLevelFolder))
                             {
@@ -584,18 +595,14 @@ public class PackUpdater
                     }
                     catch { }
                 }
-
-                var vanillaRoot = Directory.GetDirectories(extractDir).FirstOrDefault();
-                if (vanillaRoot == null)
+                if (vanillaRTXSrc != null)
                 {
-                    LogMessage("Payload to deploy is empty.");
-                    success_status = false;
-                    return success_status;
+                    CopyPackFolder(Path.GetDirectoryName(vanillaRTXSrc), resourcePackPath, Path.GetFileName(vanillaRTXSrc), "VanillaRTX");
                 }
-
-                // Phase 2: Deploy packs, CopyPackFolder forces its way into its target, wipes it before writing
-                CopyPackFolder(vanillaRoot, resourcePackPath, "Vanilla-RTX", "VanillaRTX");
-                CopyPackFolder(vanillaRoot, resourcePackPath, "Vanilla-RTX-Normals", "VanillaRTXNormals");
+                if (vanillaRTXNormalsSrc != null)
+                {
+                    CopyPackFolder(Path.GetDirectoryName(vanillaRTXNormalsSrc), resourcePackPath, Path.GetFileName(vanillaRTXNormalsSrc), "VanillaRTXNormals");
+                }
 
                 success_status = true;
                 return success_status;
@@ -612,6 +619,7 @@ public class PackUpdater
             return false;
         }
     }
+
     private void CopyPackFolder(string vanillaRoot, string resourcePackPath, string sourceFolderName, string destFolderName)
     {
         var src = Path.Combine(vanillaRoot, sourceFolderName);

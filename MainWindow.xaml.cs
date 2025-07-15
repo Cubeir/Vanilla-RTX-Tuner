@@ -27,9 +27,19 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
+- If you click on the lamp, credits roll into the sidebar log, which includes your name, and ALL kofi memebrs:
+MAYBE have the list on Vanilla RTX's readme, you update the readme somewhat frequently, YES, this is it.
+Put them on readme, read the readme, Tuner takes the names from readme and displays them if user has internet.
+Only active members
+Make the click NOT break moving the window, implement it gooood
+
+
 - TODO UPDATER: Update app Updater, don't give up the moment user says no to admin prompt.
 Sure the app tries to run it as admin right off the bat, if that fails, run it as non-admin
 The script handles itself well and reprompts user to give admin rights
+//  the app to be updated so it doesn't abort the update if you press no to the installer.bat once.
+// It should let the script run (so you have the chance to press yes again) -- only aborting the update if the script closes without ever getting its admin rights.
+
 
 - Change SidebarLog into a rich textbox, so it can have links and other formatting:
  - While updating the app, get link of the latest release page, and put that link in the logs "read changelogs here"
