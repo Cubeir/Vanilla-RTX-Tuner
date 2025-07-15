@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using ImageMagick;
 using Newtonsoft.Json;
@@ -208,21 +209,24 @@ public static class Helpers
 
 
 
-    public static async Task<(bool, string?)> Download(string url)
+    private static readonly HttpClient SharedHttpClient = new HttpClient();
+    public static async Task<(bool, string?)> Download(string url, CancellationToken cancellationToken = default)
     {
         var retries = 3;
         while (retries-- > 0)
         {
             try
             {
-                using var client = new HttpClient
-                {
-                    Timeout = TimeSpan.FromSeconds(15)
-                };
+                // === HTTP CLIENT CONFIGURATION ===
+                SharedHttpClient.Timeout = TimeSpan.FromSeconds(15);
                 var userAgent = $"vanilla_rtx_tuner/{TunerVariables.appVersion}";
-                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+                if (!SharedHttpClient.DefaultRequestHeaders.Contains("User-Agent"))
+                {
+                    SharedHttpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
+                }
 
-                using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                // === DOWNLOAD ===
+                using var response = await SharedHttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 Log("Starting Download.");
 
@@ -230,7 +234,7 @@ public static class Helpers
                 if (!totalBytes.HasValue)
                     Log("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).");
 
-                // Get filename
+                // === FILENAME EXTRACTION AND SANITIZATION ===
                 string fileName;
                 if (response.Content.Headers.ContentDisposition?.FileName != null)
                 {
@@ -240,29 +244,37 @@ public static class Helpers
                 {
                     fileName = Path.GetFileName(new Uri(url).AbsolutePath);
                     if (string.IsNullOrEmpty(fileName))
-                        fileName = "downloaded_file";
-                    Log("File name: " + fileName);
+                    {
+                        // Fallback to random UUID filename if no valid name found
+                        fileName = $"download_{Guid.NewGuid():N}";
+                        Log($"No valid filename found, using random name: {fileName}");
+                    }
+                    else
+                    {
+                        Log("File name: " + fileName);
+                    }
                 }
 
-                // Sanitize filename
+                // sanitize filename
                 fileName = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
+                if (fileName.Length > 128) fileName = fileName.Substring(0, 128);
 
-                // fallback locations in order: temp dir, user dl folder, app's data dir, app's dir, desktop as last resort
+                // === LOCATION RESOLUTION WITH FALLBACK === Temp dir, user dl folder, app's data dir, app's dir, desktop as last resort
                 string savingLocation = null;
                 var fallbackLocations = new Func<string>[]
                 {
-                () => Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner_cache", fileName),
-                
-                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Downloads", "vanilla_rtx_tuner_cache", fileName),
-                
-                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "vanilla_rtx_tuner_cache", fileName),
+                    () => Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner_cache", fileName),
 
-                () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner_cache", fileName),
-                
-                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    "vanilla_rtx_tuner_cache", fileName)
+                    () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                        "Downloads", "vanilla_rtx_tuner_cache", fileName),
+
+                    () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "vanilla_rtx_tuner_cache", fileName),
+
+                    () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner_cache", fileName),
+
+                    () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                        "vanilla_rtx_tuner_cache", fileName)
                 };
 
                 foreach (var getPath in fallbackLocations)
@@ -279,7 +291,21 @@ public static class Helpers
                         File.WriteAllText(testFile, "tuner_write_test");
                         File.Delete(testFile);
 
-                        savingLocation = testPath;
+                        // Check if file exists and generate unique name if needed
+                        var finalPath = testPath;
+                        var counter = 1;
+                        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(testPath);
+                        var extension = Path.GetExtension(testPath);
+                        var directory = Path.GetDirectoryName(testPath);
+
+                        while (File.Exists(finalPath))
+                        {
+                            var newFileName = $"{fileNameWithoutExt}-{counter}{extension}";
+                            finalPath = Path.Combine(directory, newFileName);
+                            counter++;
+                        }
+
+                        savingLocation = finalPath;
                         if (testPath != fallbackLocations[2]())
                         {
                             Log($"Using save location: {savingLocation}");
@@ -298,6 +324,7 @@ public static class Helpers
                     return (false, null);
                 }
 
+                // === DOWNLOAD WITH PROGRESS TRACKING ===
                 using var contentStream = await response.Content.ReadAsStreamAsync();
                 using var fileStream = new FileStream(savingLocation, FileMode.Create, FileAccess.Write, FileShare.None, 8192, useAsync: true);
 
@@ -307,9 +334,9 @@ public static class Helpers
                 double lastLoggedProgress = 0;
                 var lastLoggedMB = 0;
 
-                while ((read = await contentStream.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
+                while ((read = await contentStream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)) > 0)
                 {
-                    await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                    await fileStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                     totalRead += read;
 
                     if (totalBytes.HasValue)
@@ -335,15 +362,20 @@ public static class Helpers
                 Log("Download finished successfully.");
                 return (true, savingLocation);
             }
+            catch (OperationCanceledException ex) when (!(ex is TaskCanceledException) || ex.InnerException is not TimeoutException)
+            {
+                Log("Download cancelled by user.");
+                return (false, null);
+            }
             catch (HttpRequestException ex) when (retries > 0)
             {
                 Log($"Transient error: {ex.Message}. Retrying...");
-                await Task.Delay(1000);
+                await Task.Delay(1000, cancellationToken);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException && retries > 0)
             {
                 Log("Request timed out. Retrying...");
-                await Task.Delay(1000);
+                await Task.Delay(1000, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -355,7 +387,6 @@ public static class Helpers
         Log("Download failed after multiple attempts.");
         return (false, null);
     }
-
 
 
     public static async Task ExportMCPACK(string packFolderPath, string suggestedName)
