@@ -872,7 +872,7 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
-            BlinkingLamp(true);
+            BlinkingLamp(false);
             ToggleControls(this, true);
             SidelogProgressBar.IsIndeterminate = false;
         }
