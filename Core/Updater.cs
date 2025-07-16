@@ -23,7 +23,7 @@ public class AppUpdater
     public static async Task<(bool, string)> CheckGitHubForUpdates()
     {
         var localSettings = ApplicationData.Current.LocalSettings;
-        const string LastAppUpdateCheckKey = "LastAppUpdateCheckTimeUtc";
+        const string LastAppUpdateCheckKey = "LastAppUpdateCheckTime";
         var now = DateTimeOffset.UtcNow;
 
         if (localSettings.Values[LastAppUpdateCheckKey] is string lastCheckStr &&
@@ -248,8 +248,10 @@ public class AppUpdater
 }
 
 /// =====================================================================================================================
-// Only deals with cache, we don't care if user has Vanilla RTX installed or not, we compare versions of cache to remote
-// No cache? download latest, cache outdated? download latest, if there's a cache and the rest fails for whatever the reason, fallback to cache
+/// Only deals with cache, we don't care if user has Vanilla RTX installed or not, we compare versions of cache to remote
+/// No cache? download latest, cache outdated? download latest, if there's a cache and the rest fails for whatever the reason, fallback to cache
+/// =====================================================================================================================
+
 
 public class PackUpdater
 {
@@ -266,8 +268,8 @@ public class PackUpdater
     public event Action<string> ProgressUpdate;
     private readonly List<string> _logMessages = new List<string>();
 
-    // For cooldown of checking for update to avoid spamming the API
-    private const string LastUpdateCheckKey = "LastUpdateCheckTimeUtc";
+    // For cooldown of checking for update to avoid spamming github
+    private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
     private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(3);
 
     // -------------------------------\           /------------------------------------ //
@@ -784,27 +786,24 @@ public class PackUpdater
     }
 }
 
-
-
-
-
-
+/// =====================================================================================================================
+/// 
+/// =====================================================================================================================
+ 
 public class CreditsUpdater
 {
-    private const string CREDITS_CACHE_KEY = "vanilla_rtx_credits_cache";
-    private const string CREDITS_TIMESTAMP_KEY = "vanilla_rtx_credits_timestamp";
-    private const string CREDITS_LAST_SHOWN_KEY = "vanilla_rtx_credits_last_shown";
+    // Gets credits silently in the background, returns null if it fails or if it is on cooldown
+    private const string CREDITS_CACHE_KEY = "credits_cache";
+    private const string CREDITS_TIMESTAMP_KEY = "credits_timestamp";
+    private const string CREDITS_LAST_SHOWN_KEY = "credits_last_shown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
-    private const int CACHE_UPDATE_COOLDOWN_DAYS = 12;
-    private const int DISPLAY_COOLDOWN_DAYS = 4; // Artificial cooldown just to control how often credits are shown, returns null when active
+    private const int CACHE_UPDATE_COOLDOWN_DAYS = 7;
+    private const int DISPLAY_COOLDOWN_DAYS = 1;
 
     public static string Credits { get; private set; } = string.Empty;
     private static readonly object _updateLock = new object();
     private static bool _isUpdating = false;
 
-    /// <summary>
-    /// Initializes credits in the background on app startup
-    /// </summary>
     public static async Task InitializeCreditsAsync()
     {
         _ = Task.Run(async () =>
@@ -838,11 +837,7 @@ public class CreditsUpdater
         });
     }
 
-    /// <summary>
-    /// Gets cached credits and triggers background update if cache is missing or expired.
-    /// Returns null if display cooldown is active to control showing frequency.
-    /// </summary>
-    public static string GetCredits(bool returnNothing = false)
+    public static string GetCredits(bool returnString = false)
     {
         try
         {
@@ -861,7 +856,7 @@ public class CreditsUpdater
                         {
                             try
                             {
-                                MainWindow.Instance?.BlinkingLamp(true);
+                                // MainWindow.Instance?.BlinkingLamp(true);
                                 var freshCredits = await updater.FetchAndExtractCreditsAsync();
                                 if (!string.IsNullOrEmpty(freshCredits))
                                 {
@@ -875,7 +870,7 @@ public class CreditsUpdater
                             }
                             finally
                             {
-                                MainWindow.Instance?.BlinkingLamp(false);
+                                // MainWindow.Instance?.BlinkingLamp(false);
                                 lock (_updateLock)
                                 {
                                     _isUpdating = false;
@@ -899,7 +894,7 @@ public class CreditsUpdater
             }
 
             // Only return credits if display is allowed AND cache exists
-            return returnNothing && !string.IsNullOrEmpty(cachedCredits) ? cachedCredits : null;
+            return returnString && !string.IsNullOrEmpty(cachedCredits) ? cachedCredits : null;
         }
         catch
         {
