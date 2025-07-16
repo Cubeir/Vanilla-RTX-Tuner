@@ -573,6 +573,7 @@
     <RepositoryUrl>https://github.com/cubeir/Vanilla-RTX-Tuner</RepositoryUrl>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AssemblyName>Vanilla RTX Tuner WinUI</AssemblyName>
+    <AssemblyOriginatorKeyFile>CubeirSoftware.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DebugType>none</DebugType>
