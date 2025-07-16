@@ -782,8 +782,8 @@ public class Processor
             }
             else
             {
-                // Linear fall-off from 128 to 255: 100% at 128, 67% at 255
-                return 1.0 - (colorValue - 128) * 0.33 / 127.0;
+                // Linear fall-off from 128 to 255: 100% at 128, 33% at 255
+                return 1.0 - (colorValue - 128) * 0.67 / 127.0;
             }
         }
 
@@ -811,46 +811,102 @@ public class Processor
                 var width = bmp.Width;
                 var height = bmp.Height;
 
-                var wroteBack = false;
-                for (var y = 0; y < height; y++)
+                // Check if this is an animated texture (flipbook)
+                bool isAnimated = false;
+                int frameHeight = width; // First frame is always square
+                int frameCount = 1;
+
+                if (width > 0 && height >= width * 2 && height % width == 0)
                 {
-                    for (var x = 0; x < width; x++)
+                    frameCount = height / width;
+                    isAnimated = frameCount >= 2; // Any number of frames 2+
+                }
+                else if (width == 0)
+                {
+                    continue; // Skip this image if width is 0
+                }
+
+                // Storage for noise offsets to apply to subsequent frames
+                int[,] redOffsets = null;
+                int[,] greenOffsets = null;
+                int[,] blueOffsets = null;
+
+                if (isAnimated)
+                {
+                    redOffsets = new int[width, frameHeight];
+                    greenOffsets = new int[width, frameHeight];
+                    blueOffsets = new int[width, frameHeight];
+                }
+
+                var wroteBack = false;
+
+                for (int frame = 0; frame < frameCount; frame++)
+                {
+                    int frameStartY = frame * frameHeight;
+
+                    for (var y = 0; y < frameHeight; y++)
                     {
-                        var origColor = bmp.GetPixel(x, y);
-                        int r = origColor.R;
-                        int g = origColor.G;
-                        int b = origColor.B;
-
-                        // unique random offsets
-                        var redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                        var greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                        var blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-
-                        // effectiveness based on current color values
-                        var redEffectiveness = CalculateEffectiveness(r);
-                        var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
-                        var blueEffectiveness = CalculateEffectiveness(b);
-
-                        // set effectiveness of offsets, rounded
-                        var effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
-                        var effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
-                        var effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
-
-                        
-                        var newR = r + effectiveRedOffset;
-                        var newG = g + effectiveGreenOffset;
-                        var newB = b + effectiveBlueOffset;
-
-                        // anti-clipping rule: discard if would cause clipping, keep original colors!
-                        if (newR < 0 || newR > 255) newR = r;
-                        if (newG < 0 || newG > 255) newG = g;
-                        if (newB < 0 || newB > 255) newB = b;
-
-                        if (newR != r || newG != g || newB != b)
+                        for (var x = 0; x < width; x++)
                         {
-                            wroteBack = true;
-                            var newColor = Color.FromArgb(origColor.A, newR, newG, newB);
-                            bmp.SetPixel(x, y, newColor);
+                            int actualY = frameStartY + y;
+                            var origColor = bmp.GetPixel(x, actualY);
+                            int r = origColor.R;
+                            int g = origColor.G;
+                            int b = origColor.B;
+
+                            int redOffset, greenOffset, blueOffset;
+
+                            if (isAnimated && frame == 0)
+                            {
+                                // First frame: generate and store noise offsets
+                                redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                                greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                                blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+
+                                redOffsets[x, y] = redOffset;
+                                greenOffsets[x, y] = greenOffset;
+                                blueOffsets[x, y] = blueOffset;
+                            }
+                            else if (isAnimated && frame > 0)
+                            {
+                                // Subsequent frames: use stored offsets
+                                redOffset = redOffsets[x, y];
+                                greenOffset = greenOffsets[x, y];
+                                blueOffset = blueOffsets[x, y];
+                            }
+                            else
+                            {
+                                // Non-animated texture: generate unique offsets as before
+                                redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                                greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                                blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                            }
+
+                            // effectiveness based on current color values
+                            var redEffectiveness = CalculateEffectiveness(r);
+                            var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
+                            var blueEffectiveness = CalculateEffectiveness(b);
+
+                            // set effectiveness of offsets, rounded
+                            var effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
+                            var effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
+                            var effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
+
+                            var newR = r + effectiveRedOffset;
+                            var newG = g + effectiveGreenOffset;
+                            var newB = b + effectiveBlueOffset;
+
+                            // anti-clipping rule: discard if would cause clipping, keep original colors!
+                            if (newR < 0 || newR > 255) newR = r;
+                            if (newG < 0 || newG > 255) newG = g;
+                            if (newB < 0 || newB > 255) newB = b;
+
+                            if (newR != r || newG != g || newB != b)
+                            {
+                                wroteBack = true;
+                                var newColor = Color.FromArgb(origColor.A, newR, newG, newB);
+                                bmp.SetPixel(x, actualY, newColor);
+                            }
                         }
                     }
                 }
@@ -872,8 +928,6 @@ public class Processor
             }
         }
     }
-
-
 
 
     #endregion Processors -------------------

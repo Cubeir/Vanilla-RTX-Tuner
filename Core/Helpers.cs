@@ -18,7 +18,7 @@ namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 public static class Helpers
 {
-    // TODO: These are copied over from the Toolkit, we only deal with Vanilla RTX files here, simplify
+    // Direct TGA handling for raw PBR data - avoids color space conversions with better performance
     public static Bitmap ReadImage(string imagePath, bool maxOpacity = false)
     {
         try
