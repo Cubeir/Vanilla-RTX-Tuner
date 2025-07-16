@@ -783,3 +783,262 @@ public class PackUpdater
         ProgressUpdate?.Invoke(message);
     }
 }
+
+
+
+
+
+
+public class CreditsUpdater
+{
+    private const string CREDITS_CACHE_KEY = "vanilla_rtx_credits_cache";
+    private const string CREDITS_TIMESTAMP_KEY = "vanilla_rtx_credits_timestamp";
+    private const string CREDITS_LAST_SHOWN_KEY = "vanilla_rtx_credits_last_shown";
+    private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
+    private const int CACHE_UPDATE_COOLDOWN_DAYS = 12;
+    private const int DISPLAY_COOLDOWN_DAYS = 4; // Artificial cooldown just to control how often credits are shown, returns null when active
+
+    public static string Credits { get; private set; } = string.Empty;
+    private static readonly object _updateLock = new object();
+    private static bool _isUpdating = false;
+
+    /// <summary>
+    /// Initializes credits in the background on app startup
+    /// </summary>
+    public static async Task InitializeCreditsAsync()
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var updater = new CreditsUpdater();
+
+                // Load from cache first
+                var cachedCredits = updater.GetCachedCredits();
+                if (!string.IsNullOrEmpty(cachedCredits))
+                {
+                    Credits = cachedCredits;
+                }
+
+                // Update cache if needed (9 day cooldown)
+                if (updater.ShouldUpdateCache())
+                {
+                    var freshCredits = await updater.FetchAndExtractCreditsAsync();
+                    if (!string.IsNullOrEmpty(freshCredits))
+                    {
+                        Credits = freshCredits;
+                        updater.CacheCredits(freshCredits);
+                    }
+                }
+            }
+            catch
+            {
+                // Silently fail, Credits remains empty
+            }
+        });
+    }
+
+    /// <summary>
+    /// Gets cached credits and triggers background update if cache is missing or expired.
+    /// Returns null if display cooldown is active to control showing frequency.
+    /// </summary>
+    public static string GetCredits(bool returnNothing = false)
+    {
+        try
+        {
+            var updater = new CreditsUpdater();
+            var cachedCredits = updater.GetCachedCredits();
+
+            // If no cache or update cooldown expired, trigger background update (only one at a time)
+            if ((string.IsNullOrEmpty(cachedCredits) || updater.ShouldUpdateCache()) && !_isUpdating)
+            {
+                lock (_updateLock)
+                {
+                    if (!_isUpdating) // Double-check inside lock
+                    {
+                        _isUpdating = true;
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                MainWindow.Instance?.BlinkingLamp(true);
+                                var freshCredits = await updater.FetchAndExtractCreditsAsync();
+                                if (!string.IsNullOrEmpty(freshCredits))
+                                {
+                                    Credits = freshCredits;
+                                    updater.CacheCredits(freshCredits);
+                                }
+                            }
+                            catch
+                            {
+                                // Silently fail background update
+                            }
+                            finally
+                            {
+                                MainWindow.Instance?.BlinkingLamp(false);
+                                lock (_updateLock)
+                                {
+                                    _isUpdating = false;
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Check display cooldown - return null if still in cooldown period
+            if (!updater.ShouldShowCredits())
+            {
+                return null;
+            }
+
+            // Update last shown timestamp when credits are about to be displayed
+            if (!string.IsNullOrEmpty(cachedCredits))
+            {
+                updater.UpdateLastShownTimestamp();
+            }
+
+            // Only return credits if display is allowed AND cache exists
+            return returnNothing && !string.IsNullOrEmpty(cachedCredits) ? cachedCredits : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private string? GetCachedCredits()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+            return localSettings.Values.TryGetValue(CREDITS_CACHE_KEY, out var value)
+                ? value.ToString()
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private bool ShouldUpdateCache()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            if (!localSettings.Values.TryGetValue(CREDITS_TIMESTAMP_KEY, out var value))
+                return true;
+
+            if (DateTime.TryParse(value.ToString(), out DateTime cachedTime))
+            {
+                return DateTime.Now - cachedTime >= TimeSpan.FromDays(CACHE_UPDATE_COOLDOWN_DAYS);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private bool ShouldShowCredits()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            if (!localSettings.Values.TryGetValue(CREDITS_LAST_SHOWN_KEY, out var value))
+                return true; // Never shown before, allow showing
+
+            if (DateTime.TryParse(value.ToString(), out DateTime lastShownTime))
+            {
+                return DateTime.Now - lastShownTime >= TimeSpan.FromDays(DISPLAY_COOLDOWN_DAYS);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private void UpdateLastShownTimestamp()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[CREDITS_LAST_SHOWN_KEY] = DateTime.Now.ToString();
+        }
+        catch
+        {
+            // Silently ignore timestamp update failures
+        }
+    }
+
+    private async Task<string> FetchAndExtractCreditsAsync()
+    {
+        try
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
+                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+
+                var response = await client.GetAsync(README_URL);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                // Extract credits between "### Credits" and "——"
+                int creditsIndex = content.IndexOf("### Credits", StringComparison.OrdinalIgnoreCase);
+                if (creditsIndex == -1)
+                    return null;
+
+                string afterCredits = content.Substring(creditsIndex + "### Credits".Length).Trim();
+                int delimiterIndex = afterCredits.IndexOf("——");
+                if (delimiterIndex == -1)
+                    return null;
+
+                return afterCredits.Substring(0, delimiterIndex).Trim();
+            }
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void CacheCredits(string credits)
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[CREDITS_CACHE_KEY] = credits;
+            localSettings.Values[CREDITS_TIMESTAMP_KEY] = DateTime.Now.ToString();
+        }
+        catch
+        {
+            // Silent fails
+        }
+    }
+
+    // Temp testing method
+    public static void ForceUpdateCache()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[CREDITS_TIMESTAMP_KEY] = DateTime.Now.AddDays(-10).ToString();
+            localSettings.Values[CREDITS_LAST_SHOWN_KEY] = DateTime.Now.AddDays(-10).ToString();
+        }
+        catch
+        {
+        }
+    }
+}
