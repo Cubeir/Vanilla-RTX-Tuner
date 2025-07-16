@@ -43,7 +43,8 @@
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
-                ToolTipService.ToolTip="Check for updates"/>
+                ToolTipService.ToolTip="Check for updates" />
+
 
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Top"
@@ -171,7 +172,7 @@
 
 
         <!-- Reset Sliders Button -->
-            <Button x:Name="ResetButton"
+        <Button x:Name="ResetButton"
                 Click="ResetButton_Click"
                 Width="85"
                 Margin="866,160,0,15"
@@ -251,7 +252,7 @@
             <!-- Normalmaps -->
             <TextBlock Text="Normal Intensity (0-600%)"
                        FontWeight="Bold"
-                       ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks (Affects: All)"/>
+                       ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks (Affects: All)" />
             <StackPanel Orientation="Horizontal"
                         Spacing="12">
                 <Slider x:Name="NormalIntensitySlider"
@@ -304,7 +305,7 @@
 
             <Rectangle Height="12"
                        Fill="Transparent" />
-           
+
             <!-- Roughen Up -->
             <TextBlock Text="Roughen Up (0-20)"
                        FontWeight="Bold"
@@ -324,12 +325,12 @@
                          Text="0"
                          TextChanged="RoughenUp_TextChanged" />
             </StackPanel>
-            
-            
+
+
             <Rectangle Height="12"
                        Fill="Transparent" />
-            
-            
+
+
             <!-- Butcher Heightmaps -->
             <TextBlock Text="Butcher Heightmaps (0-255)"
                        FontWeight="Bold"
@@ -440,9 +441,6 @@
             </StackPanel>
         </Button>
 
-
-
     </Grid>
-
 
 </Window>
