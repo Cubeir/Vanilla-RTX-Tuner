@@ -158,6 +158,9 @@ public sealed partial class MainWindow : Window
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder."); // shockers!
 
+        // Silent background credits retriever
+        CreditsUpdater.GetCredits(false);
+
         this.Closed += (s, e) =>
         {
             SaveSettings();
@@ -477,7 +480,6 @@ public sealed partial class MainWindow : Window
     }
 
 
-
     private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
     {
         // Downloading department: Check if we already found an update and should proceed with download/install
@@ -601,7 +603,6 @@ public sealed partial class MainWindow : Window
             }
         }
     }
-
 
 
 
@@ -867,6 +868,13 @@ public sealed partial class MainWindow : Window
                 await Task.Run(Processor.TuneSelectedPacks);
                 Log("Completed tuning.");
 
+                // show credits
+                CreditsUpdater.ForceUpdateCache();
+                var credits = CreditsUpdater.GetCredits(true);
+                if (!string.IsNullOrEmpty(credits))
+                {
+                    Log(credits);
+                }
 
             }
         }
@@ -934,5 +942,4 @@ public sealed partial class MainWindow : Window
         var logs = Launcher.LaunchMinecraftRTX(IsTargetingPreview);
         Log(logs);
     }
-
 }
