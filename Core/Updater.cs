@@ -14,6 +14,10 @@ using Windows.Storage;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
+/// =====================================================================================================================
+/// 
+/// =====================================================================================================================
+
 public class AppUpdater
 {
     public const string API_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX-Tuner/releases/latest";
@@ -250,8 +254,8 @@ public class AppUpdater
 /// =====================================================================================================================
 /// Only deals with cache, we don't care if user has Vanilla RTX installed or not, we compare versions of cache to remote
 /// No cache? download latest, cache outdated? download latest, if there's a cache and the rest fails for whatever the reason, fallback to cache
+/// Deployment deletes any pack that matches UUIDs as defined at the begenning of PackLocator class
 /// =====================================================================================================================
-
 
 public class PackUpdater
 {
@@ -787,9 +791,10 @@ public class PackUpdater
 }
 
 /// =====================================================================================================================
-/// 
+/// Silently tries to update the credits from Vanilla RTX's readme -- any failure will result in an empty string
+/// Cooldowns also result in empty string, check for null and don't show credits whereever this class is used.
 /// =====================================================================================================================
- 
+
 public class CreditsUpdater
 {
     // Gets credits silently in the background, returns null if it fails or if it is on cooldown
