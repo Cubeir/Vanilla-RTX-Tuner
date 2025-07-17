@@ -56,12 +56,12 @@
 
             <Image x:Name="iconImageBox"
                    Grid.Column="0"
-                   Source="/Assets/tuner.lamp.on.png"
+                   Source="/Assets/tuner.lamp.on.small.png"
                    Margin="0,0,7,0"
                    Height="20"
                    Width="Auto"
                    VerticalAlignment="Center" />
-
+            
             <TextBlock x:Name="TitleBarText"
                        Grid.Column="1"
                        FontFamily="Segoe UI"
