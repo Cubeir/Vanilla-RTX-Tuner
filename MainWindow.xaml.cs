@@ -27,23 +27,15 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
-- TODO UPDATER: Update app Updater, don't give up the moment user says no to admin prompt.
-Sure the app tries to run it as admin right off the bat, if that fails, run it as non-admin
-The script handles itself well and reprompts user to give admin rights
-//  the app to be updated so it doesn't abort the update if you press no to the installer.bat once.
-// It should let the script run (so you have the chance to press yes again) -- only aborting the update if the script closes without ever getting its admin rights.
-
 - Change SidebarLog into a rich textbox, so it can have links and other formatting:
  - While updating the app, get link of the latest release page, and put that link in the logs "read changelogs here"
  - When user checks for updates and its available clicking one the link in sidebar log will allow them to read the changelogs.
+ - It's a good feature overall, opens up options.
 
 - Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
 For example, sliders must definitely be binded, make the code cleaner.
 
-- Make your grainy-noise method apply the SAME noise throughout stages of flipbook textures
-  This is to prevent grainy PBR changes throughout animations entirely
-- Also have to figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
-  Possibly by using the same noise seed, or taking the same values to apply -- the application will have the rules applied to it so it should be fine
+- Figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
 
 - Read UUIDs from config.json, wherever you want them -- this is necessary if you hook extensions, 
   and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
