@@ -24,6 +24,10 @@ public class AppUpdater
     public static string latestAppVersion = null;
     public static string latestAppRemote_URL = null;
 
+    private const string CacheVersionKey = "CachedAppUpdateVersion";
+    private const string CacheZipPathKey = "CachedAppUpdateZipPath";
+    private const string CacheExtractionPathKey = "CachedAppUpdateExtractionPath";
+
     public static async Task<(bool, string)> CheckGitHubForUpdates()
     {
         var localSettings = ApplicationData.Current.LocalSettings;
@@ -33,11 +37,11 @@ public class AppUpdater
         if (localSettings.Values[LastAppUpdateCheckKey] is string lastCheckStr &&
             DateTimeOffset.TryParse(lastCheckStr, out var lastCheck))
         {
-            var cooldownEnd = lastCheck.AddMinutes(1);
+            var cooldownEnd = lastCheck.AddMinutes(0.15);
             if (now < cooldownEnd)
             {
                 var secondsLeft = (int)Math.Ceiling((cooldownEnd - now).TotalSeconds);
-                return (false, $"Please wait {secondsLeft} seconds before checking for updates again ⏳");
+                return (false, $"Please wait {secondsLeft} seconds before checking for update again ⏳");
             }
         }
 
@@ -91,18 +95,21 @@ public class AppUpdater
 
                 string extractedVersion = versionMatch.Groups[1].Value;
 
-                // Store the extracted data (if either fails, updating won't hapepn)
-
-
-                // MainWindow.Log($"Latest Version: {extractedVersion}");
-
-
                 // See if we need updates
                 if (IsVersionHigher(extractedVersion, TunerVariables.appVersion))
                 {
                     latestAppVersion = extractedVersion;
                     latestAppRemote_URL = downloadUrl;
-                    return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
+
+                    // Check if we have this version cached
+                    if (IsCachedVersionValid(extractedVersion))
+                    {
+                        return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to install from cache.");
+                    }
+                    else
+                    {
+                        return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
+                    }
                 }
                 else
                 {
@@ -115,6 +122,149 @@ public class AppUpdater
             return (false, $"Error checking for updates: {ex.Message}");
         }
     }
+
+    private static bool IsCachedVersionValid(string targetVersion)
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            // Check if we have cache data for this version
+            if (!(localSettings.Values[CacheVersionKey] is string cachedVersion) ||
+                cachedVersion != targetVersion)
+            {
+                return false;
+            }
+
+            if (!(localSettings.Values[CacheZipPathKey] is string cachedZipPath) ||
+                string.IsNullOrEmpty(cachedZipPath))
+            {
+                return false;
+            }
+
+            // Verify the cached zip file still exists and is valid
+            if (!File.Exists(cachedZipPath))
+            {
+                return false;
+            }
+
+            // Basic validation: check if it's a valid zip file
+            try
+            {
+                using (var archive = ZipFile.OpenRead(cachedZipPath))
+                {
+                    // Just check if we can read the zip - if this throws, it's corrupt
+                    _ = archive.Entries.Count;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static void ClearCacheData()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            // Clear cache keys
+            localSettings.Values.Remove(CacheVersionKey);
+            localSettings.Values.Remove(CacheZipPathKey);
+            localSettings.Values.Remove(CacheExtractionPathKey);
+        }
+        catch (Exception ex)
+        {
+            MainWindow.Log($"Warning: Failed to clear cache data: {ex.Message}");
+        }
+    }
+
+    private static void CleanupOldCacheFiles()
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            // Get current cache paths to protect them
+            string currentZipPath = localSettings.Values[CacheZipPathKey] as string;
+            string currentExtractionPath = localSettings.Values[CacheExtractionPathKey] as string;
+
+            if (string.IsNullOrEmpty(currentZipPath) || !File.Exists(currentZipPath))
+            {
+                return; // No current cache to base cleanup on
+            }
+
+            string baseDirectory = Path.GetDirectoryName(currentZipPath);
+            if (string.IsNullOrEmpty(baseDirectory) || !Directory.Exists(baseDirectory))
+            {
+                return;
+            }
+
+            // Clean up old zip files (but not the current cached one)
+            var zipFiles = Directory.GetFiles(baseDirectory, "Vanilla.RTX.Tuner.WinUI_*.zip");
+            foreach (string zipFile in zipFiles)
+            {
+                if (!string.Equals(zipFile, currentZipPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        File.Delete(zipFile);
+                        MainWindow.Log($"Cleaned up old zip: {Path.GetFileName(zipFile)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MainWindow.Log($"Warning: Could not delete old zip {zipFile}: {ex.Message}");
+                    }
+                }
+            }
+
+            // Clean up old extraction directories (but not the current one)
+            var extractionDirs = Directory.GetDirectories(baseDirectory, "Vanilla_RTX_Tuner_AutoUpdater_*");
+            foreach (string extractionDir in extractionDirs)
+            {
+                if (!string.Equals(extractionDir, currentExtractionPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        Directory.Delete(extractionDir, true);
+                        MainWindow.Log($"Cleaned up old extraction dir: {Path.GetFileName(extractionDir)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MainWindow.Log($"Warning: Could not delete old extraction dir {extractionDir}: {ex.Message}");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MainWindow.Log($"Warning: Failed to cleanup old cache files: {ex.Message}");
+        }
+    }
+
+    private static void SaveCacheData(string version, string zipPath, string extractionPath)
+    {
+        try
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[CacheVersionKey] = version;
+            localSettings.Values[CacheZipPathKey] = zipPath;
+            localSettings.Values[CacheExtractionPathKey] = extractionPath;
+        }
+        catch (Exception ex)
+        {
+            MainWindow.Log($"Warning: Failed to save cache data: {ex.Message}");
+        }
+    }
+
     private static bool IsVersionHigher(string newVersion, string currentVersion)
     {
         try
@@ -138,36 +288,86 @@ public class AppUpdater
             MainWindow.Log($"Version compare failed ❗ {ex.Message} | new: {newVersion}, current: {currentVersion} ");
             return false;
         }
-
     }
 
     public static async Task<(bool, string)> InstallAppUpdate()
     {
         try
         {
-            if (string.IsNullOrEmpty(latestAppRemote_URL))
+            if (string.IsNullOrEmpty(latestAppRemote_URL) || string.IsNullOrEmpty(latestAppVersion))
             {
-                return (false, "Error: No update URL available");
+                return (false, "Error: No update URL or version available");
             }
 
-            // Download the update package
-            var downloadResult = await Helpers.Download(latestAppRemote_URL);
+            // Clean up old cache files first (but preserve current cache)
+            CleanupOldCacheFiles();
 
-            if (!downloadResult.Item1 || string.IsNullOrEmpty(downloadResult.Item2))
+            string zipFilePath = null;
+            string extractionDir = null;
+            bool usedCache = false;
+
+            // Try to use cached version first
+            if (IsCachedVersionValid(latestAppVersion))
             {
-                return (false, "Failed to download update package properly ❗");
+                var localSettings = ApplicationData.Current.LocalSettings;
+                zipFilePath = localSettings.Values[CacheZipPathKey] as string;
+
+                // Check if extraction directory from cache still exists
+                if (localSettings.Values[CacheExtractionPathKey] is string cachedExtractionPath &&
+                    Directory.Exists(cachedExtractionPath))
+                {
+                    // Re-use existing extraction directory
+                    extractionDir = cachedExtractionPath;
+                    MainWindow.Log("Using cached extraction directory...");
+                }
+                else
+                {
+                    // Create new extraction directory and re-extract
+                    extractionDir = Path.Combine(
+                        Path.GetDirectoryName(zipFilePath),
+                        $"Vanilla_RTX_Tuner_AutoUpdater_{Guid.NewGuid():N}"
+                    );
+
+                    // Extract the zip file
+                    ZipFile.ExtractToDirectory(zipFilePath, extractionDir, true);
+
+                    // Update cache with new extraction path
+                    localSettings.Values[CacheExtractionPathKey] = extractionDir;
+                    MainWindow.Log("Re-extracted cached zip to new directory...");
+                }
+
+                usedCache = true;
+                MainWindow.Log("Using cached update package...");
             }
+            else
+            {
+                // Clear any stale cache data
+                ClearCacheData();
 
-            string zipFilePath = downloadResult.Item2;
+                // Download the update package
+                var downloadResult = await Helpers.Download(latestAppRemote_URL);
 
-            // Create unique extraction directory
-            string extractionDir = Path.Combine(
-                Path.GetDirectoryName(zipFilePath),
-                $"Vanilla_RTX_Tuner_AutoUpdater_{Guid.NewGuid():N}"
-            );
+                if (!downloadResult.Item1 || string.IsNullOrEmpty(downloadResult.Item2))
+                {
+                    return (false, "Failed to download update package properly ❗");
+                }
 
-            // Extract the zip file
-            ZipFile.ExtractToDirectory(zipFilePath, extractionDir, true);
+                zipFilePath = downloadResult.Item2;
+
+                // Create unique extraction directory
+                extractionDir = Path.Combine(
+                    Path.GetDirectoryName(zipFilePath),
+                    $"Vanilla_RTX_Tuner_AutoUpdater_{Guid.NewGuid():N}"
+                );
+
+                // Extract the zip file
+                ZipFile.ExtractToDirectory(zipFilePath, extractionDir, true);
+
+                // Save cache data before attempting installation
+                SaveCacheData(latestAppVersion, zipFilePath, extractionDir);
+
+                MainWindow.Log("Downloaded fresh update package...");
+            }
 
             // Search for Installer.bat in the extraction directory
             string[] batFiles = Directory.GetFiles(extractionDir, "Installer.bat", SearchOption.AllDirectories);
@@ -192,6 +392,8 @@ public class AppUpdater
 
                     if (installerProcess != null)
                     {
+                        // Installation started successfully - clear cache as it's no longer needed
+                        ClearCacheData();
                         return (true, "Installer started successfully, accept the UAC prompt ℹ️");
                     }
                     else
@@ -201,7 +403,7 @@ public class AppUpdater
                 }
                 catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
                 {
-                    // TODO UPDATER: see misc, don't fail in this case...
+                    // User cancelled UAC - keep cache data for next attempt
                     return (false, "Installation cancelled - Administrator privileges are required. Try updating again.");
                 }
                 catch (Exception ex)
@@ -211,8 +413,7 @@ public class AppUpdater
             }
             else
             {
-                // Search for .msix file if Installer.bat not found (just in case some dumbass anti-virus decides to wipe it upon extraction, msix is safe)
-                // Besides that we assume user already installed the app via installer.bat at least once, and my self-signed certificate already lasts a good 10 years so...
+                // Search for .msix file if Installer.bat not found
                 string[] msixFiles = Directory.GetFiles(extractionDir, "*.msix", SearchOption.AllDirectories);
 
                 if (msixFiles.Length > 0)
@@ -231,6 +432,8 @@ public class AppUpdater
 
                     if (msixProcess != null)
                     {
+                        // Installation started successfully - clear cache as it's no longer needed
+                        ClearCacheData();
                         return (true, "MSIX installer started successfully, continue to update in Windows App Installer ❗ (Installer.bat was not found, possibly removed by antivirus)");
                     }
                     else

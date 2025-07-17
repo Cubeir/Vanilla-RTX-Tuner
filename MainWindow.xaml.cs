@@ -478,7 +478,6 @@ public sealed partial class MainWindow : Window
         // Downloading department: Check if we already found an update and should proceed with download/install
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
-            AppUpdaterButton.IsEnabled = false;
             SidelogProgressBar.IsIndeterminate = true;
             ToggleControls(this, false);
             BlinkingLamp(true);
@@ -493,7 +492,6 @@ public sealed partial class MainWindow : Window
                 Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.");
             }
 
-            AppUpdaterButton.IsEnabled = true;
             SidelogProgressBar.IsIndeterminate = false;
             ToggleControls(this, true);
             BlinkingLamp(false);
