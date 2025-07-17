@@ -930,6 +930,239 @@ public class Processor
     }
 
 
+    // This one is a copy of the above with something extra to keep the same noise pattern across texture variants
+    // e.g. on/off etc... but I'm not sure about it yet, or if it is event worth it.
+    private static void ProcessMaterialGrain(PackInfo pack)
+    {
+        double CalculateEffectiveness(int colorValue)
+        {
+            if (colorValue == 128)
+                return 1.0; // 100% effectiveness at 128
+
+            if (colorValue < 128)
+            {
+                // Linear fall-off from 128 to 0: 100% at 128, 0% at 0
+                return colorValue / 128.0;
+            }
+            else
+            {
+                // Linear fall-off from 128 to 255: 100% at 128, 33% at 255
+                return 1.0 - (colorValue - 128) * 0.67 / 127.0;
+            }
+        }
+
+        string GetBaseFilename(string filePath)
+        {
+            var filename = Path.GetFileNameWithoutExtension(filePath);
+
+            // Define all known variant suffixes (case insensitive)
+            var variantSuffixes = new[]
+            {
+            "_on", "_off", "_active", "_inactive", "_dormant", "_bloom", "_ejecting",
+            "_lit", "_unlit", "_powered", "_crafting"
+        };
+
+            // Split by underscores and rebuild without any variant suffixes
+            var parts = filename.Split('_');
+            var baseParts = new List<string>();
+
+            foreach (var part in parts)
+            {
+                bool isVariantSuffix = false;
+                foreach (var suffix in variantSuffixes)
+                {
+                    // Remove the leading underscore from suffix for comparison
+                    var suffixWithoutUnderscore = suffix.Substring(1);
+                    if (part.Equals(suffixWithoutUnderscore, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isVariantSuffix = true;
+                        break;
+                    }
+                }
+
+                if (!isVariantSuffix)
+                {
+                    baseParts.Add(part);
+                }
+            }
+
+            return string.Join("_", baseParts);
+        }
+
+        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+            return;
+
+        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
+        if (!files.Any())
+        {
+            MainWindow.Log($"{pack.Name}: no _mer.tga files found.");
+            return;
+        }
+
+        var materialNoiseOffset = MaterialNoiseOffset;
+        if (materialNoiseOffset <= 0)
+            return;
+
+        var random = new Random();
+
+        // Cache for shared noise patterns between variants and flipbook frames
+        var noisePatternCache = new Dictionary<string, (int[,] red, int[,] green, int[,] blue)>();
+
+        // Group files by their base filename to identify variant families
+        var fileGroups = files.GroupBy(file => GetBaseFilename(file))
+                              .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Track processed files to avoid double-processing
+        var processedFiles = new HashSet<string>();
+
+        foreach (var fileGroup in fileGroups)
+        {
+            var baseFilename = fileGroup.Key;
+            var variantFiles = fileGroup.Value;
+            var hasMultipleVariants = variantFiles.Count > 1;
+
+            foreach (var file in variantFiles)
+            {
+                if (processedFiles.Contains(file))
+                    continue;
+
+                processedFiles.Add(file);
+
+                try
+                {
+                    using var bmp = ReadImage(file, false);
+                    var width = bmp.Width;
+                    var height = bmp.Height;
+
+                    // Check if this is an animated texture (flipbook)
+                    bool isAnimated = false;
+                    int frameHeight = width; // First frame is always square
+                    int frameCount = 1;
+
+                    if (width > 0 && height >= width * 2 && height % width == 0)
+                    {
+                        frameCount = height / width;
+                        isAnimated = frameCount >= 2; // Any number of frames 2+
+                    }
+                    else if (width == 0)
+                    {
+                        continue; // Skip this image if width is 0
+                    }
+
+                    // Choose cache key strategy based on whether variants exist
+                    string cacheKey;
+                    if (hasMultipleVariants)
+                    {
+                        // Use base filename for variants to share noise patterns
+                        cacheKey = $"{baseFilename}_{width}x{frameHeight}";
+                    }
+                    else
+                    {
+                        // Use full filename for standalone textures to avoid interference
+                        cacheKey = $"{Path.GetFileNameWithoutExtension(file)}_{width}x{frameHeight}";
+                    }
+
+                    // Try to get existing noise pattern from cache
+                    int[,] redOffsets = null;
+                    int[,] greenOffsets = null;
+                    int[,] blueOffsets = null;
+
+                    if (noisePatternCache.TryGetValue(cacheKey, out var cachedPattern))
+                    {
+                        redOffsets = cachedPattern.red;
+                        greenOffsets = cachedPattern.green;
+                        blueOffsets = cachedPattern.blue;
+                    }
+                    else
+                    {
+                        // Generate new noise pattern and cache it
+                        redOffsets = new int[width, frameHeight];
+                        greenOffsets = new int[width, frameHeight];
+                        blueOffsets = new int[width, frameHeight];
+
+                        // Pre-generate noise pattern for the first frame dimensions
+                        for (int y = 0; y < frameHeight; y++)
+                        {
+                            for (int x = 0; x < width; x++)
+                            {
+                                redOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                                greenOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                                blueOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+                            }
+                        }
+
+                        noisePatternCache[cacheKey] = (redOffsets, greenOffsets, blueOffsets);
+                    }
+
+                    var wroteBack = false;
+
+                    for (int frame = 0; frame < frameCount; frame++)
+                    {
+                        int frameStartY = frame * frameHeight;
+
+                        for (var y = 0; y < frameHeight; y++)
+                        {
+                            for (var x = 0; x < width; x++)
+                            {
+                                int actualY = frameStartY + y;
+                                var origColor = bmp.GetPixel(x, actualY);
+                                int r = origColor.R;
+                                int g = origColor.G;
+                                int b = origColor.B;
+
+                                // Use cached noise offsets (same for all frames and variants)
+                                int redOffset = redOffsets[x, y];
+                                int greenOffset = greenOffsets[x, y];
+                                int blueOffset = blueOffsets[x, y];
+
+                                // effectiveness based on current color values
+                                var redEffectiveness = CalculateEffectiveness(r);
+                                var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
+                                var blueEffectiveness = CalculateEffectiveness(b);
+
+                                // set effectiveness of offsets, rounded
+                                var effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
+                                var effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
+                                var effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
+
+                                var newR = r + effectiveRedOffset;
+                                var newG = g + effectiveGreenOffset;
+                                var newB = b + effectiveBlueOffset;
+
+                                // anti-clipping rule: discard if would cause clipping, keep original colors!
+                                if (newR < 0 || newR > 255) newR = r;
+                                if (newG < 0 || newG > 255) newG = g;
+                                if (newB < 0 || newB > 255) newB = b;
+
+                                if (newR != r || newG != g || newB != b)
+                                {
+                                    wroteBack = true;
+                                    var newColor = Color.FromArgb(origColor.A, newR, newG, newB);
+                                    bmp.SetPixel(x, actualY, newColor);
+                                }
+                            }
+                        }
+                    }
+
+                    if (wroteBack)
+                    {
+                        WriteImageAsTGA(bmp, file);
+                        // MainWindow.Log($"{packName}: added material noise to {Path.GetFileName(file)}.");
+                    }
+                    else
+                    {
+                        // MainWindow.Log($"{packName}: no changes in material noise for {Path.GetFileName(file)}.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                    // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
+                }
+            }
+        }
+    }
+
     #endregion Processors -------------------
 }
 
