@@ -37,8 +37,6 @@ Below you'll find a comprehensive list of features and functionalities included 
   Creates grainy materials by adding a layer of noise, user input determines the maximum deviation.
   This is done in a safe manner with a special algorithm that makes it nearly impossible to take away from the pack's intended look.
   
-  ![grain-panel](https://github.com/user-attachments/assets/34af1221-8649-4976-80cf-d013cf21fa38)
-
 - **`Roughen Up`**  
   Increases roughness on materials using an inverse curve function to impact lower values more than higher ones to more closely match Vibrant Visuals' artstyle.
   
