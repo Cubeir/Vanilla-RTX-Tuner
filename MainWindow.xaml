@@ -16,7 +16,7 @@
 
         <!-- Title bar -->
         <Button x:Name="HelpButton"
-                Content="&#xE9CE;"
+                Content="&#xE897;"
                 FontFamily="Segoe MDL2 Assets"
                 Width="40"
                 Height="32"
@@ -30,8 +30,8 @@
                 Click="HelpButton_Click"
                 ToolTipService.ToolTip="Help" />
 
-        <Button x:Name="AppUpdaterButton"
-                Content="&#xE895;"
+        <Button x:Name="DonateButton"
+                Content="&#xEB51;"
                 FontFamily="Segoe MDL2 Assets"
                 Width="40"
                 Height="32"
@@ -39,11 +39,29 @@
                 VerticalAlignment="Top"
                 Margin="15, 0, 179, 15"
                 CornerRadius="0"
-                FontSize="15"
+                FontSize="16"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                Click="DonateButton_Click"
+                PointerEntered="DonateButton_PointerEntered"
+                PointerExited="DonateButton_PointerExited"
+                ToolTipService.ToolTip="Support the developer" />
+
+        <Button x:Name="AppUpdaterButton"
+                Content="&#xE895;"
+                FontFamily="Segoe MDL2 Assets"
+                Width="40"
+                Height="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="15, 0, 220, 15"
+                CornerRadius="0"
+                FontSize="16"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
                 ToolTipService.ToolTip="Check for updates" />
+        
 
 
         <Grid HorizontalAlignment="Center"
@@ -54,14 +72,38 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Image x:Name="iconImageBox"
-                   Grid.Column="0"
-                   Source="/Assets/tuner.lamp.on.small.png"
-                   Margin="0,0,7,0"
-                   Height="20"
-                   Width="Auto"
-                   VerticalAlignment="Center" />
-            
+            <Canvas Grid.Column="0"
+                    Height="20"
+                    Width="20"
+                    VerticalAlignment="Center"
+                    Margin="0,0,7,0"
+                    CacheMode="BitmapCache">
+                    
+                <!-- Halo (bottom layer) -->
+                <Image x:Name="iconHaloImageBox"
+                       Source="/Assets/tuner.lamp.halo.png"
+                       Height="128"
+                       Width="128"
+                       Canvas.Left="-54"
+                       Canvas.Top="-54"
+                       Opacity="0.25"
+                       IsHitTestVisible="False"/>
+
+                <!-- Base "on" image (middle layer - always visible) -->
+                <Image x:Name="iconImageBox"
+                       Source="/Assets/tuner.lamp.on.small.png"
+                       Height="20"
+                       Width="20"
+                       Opacity="1.0" />
+
+                <!-- Overlay "off" image (top layer - fades in/out) -->
+                <Image x:Name="iconOverlayImageBox"
+                       Source="/Assets/tuner.lamp.off.small.png"
+                       Height="20"
+                       Width="20"
+                       Opacity="0.0" />
+            </Canvas>
+
             <TextBlock x:Name="TitleBarText"
                        Grid.Column="1"
                        FontFamily="Segoe UI"

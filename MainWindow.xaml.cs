@@ -10,11 +10,14 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Graphics;
@@ -40,7 +43,7 @@ For example, sliders must definitely be binded, make the code cleaner.
 - Read UUIDs from config.json, wherever you want them -- this is necessary if you hook extensions, 
   and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
 
-- Core functionality could be improved: load images once and process them, instead of doing so in multiple individual passes
+- Processor: load images once and process them, instead of doing so in multiple individual passes
   You're wasting power, slowing things down, though it is more manageable this way so perhaps.. rethink?
 
 - Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
@@ -221,23 +224,26 @@ public sealed partial class MainWindow : Window
     }
     public async Task BlinkingLamp(bool enable)
     {
-        const double initialDelayMs = 1000;
-        const double minDelayMs = 150; // can ramp down to this Ms delay during a normal cycle
-        const double minRampSec = 3; // minimum ramp cycle duration
-        const double maxRampSec = 12; // maximum ...
-        const double minBlinkMs = 25; // minimum erratic flash delay between blinks
-        const double maxBlinkMs = 100; // maximum ...
+        const double initialDelayMs = 1000; // Initial speed of blinking
+        const double minDelayMs = 150; 
+        const double minRampSec = 3;  // How long can it can on ramping up or down
+        const double maxRampSec = 12;
+        const double minBlinkMs = 25; // How fast or slow can the blinking get
+        const double maxBlinkMs = 100;
+        const double fadeAnimationMs = 100;
 
         var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.small.png");
         var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png");
+        var offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.small.png");
+        var emptyPath = Path.Combine(AppContext.BaseDirectory, "Assets", "empty.png");
 
         var today = DateTime.Today;
-        string offPath;
-        bool isSpecial;
+        string specialPath = null;
+        bool isSpecial = false;
 
         if (today.Month == 4 && today.Day >= 21 && today.Day <= 23)
         {
-            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "happybirthdayme.png");
+            specialPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "happybirthdayme.png");
             isSpecial = true;
         }
         else if (today.Month == 10 && (today.DayOfWeek == DayOfWeek.Saturday || today.DayOfWeek == DayOfWeek.Sunday))
@@ -245,18 +251,19 @@ public sealed partial class MainWindow : Window
             onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.on.png");
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.off.png");
             superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.super.png");
-            isSpecial = false; // is special, but we want to keep the blinking animation (is special is used to disable the animation)
+            isSpecial = false;
         }
         else if (today.Month == 12 && today.Day >= 25)
         {
-            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "gingerman.png");
+            specialPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "gingerman.png");
             isSpecial = true;
         }
-        else
-        {
-            offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.small.png");
-            isSpecial = false;
-        }
+
+        // Pre-load all images
+        var imagesToPreload = new List<string> { onPath, superOnPath, offPath, emptyPath };
+        if (specialPath != null) imagesToPreload.Add(specialPath);
+
+        await Task.WhenAll(imagesToPreload.Select(GetCachedImageAsync));
 
         var random = new Random();
         _lampBlinkCts?.Cancel();
@@ -268,58 +275,83 @@ public sealed partial class MainWindow : Window
 
             if (isSpecial)
             {
-                await SetImageAsync(offPath);
+                // For special cases: show static special image, hide halo
+                await SetImageAsync(iconImageBox, specialPath);
+                await SetImageAsync(iconOverlayImageBox, emptyPath);
+                await AnimateOpacity(iconHaloImageBox, 0, fadeAnimationMs);
                 return;
             }
 
-            await BlinkLoop(_lampBlinkCts.Token, onPath, superOnPath, offPath); // Pass superOnPath to BlinkLoop
+            await BlinkLoop(_lampBlinkCts.Token, onPath, superOnPath, offPath);
         }
         else
         {
-            await SetImageAsync(onPath);
+            // Static on state
+            await SetImageAsync(iconImageBox, onPath);
+            await SetImageAsync(iconOverlayImageBox, emptyPath);
+            await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
         }
 
         async Task BlinkLoop(CancellationToken token, string onPath, string superOnPath, string offPath)
         {
-            var onImage = await GetCachedImageAsync(onPath);
-            var superOnImage = await GetCachedImageAsync(superOnPath); // Load super on image
-            var offImage = await GetCachedImageAsync(offPath);
+            // Setup layered images
+            await SetImageAsync(iconImageBox, onPath);      // Base layer (always visible)
+            await SetImageAsync(iconOverlayImageBox, offPath); // Overlay layer (fades in/out)
 
-            bool state = true;
+            iconImageBox.Opacity = 1.0;
+            iconOverlayImageBox.Opacity = 0.0;
+
+            bool state = true; // true = on, false = off
             double phaseTime = 0;
             bool rampingUp = true;
             double currentRampDuration = GetRandomRampDuration();
             var rampStartTime = DateTime.UtcNow;
-            var nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 10); // schedule the first erratic flash in 10-20 sec
+            var nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 0 + 0); // first schedule
 
             while (!token.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
 
-                if (now >= nextErraticFlash)
+                if (now >= nextErraticFlash) // No longer an erratic flash, changed to be a stable super state
                 {
-                    var erraticDuration = random.Next(500, 1200);
-                    var erraticEnd = now.AddMilliseconds(erraticDuration);
+                    var superFlashDuration = random.Next(500, 2000); // random few moments of super brightness
+                    var superFlashEnd = now.AddMilliseconds(superFlashDuration);
 
-                    while (DateTime.UtcNow < erraticEnd && !token.IsCancellationRequested)
-                    {
-                        iconImageBox.Source = state ? superOnImage : offImage; // Use superOnImage during erratic flash
-                        state = !state;
-                        await Task.Delay(random.Next((int)minBlinkMs, (int)maxBlinkMs + 1), token);
-                    }
+                    // Switch to super-bright mode and stay there
+                    await SetImageAsync(iconImageBox, superOnPath);
+                    await SetImageAsync(iconOverlayImageBox, emptyPath);
 
-                    iconImageBox.Source = onImage; // Reset to regular on image
-                    state = true;
+                    // Animate to super bright state
+                    var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
+                    var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                    await Task.WhenAll(superBaseTask, superHaloTask);
+
+                    // Hold the super state for the duration
+                    await Task.Delay(superFlashDuration, token);
+
+                    // Start fading the halo immediately
+                    var resetHaloTask = AnimateOpacity(iconHaloImageBox, 0.05, fadeAnimationMs);
+
+                    // Reset to normal mode images (this is instant)
+                    await SetImageAsync(iconImageBox, onPath);
+                    await SetImageAsync(iconOverlayImageBox, offPath);
+
+                    // Now animate overlay to "off" state, coordinated with halo fade
+                    var resetOverlayTask = AnimateOpacity(iconOverlayImageBox, 1.0, fadeAnimationMs);
+
+                    // Wait for both animations to complete
+                    await Task.WhenAll(resetOverlayTask, resetHaloTask);
+
+                    // Ensure we're in the "off" state for the next cycle
+                    state = false;
                     rampingUp = true;
                     currentRampDuration = GetRandomRampDuration();
                     rampStartTime = DateTime.UtcNow;
-                    nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 14); // schedule the next erratic flash (10-24 sec)
+                    nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 14);
                     continue;
                 }
 
-                iconImageBox.Source = state ? onImage : offImage; // Use regular onImage during normal blinking
-                state = !state;
-
+                // Normal blinking with smooth transitions
                 phaseTime = (now - rampStartTime).TotalSeconds;
                 double progress = Math.Clamp(phaseTime / currentRampDuration, 0, 1);
                 double eased = EaseInOut(progress);
@@ -327,6 +359,17 @@ public sealed partial class MainWindow : Window
                 double delay = rampingUp
                     ? initialDelayMs - (initialDelayMs - minDelayMs) * eased
                     : minDelayMs + (initialDelayMs - minDelayMs) * eased;
+
+                // Smooth opacity transitions
+                double overlayOpacity = state ? 0.0 : 1.0; // Off image overlay
+                double normalHaloOpacity = state ? 0.6 : 0.05; // Halo intensity
+
+                var overlayTask = AnimateOpacity(iconOverlayImageBox, overlayOpacity, fadeAnimationMs);
+                var normalHaloTask = AnimateOpacity(iconHaloImageBox, normalHaloOpacity, fadeAnimationMs);
+
+                await Task.WhenAll(overlayTask, normalHaloTask);
+
+                state = !state;
 
                 if (progress >= 1.0)
                 {
@@ -338,7 +381,12 @@ public sealed partial class MainWindow : Window
                 await Task.Delay((int)delay, token);
             }
 
-            iconImageBox.Source = onImage; // Ensure final state is regular on image
+            // Cleanup: Reset to static on state
+            await SetImageAsync(iconImageBox, onPath);
+            await SetImageAsync(iconOverlayImageBox, emptyPath);
+            iconImageBox.Opacity = 1.0;
+            iconOverlayImageBox.Opacity = 0.0;
+            await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
         }
 
         double GetRandomRampDuration()
@@ -361,9 +409,30 @@ public sealed partial class MainWindow : Window
             return bmp;
         }
 
-        async Task SetImageAsync(string path)
+        async Task SetImageAsync(Image imageControl, string path)
         {
-            iconImageBox.Source = await GetCachedImageAsync(path);
+            imageControl.Source = await GetCachedImageAsync(path);
+        }
+
+        async Task AnimateOpacity(FrameworkElement element, double targetOpacity, double durationMs)
+        {
+            var storyboard = new Storyboard();
+            var animation = new DoubleAnimation
+            {
+                To = targetOpacity,
+                Duration = TimeSpan.FromMilliseconds(durationMs),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+            };
+
+            Storyboard.SetTarget(animation, element);
+            Storyboard.SetTargetProperty(animation, "Opacity");
+            storyboard.Children.Add(animation);
+
+            var tcs = new TaskCompletionSource<bool>();
+            storyboard.Completed += (s, e) => tcs.SetResult(true);
+
+            storyboard.Begin();
+            await tcs.Task;
         }
     }
     public async void UpdateUI(double animationDurationSeconds = 0.33)
@@ -461,7 +530,11 @@ public sealed partial class MainWindow : Window
     private void HelpButton_Click(object sender, RoutedEventArgs e)
     {
         Log("Find helpful resources in the README file, launching in your browser shortly ℹ️");
+    }
 
+    private void DonateButton_Click(object sender, RoutedEventArgs e)
+    {
+        DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
         if (!string.IsNullOrEmpty(credits))
         {
@@ -470,6 +543,25 @@ public sealed partial class MainWindow : Window
 
         OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
     }
+    private void DonateButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        DonateButton.Content = "\uEB52";
+        var credits = CreditsUpdater.GetCredits(true);
+        if (!string.IsNullOrEmpty(credits))
+        {
+            Log(credits);
+        }
+    }
+    private void DonateButton_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        DonateButton.Content = "\uEB51";
+        var credits = CreditsUpdater.GetCredits(true);
+        if (!string.IsNullOrEmpty(credits))
+        {
+            Log(credits);
+        }
+    }
+
 
 
 
@@ -923,4 +1015,7 @@ public sealed partial class MainWindow : Window
         var logs = Launcher.LaunchMinecraftRTX(IsTargetingPreview);
         Log(logs);
     }
+
+
+
 }
