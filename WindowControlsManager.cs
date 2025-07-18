@@ -17,6 +17,7 @@ public class WindowControlsManager
     private static readonly HashSet<string> _globalExclusions = new()
         {
             "HelpButton",
+            "DonateButton",
             "SidebarLog",
             "SidelogProgressBar"
         };
