@@ -41,7 +41,7 @@ public class AppUpdater
             if (now < cooldownEnd)
             {
                 var secondsLeft = (int)Math.Ceiling((cooldownEnd - now).TotalSeconds);
-                return (false, $"Please wait {secondsLeft} seconds before checking for update again ⏳");
+                return (false, $"⏳ Please wait {secondsLeft} seconds before checking for update again.");
             }
         }
 
@@ -49,11 +49,11 @@ public class AppUpdater
         localSettings.Values[LastAppUpdateCheckKey] = now.ToString("o");
 
         if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
-            return (false, "No Connection Found 🛜");
+            return (false, "🛜 No Connection Found.");
 
         try
         {
-            MainWindow.Log("Checking GitHub for updates...");
+            MainWindow.Log("Checking GitHub for updates.", MainWindow.LogLevel.Network);
 
             using (HttpClient client = new HttpClient())
             {
@@ -71,7 +71,7 @@ public class AppUpdater
                 JArray assets = (JArray)release["assets"];
                 if (assets == null || !assets.Any())
                 {
-                    return (false, "No assets found in latest release");
+                    return (false, "⚠️ No assets found in latest release.");
                 }
 
                 // Find the target asset (Should always start with "Vanilla.RTX.Tuner.WinUI_[version]")
@@ -80,7 +80,7 @@ public class AppUpdater
 
                 if (targetAsset == null)
                 {
-                    return (false, "Target asset not found in release");
+                    return (false, "⚠️ Target asset not found in release");
                 }
 
                 // Extract version and DL url from filename
@@ -90,7 +90,7 @@ public class AppUpdater
                 var versionMatch = Regex.Match(fileName, @"Vanilla\.RTX\.Tuner\.WinUI_(\d+(\.\d+){1,3})\.zip");
                 if (!versionMatch.Success)
                 {
-                    return (false, $"Could not extract version from filename: {fileName}");
+                    return (false, $"⚠️ Could not extract version from filename: {fileName}");
                 }
 
                 string extractedVersion = versionMatch.Groups[1].Value;
@@ -104,22 +104,22 @@ public class AppUpdater
                     // Check if we have this version cached
                     if (IsCachedVersionValid(extractedVersion))
                     {
-                        return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to install from cache.");
+                        return (true, $"📦 A New App Version is Available\nLatest: {extractedVersion} - Click again to install from cache.");
                     }
                     else
                     {
-                        return (true, $"A New App Version is Available 📦 Latest: {extractedVersion} - Click again to begin download & installation.");
+                        return (true, $"📦 A New App Version is Available\nLatest: {extractedVersion} - Click again to begin download & installation.");
                     }
                 }
                 else
                 {
-                    return (false, "Current version is the latest ℹ️");
+                    return (false, "ℹ️ Current version is the latest.");
                 }
             }
         }
         catch (Exception ex)
         {
-            return (false, $"Error checking for updates: {ex.Message}");
+            return (false, $"❌ Error checking for updates: {ex.Message}");
         }
     }
 
@@ -183,7 +183,7 @@ public class AppUpdater
         }
         catch (Exception ex)
         {
-            MainWindow.Log($"Warning: Failed to clear cache data: {ex.Message}");
+            MainWindow.Log($"Warning: Failed to clear cache data: {ex.Message}", MainWindow.LogLevel.Warning);
         }
     }
 
@@ -217,11 +217,11 @@ public class AppUpdater
                     try
                     {
                         File.Delete(zipFile);
-                        MainWindow.Log($"Cleaned up old zip: {Path.GetFileName(zipFile)}");
+                        MainWindow.Log($"Cleaned up old zip: {Path.GetFileName(zipFile)}", MainWindow.LogLevel.Informational);
                     }
                     catch (Exception ex)
                     {
-                        MainWindow.Log($"Warning: Could not delete old zip {zipFile}: {ex.Message}");
+                        MainWindow.Log($"Warning: Could not delete old zip {zipFile}: {ex.Message}", MainWindow.LogLevel.Warning);
                     }
                 }
             }
@@ -235,18 +235,18 @@ public class AppUpdater
                     try
                     {
                         Directory.Delete(extractionDir, true);
-                        MainWindow.Log($"Cleaned up old extraction dir: {Path.GetFileName(extractionDir)}");
+                        MainWindow.Log($"Cleaned up old extraction dir: {Path.GetFileName(extractionDir)}", MainWindow.LogLevel.Informational);
                     }
                     catch (Exception ex)
                     {
-                        MainWindow.Log($"Warning: Could not delete old extraction dir {extractionDir}: {ex.Message}");
+                        MainWindow.Log($"Warning: Could not delete old extraction dir {extractionDir}: {ex.Message}", MainWindow.LogLevel.Warning);
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            MainWindow.Log($"Warning: Failed to cleanup old cache files: {ex.Message}");
+            MainWindow.Log($"Warning: Failed to cleanup old cache files: {ex.Message}", MainWindow.LogLevel.Warning);
         }
     }
 
@@ -261,7 +261,7 @@ public class AppUpdater
         }
         catch (Exception ex)
         {
-            MainWindow.Log($"Warning: Failed to save cache data: {ex.Message}");
+            MainWindow.Log($"Warning: Failed to save cache data: {ex.Message}", MainWindow.LogLevel.Warning);
         }
     }
 
@@ -285,7 +285,7 @@ public class AppUpdater
         }
         catch (Exception ex)
         {
-            MainWindow.Log($"Version compare failed ❗ {ex.Message} | new: {newVersion}, current: {currentVersion} ");
+            MainWindow.Log($"Version compare failed ❗ {ex.Message} | new: {newVersion}, current: {currentVersion}", MainWindow.LogLevel.Error);
             return false;
         }
     }
@@ -318,7 +318,7 @@ public class AppUpdater
                 {
                     // Re-use existing extraction directory
                     extractionDir = cachedExtractionPath;
-                    MainWindow.Log("Using cached extraction directory...");
+                    MainWindow.Log("Using cached extraction directory.", MainWindow.LogLevel.Informational);
                 }
                 else
                 {
@@ -333,11 +333,11 @@ public class AppUpdater
 
                     // Update cache with new extraction path
                     localSettings.Values[CacheExtractionPathKey] = extractionDir;
-                    MainWindow.Log("Re-extracted cached zip to new directory...");
+                    MainWindow.Log("Re-extracted cached zip to new directory.", MainWindow.LogLevel.Debug);
                 }
 
                 usedCache = true;
-                MainWindow.Log("Using cached update package...");
+                MainWindow.Log("Using cached update package.", MainWindow.LogLevel.Informational);
             }
             else
             {
@@ -349,7 +349,7 @@ public class AppUpdater
 
                 if (!downloadResult.Item1 || string.IsNullOrEmpty(downloadResult.Item2))
                 {
-                    return (false, "Failed to download update package properly ❗");
+                    return (false, "❌ Failed to download update package properly.");
                 }
 
                 zipFilePath = downloadResult.Item2;
@@ -366,7 +366,7 @@ public class AppUpdater
                 // Save cache data before attempting installation
                 SaveCacheData(latestAppVersion, zipFilePath, extractionDir);
 
-                MainWindow.Log("Downloaded fresh update package...");
+                MainWindow.Log("Downloaded fresh update package.", MainWindow.LogLevel.Lengthy);
             }
 
             // Search for Installer.bat in the extraction directory

@@ -129,10 +129,10 @@ public class Launcher
                 // Create backup before writing
                 var backupPath = optionsFilePath + ".backup";
                 File.Copy(optionsFilePath, backupPath, true);
-                statusMessages.Add("Created backup of options file. ℹ️");
+                statusMessages.Add("Created backup of options file.");
 
                 File.WriteAllLines(optionsFilePath, lines);
-                statusMessages.Add("Options file updated successfully. ✅");
+                statusMessages.Add("Options file updated successfully.");
 
                 // Launch Minecraft depending on protocol
                 try
@@ -145,11 +145,11 @@ public class Launcher
                     };
 
                     Process.Start(processInfo);
-                    statusMessages.Add($"Ray tracing enabled and launched {versionName} successfully ✅");
+                    statusMessages.Add($"Ray tracing enabled and launched {versionName} successfully.");
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
-                    statusMessages.Add($"Failed to launch {versionName}: {ex.Message}❗");
+                    statusMessages.Add($"Failed to launch {versionName}: {ex.Message}");
                     statusMessages.Add("Make sure the game is installed and the minecraft:// protocols are allowed to work.");
                 }
                 catch (Exception ex)

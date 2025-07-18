@@ -78,21 +78,21 @@ public class PackLocator
                     {
                         vanillaRTXLocation = folder;
                         vanillaRTXVersion = version;
-                        results.Add($"Found: Vanilla RTX — {version}");
+                        results.Add($"✅ Found: Vanilla RTX — {version}");
                     }
                     else if (string.Equals(headerUUID, vanillaRTXNormalsHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
                              string.Equals(moduleUUID, vanillaRTXNormalsModuleUUID, StringComparison.OrdinalIgnoreCase))
                     {
                         vanillaRTXNormalsLocation = folder;
                         vanillaRTXNormalsVersion = version;
-                        results.Add($"Found: Vanilla RTX Normals — {version}");
+                        results.Add($"✅ Found: Vanilla RTX Normals — {version}");
                     }
                     else if (string.Equals(headerUUID, vanillaRTXOpusHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
                              string.Equals(moduleUUID, vanillaRTXOpusModuleUUID, StringComparison.OrdinalIgnoreCase))
                     {
                         vanillaRTXOpusLocation = folder;
                         vanillaRTXOpusVersion = version;
-                        results.Add($"Found: Vanilla RTX Opus — {version}");
+                        results.Add($"✅ Found: Vanilla RTX Opus — {version}");
                     }
 
                     // Break early if all packs found
@@ -111,11 +111,11 @@ public class PackLocator
 
             // Add not found messages
             if (string.IsNullOrEmpty(vanillaRTXLocation))
-                results.Add("Not found: Vanilla RTX");
+                results.Add("⚠️ Not found: Vanilla RTX");
             if (string.IsNullOrEmpty(vanillaRTXNormalsLocation))
-                results.Add("Not found: Vanilla RTX Normals");
+                results.Add("⚠️ Not found: Vanilla RTX Normals");
             if (string.IsNullOrEmpty(vanillaRTXOpusLocation))
-                results.Add("Not found: Vanilla RTX Opus");
+                results.Add("⚠️ Not found: Vanilla RTX Opus");
 
             return string.Join(Environment.NewLine, results);
         }

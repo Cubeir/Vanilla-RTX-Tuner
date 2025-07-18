@@ -178,7 +178,9 @@ public static class Helpers
     }
 
 
-    // TODO: Replace this with uwp appdata? (safer)
+    // TODO: Replace this with uwp appdata? (safer and you're already using packaged app so..)
+    // Thing is good for should-be-exposed constants, while uwp storage is better for persistant per-user generated data
+    // Nevertheless the method could become more robust, it is too loose right now.
     public static T GetConfig<T>(string paramName)
     {
         var jsonFilePath = Path.Combine(AppContext.BaseDirectory, "Assets", "config.json");
@@ -199,7 +201,7 @@ public static class Helpers
                     }
                     catch (Exception ex)
                     {
-                        Log($"Error returning parameter value for '{paramName}' to type {typeof(T)}: {ex.Message}");
+                        Log($"Error returning parameter value for '{paramName}' to type {typeof(T)}: {ex.Message}", LogLevel.Error);
                     }
                 }
             }
@@ -228,11 +230,11 @@ public static class Helpers
                 // === DOWNLOAD ===
                 using var response = await SharedHttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
-                Log("Starting Download.");
+                Log("Starting Download.", LogLevel.Network);
 
                 var totalBytes = response.Content.Headers.ContentLength;
                 if (!totalBytes.HasValue)
-                    Log("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).");
+                    Log("Total file size unknown. Progress will be logged as total downloaded (in MegaBytes).", LogLevel.Informational);
 
                 // === FILENAME EXTRACTION AND SANITIZATION ===
                 string fileName;
@@ -247,11 +249,11 @@ public static class Helpers
                     {
                         // Fallback to random UUID filename if no valid name found
                         fileName = $"download_{Guid.NewGuid():N}";
-                        Log($"No valid filename found, using random name: {fileName}");
+                        Log($"No valid filename found, using random name: {fileName}", LogLevel.Informational);
                     }
                     else
                     {
-                        Log("File name: " + fileName);
+                        Log("File name: " + fileName, LogLevel.Informational);
                     }
                 }
 
@@ -308,7 +310,7 @@ public static class Helpers
                         savingLocation = finalPath;
                         if (testPath != fallbackLocations[2]())
                         {
-                            Log($"Save location: {savingLocation}");
+                            Log($"Save location: {savingLocation}", LogLevel.Informational);
                         }
                         break;
                     }
@@ -320,7 +322,7 @@ public static class Helpers
 
                 if (savingLocation == null)
                 {
-                    Log("No writable location found for download.");
+                    Log("No writable location found for download.", LogLevel.Error);
                     return (false, null);
                 }
 
@@ -345,7 +347,7 @@ public static class Helpers
                         if (progress - lastLoggedProgress >= 10 || progress >= 100)
                         {
                             lastLoggedProgress = progress;
-                            Log($"Download Progress: {progress:0}%");
+                            Log($"Download Progress: {progress:0}%", LogLevel.Informational);
                         }
                     }
                     else
@@ -354,7 +356,7 @@ public static class Helpers
                         if (currentMB > lastLoggedMB)
                         {
                             lastLoggedMB = currentMB;
-                            Log($"Download Progress: {currentMB} MB");
+                            Log($"Download Progress: {currentMB} MB", LogLevel.Informational);
                         }
                     }
                 }
@@ -364,27 +366,27 @@ public static class Helpers
             }
             catch (OperationCanceledException ex) when (!(ex is TaskCanceledException) || ex.InnerException is not TimeoutException)
             {
-                Log("Download cancelled by user.");
+                Log("Download cancelled by user.", LogLevel.Informational);
                 return (false, null);
             }
             catch (HttpRequestException ex) when (retries > 0)
             {
-                Log($"Transient error: {ex.Message}. Retrying...");
+                Log($"Transient error: {ex.Message}. Retrying...", LogLevel.Warning);
                 await Task.Delay(1000, cancellationToken);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException && retries > 0)
             {
-                Log("Request timed out. Retrying...");
+                Log("Request timed out. Retrying...", LogLevel.Warning);
                 await Task.Delay(1000, cancellationToken);
             }
             catch (Exception ex)
             {
-                Log($"Error during download: {ex.Message}");
+                Log($"Error during download: {ex.Message}", LogLevel.Error);
                 return (false, null);
             }
         }
 
-        Log("Download failed after multiple attempts.");
+        Log("Download failed after multiple attempts.", LogLevel.Error);
         return (false, null);
     }
 

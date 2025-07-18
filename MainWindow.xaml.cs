@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI;
@@ -160,7 +161,7 @@ public sealed partial class MainWindow : Window
     private void SetMainWindowProperties()
     {
         // Initialize the window state manager
-        _windowStateManager = new WindowStateManager(this, Log);
+        _windowStateManager = new WindowStateManager(this, msg => Log(msg));
 
         ExtendsContentIntoTitleBar = true;
 
@@ -183,23 +184,47 @@ public sealed partial class MainWindow : Window
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
     }
-    public static void Log(string message)
+    public enum LogLevel
+    {
+        Success, Informational, Warning, Error, Network, Lengthy, Debug
+    }
+    public static void Log(string message, LogLevel? level = null)
     {
         void Prepend()
         {
-            string separator = "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯";
-            string wrappedMessage;
+            var textBox = Instance.SidebarLog;
 
-            if (string.IsNullOrWhiteSpace(Instance.SidebarLog.Text))
+            // Get the appropriate prefix for the log level (empty if no level provided)
+            string prefix = level switch
             {
-                wrappedMessage = message + "\n";
+                LogLevel.Success => "✅ ",
+                LogLevel.Informational => "ℹ️ ",
+                LogLevel.Warning => "⚠️ ",
+                LogLevel.Error => "❌ ",
+                LogLevel.Network => "🛜 ",
+                LogLevel.Lengthy => "⏳ ",
+                LogLevel.Debug => "🔍 ",
+                _ => ""
+            };
+
+            string prefixedMessage = $"{prefix}{message}";
+            string separator = "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯";
+
+            if (string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                textBox.Text = prefixedMessage + "\n";
             }
             else
             {
-                wrappedMessage = message + "\n" + separator + "\n";
+                // StringBuilder better performance with large logs
+                var sb = new StringBuilder(prefixedMessage.Length + textBox.Text.Length + separator.Length + 2);
+                sb.Append(prefixedMessage)
+                  .Append('\n')
+                  .Append(separator)
+                  .Append('\n')
+                  .Append(textBox.Text);
+                textBox.Text = sb.ToString();
             }
-
-            Instance.SidebarLog.Text = wrappedMessage + Instance.SidebarLog.Text;
         }
 
         if (Instance.DispatcherQueue.HasThreadAccess)
@@ -218,8 +243,8 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Log("Failed to open URL. Make sure you have a browser installed and associated with web links.");
-            Log($"Details: {ex.Message}");
+            Log("Failed to open URL. Make sure you have a browser installed and associated with web links.", LogLevel.Warning);
+            Log($"Details: {ex.Message}", LogLevel.Informational);
         }
     }
     public async Task BlinkingLamp(bool enable)
@@ -529,7 +554,7 @@ public sealed partial class MainWindow : Window
     #endregion -------------------------------
     private void HelpButton_Click(object sender, RoutedEventArgs e)
     {
-        Log("Find helpful resources in the README file, launching in your browser shortly ℹ️");
+        Log("Find helpful resources in the README file, launching in your browser shortly.", LogLevel.Informational);
     }
 
     private void DonateButton_Click(object sender, RoutedEventArgs e)
@@ -577,11 +602,11 @@ public sealed partial class MainWindow : Window
             var installSucess = await AppUpdater.InstallAppUpdate();
             if (installSucess.Item1)
             {
-                Log("Continue in Windows App Installer.");
+                Log("Continue in Windows App Installer.", LogLevel.Informational);
             }
             else
             {
-                Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.");
+                Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.", LogLevel.Error);
             }
 
             SidelogProgressBar.IsIndeterminate = false;
@@ -629,7 +654,7 @@ public sealed partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                Log($"Error during update check: {ex.Message}");
+                Log($"Error during update check: {ex.Message}", LogLevel.Error);
             }
             finally
             {
@@ -692,13 +717,13 @@ public sealed partial class MainWindow : Window
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = true;
-        Log("Targeting Minecraft Preview.");
+        Log("Targeting Minecraft Preview.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = false;
-        Log("Targeting regular Minecraft.");
+        Log("Targeting regular Minecraft.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
     }
 
@@ -911,17 +936,17 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Log(ex.ToString());
+            Log(ex.ToString(), LogLevel.Warning);
         }
         finally
         {
             if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
             {
-                Log("Locate and select at least one package to export.");
+                Log("Locate and select at least one package to export.", LogLevel.Warning);
             }
             else
             {
-                Log("Export Queue Finished.");
+                Log("Export Queue Finished.", LogLevel.Success);
             }
             BlinkingLamp(false);
             SidelogProgressBar.IsIndeterminate = false;
@@ -938,7 +963,7 @@ public sealed partial class MainWindow : Window
         {
             if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
             {
-                Log("Locate and select at least one package to tune.");
+                Log("Locate and select at least one package to tune.", LogLevel.Warning);
 
                 return;
             }
@@ -949,7 +974,7 @@ public sealed partial class MainWindow : Window
                 ToggleControls(this, false);
 
                 await Task.Run(Processor.TuneSelectedPacks);
-                Log("Completed tuning.");
+                Log("Completed tuning.", LogLevel.Success);
             }
         }
         finally
@@ -987,17 +1012,17 @@ public sealed partial class MainWindow : Window
 
             if (success)
             {
-                Log("Reinstallation completed ✅");     
+                Log("Reinstallation completed.", LogLevel.Success);     
                 // TODO: Trigger an artificial locate pack button click if packages were installed with success?
             }
             else
             {
-                Log("Reinstallation failed❗");
+                Log("Reinstallation failed.", LogLevel.Error);
             }
         }
         catch (Exception ex)
         {
-            Log($"Unexpected error: {ex.Message}");
+            Log($"Unexpected error: {ex.Message}", LogLevel.Error);
         }
         finally
         {
@@ -1013,7 +1038,7 @@ public sealed partial class MainWindow : Window
     private void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
         var logs = Launcher.LaunchMinecraftRTX(IsTargetingPreview);
-        Log(logs);
+        Log(logs, LogLevel.Informational);
     }
 
 

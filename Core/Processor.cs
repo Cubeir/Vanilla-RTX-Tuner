@@ -26,8 +26,8 @@ public class Processor
 
     public static void TuneSelectedPacks()
     {
-        MainWindow.Log("Options left at default will be skipped ℹ️");
-        MainWindow.Log("Tuning selected packages...");
+        MainWindow.Log("Options left at default will be skipped", MainWindow.LogLevel.Informational);
+        MainWindow.Log("Tuning selected packages...", MainWindow.LogLevel.Lengthy);
 
         var packs = new[]
         {
@@ -353,7 +353,7 @@ public class Processor
 
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _normal.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _normal.tga files found.", MainWindow.LogLevel.Warning);
             return;
         }
 
@@ -574,7 +574,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_heightmap.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _heightmap.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _heightmap.tga files found.", MainWindow.LogLevel.Warning);
             return;
         }
 
@@ -589,7 +589,7 @@ public class Processor
 
                 if (!File.Exists(colormapFile))
                 {
-                    MainWindow.Log($"{pack.Name}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.");
+                    MainWindow.Log($"{pack.Name}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.", MainWindow.LogLevel.Warning);
                     continue;
                 }
 
@@ -602,7 +602,7 @@ public class Processor
                 // Ensure dimensions match
                 if (colormapBmp.Width != width || colormapBmp.Height != height)
                 {
-                    MainWindow.Log($"{pack.Name}: dimension mismatch between heightmap and colormap for {Path.GetFileName(heightmapFile)}; skipped.");
+                    MainWindow.Log($"{pack.Name}: dimension mismatch between heightmap and colormap for {Path.GetFileName(heightmapFile)}; skipped.", MainWindow.LogLevel.Warning);
                     continue;
                 }
 
@@ -702,7 +702,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _mer.tga files found.", MainWindow.LogLevel.Warning);
             return;
         }
 
@@ -760,7 +760,7 @@ public class Processor
             }
             catch (Exception ex)
             {
-                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}", MainWindow.LogLevel.Error);
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -793,7 +793,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _mer.tga files found.", MainWindow.LogLevel.Warning);
             return;
         }
 
@@ -923,7 +923,7 @@ public class Processor
             }
             catch (Exception ex)
             {
-                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}", MainWindow.LogLevel.Error);
                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
@@ -995,7 +995,7 @@ public class Processor
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tga files found.");
+            MainWindow.Log($"{pack.Name}: no _mer.tga files found.", MainWindow.LogLevel.Warning);
             return;
         }
 
@@ -1156,7 +1156,7 @@ public class Processor
                 }
                 catch (Exception ex)
                 {
-                    MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                    MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}", MainWindow.LogLevel.Error);
                     // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
                 }
             }
