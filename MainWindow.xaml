@@ -14,7 +14,7 @@
 
     <Grid x:Name="MainGrid">
 
-        <!-- Title bar -->
+        <!-- Titlebar Buttons -->
         <Button x:Name="HelpButton"
                 Content="&#xE897;"
                 FontFamily="Segoe MDL2 Assets"
@@ -61,9 +61,9 @@
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
                 ToolTipService.ToolTip="Check for updates" />
-        
 
 
+        <!-- Titlebar Logo + Text -->
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Top"
               Margin="0, 1">
@@ -79,7 +79,7 @@
                     Margin="0,0,7,0"
                     CacheMode="BitmapCache">
                     
-                <!-- Halo (bottom layer) -->
+                <!-- Halo (Bottom layer) -->
                 <Image x:Name="iconHaloImageBox"
                        Source="/Assets/tuner.lamp.halo.png"
                        Height="128"
@@ -89,14 +89,14 @@
                        Opacity="0.25"
                        IsHitTestVisible="False"/>
 
-                <!-- Base "on" image (middle layer - always visible) -->
+                <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
                        Source="/Assets/tuner.lamp.on.small.png"
                        Height="20"
                        Width="20"
                        Opacity="1.0" />
 
-                <!-- Overlay "off" image (top layer - fades in/out) -->
+                <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
                        Source="/Assets/tuner.lamp.off.small.png"
                        Height="20"
@@ -112,8 +112,9 @@
                        VerticalAlignment="Center" />
         </Grid>
 
+        
 
-        <!-- Output log and progress bar -->
+        <!-- Output log box -->
         <TextBox x:Name="SidebarLog"
                  Margin="15,80,15,15"
                  Width="350"
@@ -126,8 +127,7 @@
                  AllowFocusOnInteraction="True"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ToolTipService.ToolTip="All relevant logs appear here." />
-
-        <!-- simple progress bar -->
+        <!-- ProgressBar above logbox -->
         <ProgressBar x:Name="SidelogProgressBar"
                      Width="348"
                      IsIndeterminate="False"
@@ -136,6 +136,7 @@
                      Margin="16.25,80,15,15"
                      VerticalAlignment="Top"
                      HorizontalAlignment="Left" />
+        
 
         <!-- Locate Pack Button -->
         <Button x:Name="LocatePacksButton"
@@ -178,7 +179,7 @@
                     ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
 
             <CheckBox x:Name="OptionsAllCheckBox"
-                      Content="Select Packages"
+                      Content="Select Packs"
                       IsThreeState="True"
                       IsEnabled="False"
                       IsChecked="False"
@@ -221,7 +222,7 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 FontWeight="SemiBold"
-                ToolTipService.ToolTip="Reset sliders back to their original values. (Note: this doesn't reset packs back to their defaults! To do that, reinstall the packages)">
+                ToolTipService.ToolTip="Reset sliders back to their original values. (Note: this doesn't reset packs back to their defaults! To do that, reinstall the packs)">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <FontIcon Glyph="&#xE72C;"
@@ -414,7 +415,7 @@
                           FontSize="18"
                           Margin="0,0,8,0"
                           VerticalAlignment="Center" />
-                <TextBlock Text="Reinstall Latest Packages"
+                <TextBlock Text="Reinstall Latest Packs"
                            VerticalAlignment="Center" />
             </StackPanel>
         </Button>
@@ -438,8 +439,6 @@
                            VerticalAlignment="Center" />
             </StackPanel>
         </Button>
-
-
 
 
         <!-- Export Selection Button -->

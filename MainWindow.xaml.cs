@@ -30,22 +30,18 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### TODO ###
-
-- Change SidebarLog into a rich textbox, so it can have links and other formatting:
- - While updating the app, get link of the latest release page, and put that link in the logs "read changelogs here"
- - When user checks for updates and its available clicking one the link in sidebar log will allow them to read the changelogs.
- - It's a good feature overall, opens up options.
-
 - Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
 For example, sliders must definitely be binded, make the code cleaner.
 
 - Figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
 
-- Read UUIDs from config.json, wherever you want them -- this is necessary if you hook extensions, 
-  and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
-
 - Processor: load images once and process them, instead of doing so in multiple individual passes
-  You're wasting power, slowing things down, though it is more manageable this way so perhaps.. rethink?
+
+You'd have to identify which types of images are going to need modifications based on packs
+Then with a wee bit more complex processor class, load once and processes as needed and finally save.
+
+This is very low prio, because files are already read nad written as TGA which is simple, super fast IO.
+But it benefits Opus a lot. -- it is more managable as-is so... let the thought rest for now
 
 - Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
   to be tuned and queue those for tuning alongside it.
@@ -58,6 +54,8 @@ For example, sliders must definitely be binded, make the code cleaner.
   Looks for all addons, the ones tagged with "any" only need this button to be modified
   the ones that have individual variants (opus/normals) need the button AND to have their packs selected for 
   modification to work
+  hook extensions, and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
+  this way you can change which pack belongs to what upstream, and even introduce new packs without having to update tuner
 */
 
 
@@ -121,7 +119,7 @@ public static class TunerVariables
     }
 }
 
-// ---------------------------------------\                /--------------------------------------------//
+// ---------------------------------------\                /-------------------------------------------- \\
 
 public sealed partial class MainWindow : Window
 {
@@ -184,6 +182,7 @@ public sealed partial class MainWindow : Window
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
     }
+
     public enum LogLevel
     {
         Success, Informational, Warning, Error, Network, Lengthy, Debug
@@ -249,18 +248,15 @@ public sealed partial class MainWindow : Window
     }
     public async Task BlinkingLamp(bool enable)
     {
-        const double initialDelayMs = 1000; // Initial speed of blinking
-        const double minDelayMs = 150; 
-        const double minRampSec = 3;  // How long can it can on ramping up or down
-        const double maxRampSec = 12;
-        const double minBlinkMs = 25; // How fast or slow can the blinking get
-        const double maxBlinkMs = 100;
-        const double fadeAnimationMs = 100;
+        const double initialDelayMs = 900; // Initial speed of blinking *also the slowest possible blinking interval*
+        const double minDelayMs = 150;  // Fastest possible blinking interval 
+        const double minRampSec = 1;  // Min length of how long it can on ramping up
+        const double maxRampSec = 8; // Max length...
+        const double fadeAnimationMs = 75; // How long does the fade animatoin take
 
         var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.small.png");
         var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png");
         var offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.small.png");
-        var emptyPath = Path.Combine(AppContext.BaseDirectory, "Assets", "empty.png");
 
         var today = DateTime.Today;
         string specialPath = null;
@@ -276,7 +272,7 @@ public sealed partial class MainWindow : Window
             onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.on.png");
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.off.png");
             superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.super.png");
-            isSpecial = false;
+            isSpecial = false; // Is special, but we want the halo, being special disables the halo and animation
         }
         else if (today.Month == 12 && today.Day >= 25)
         {
@@ -284,8 +280,8 @@ public sealed partial class MainWindow : Window
             isSpecial = true;
         }
 
-        // Pre-load all images
-        var imagesToPreload = new List<string> { onPath, superOnPath, offPath, emptyPath };
+        // Pre-load all images (removed emptyPath)
+        var imagesToPreload = new List<string> { onPath, superOnPath, offPath };
         if (specialPath != null) imagesToPreload.Add(specialPath);
 
         await Task.WhenAll(imagesToPreload.Select(GetCachedImageAsync));
@@ -302,7 +298,7 @@ public sealed partial class MainWindow : Window
             {
                 // For special cases: show static special image, hide halo
                 await SetImageAsync(iconImageBox, specialPath);
-                await SetImageAsync(iconOverlayImageBox, emptyPath);
+                iconOverlayImageBox.Opacity = 0; // Clear overlay instead of using empty image
                 await AnimateOpacity(iconHaloImageBox, 0, fadeAnimationMs);
                 return;
             }
@@ -313,7 +309,7 @@ public sealed partial class MainWindow : Window
         {
             // Static on state
             await SetImageAsync(iconImageBox, onPath);
-            await SetImageAsync(iconOverlayImageBox, emptyPath);
+            iconOverlayImageBox.Opacity = 0; // Clear overlay instead of using empty image
             await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
         }
 
@@ -326,45 +322,69 @@ public sealed partial class MainWindow : Window
             iconImageBox.Opacity = 1.0;
             iconOverlayImageBox.Opacity = 0.0;
 
-            bool state = true; // true = on, false = off
+            bool state = true;
             double phaseTime = 0;
             bool rampingUp = true;
             double currentRampDuration = GetRandomRampDuration();
             var rampStartTime = DateTime.UtcNow;
-            var nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 0 + 0); // first schedule
+            var nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 0 + 0); // First schedule (0 seconds makes it happen the first time) 
+                                                                                          // it is rescheduled again after it is triggered
 
             while (!token.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
 
-                if (now >= nextErraticFlash) // No longer an erratic flash, changed to be a stable super state
+                if (now >= nextSuperFlash)
                 {
-                    var superFlashDuration = random.Next(500, 2000); // random few moments of super brightness
-                    var superFlashEnd = now.AddMilliseconds(superFlashDuration);
+                    // Randomly choose between two superflash varaints - % chacne to trigger
+                    bool isRapidFlash = random.NextDouble() < 0.25;
 
-                    // Switch to super-bright mode and stay there
-                    await SetImageAsync(iconImageBox, superOnPath);
-                    await SetImageAsync(iconOverlayImageBox, emptyPath);
+                    if (isRapidFlash)
+                    {
+                        // Second variant: Rapid continuous flash (overcharged lamp effect)
+                        var flashCount = random.Next(3, 8); // 3-7 rapid flashes
+                        var flashSpeed = random.Next(50, 100); // random time between flashes
 
-                    // Animate to super bright state
-                    var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                    var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
-                    await Task.WhenAll(superBaseTask, superHaloTask);
+                        for (int i = 0; i < flashCount; i++)
+                        {
+                            // Flash to super bright
+                            await SetImageAsync(iconImageBox, superOnPath);
+                            iconOverlayImageBox.Opacity = 0;
+                            var superTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                            await Task.Delay(75, token); // Hold super state for 75ms
 
-                    // Hold the super state for the duration
-                    await Task.Delay(superFlashDuration, token);
+                            // Flash back to normal on (but never off)
+                            await SetImageAsync(iconImageBox, onPath);
+                            var normalTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
+                            await Task.Delay(flashSpeed, token); // Variable speed between flashes
+                        }
+                    }
+                    else
+                    {
+                        // First variant: Long-lasting static superflash
+                        var superFlashDuration = random.Next(300, 1500); // 900 ms on avg
 
-                    // Start fading the halo immediately
-                    var resetHaloTask = AnimateOpacity(iconHaloImageBox, 0.05, fadeAnimationMs);
+                        // Switch to super-bright mode and stay there
+                        await SetImageAsync(iconImageBox, superOnPath);
+                        iconOverlayImageBox.Opacity = 0;
 
-                    // Reset to normal mode images (this is instant)
+                        // Animate to super bright state and hold the super state for the duration
+                        var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
+                        var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                        await Task.WhenAll(superBaseTask, superHaloTask);
+
+                        await Task.Delay(superFlashDuration, token);
+                    }
+
+                    // Common cleanup for both variants - reset to normal mode
                     await SetImageAsync(iconImageBox, onPath);
                     await SetImageAsync(iconOverlayImageBox, offPath);
 
-                    // Now animate overlay to "off" state, coordinated with halo fade
+                    // Now animate both halo and overlay to "off" state simultaneously
+                    var resetHaloTask = AnimateOpacity(iconHaloImageBox, 0.025, fadeAnimationMs);
                     var resetOverlayTask = AnimateOpacity(iconOverlayImageBox, 1.0, fadeAnimationMs);
 
-                    // Wait for both animations to complete
+                    // Wait for both animations to complete together
                     await Task.WhenAll(resetOverlayTask, resetHaloTask);
 
                     // Ensure we're in the "off" state for the next cycle
@@ -372,11 +392,11 @@ public sealed partial class MainWindow : Window
                     rampingUp = true;
                     currentRampDuration = GetRandomRampDuration();
                     rampStartTime = DateTime.UtcNow;
-                    nextErraticFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 10 + 14);
+                    nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 5 + 4); // Schedule next one for the next 5-9 seconds
                     continue;
                 }
 
-                // Normal blinking with smooth transitions
+                // rEGULAR blinking with smooth transitions
                 phaseTime = (now - rampStartTime).TotalSeconds;
                 double progress = Math.Clamp(phaseTime / currentRampDuration, 0, 1);
                 double eased = EaseInOut(progress);
@@ -387,7 +407,7 @@ public sealed partial class MainWindow : Window
 
                 // Smooth opacity transitions
                 double overlayOpacity = state ? 0.0 : 1.0; // Off image overlay
-                double normalHaloOpacity = state ? 0.6 : 0.05; // Halo intensity
+                double normalHaloOpacity = state ? 0.6 : 0.025; // Halo intensity
 
                 var overlayTask = AnimateOpacity(iconOverlayImageBox, overlayOpacity, fadeAnimationMs);
                 var normalHaloTask = AnimateOpacity(iconHaloImageBox, normalHaloOpacity, fadeAnimationMs);
@@ -408,10 +428,9 @@ public sealed partial class MainWindow : Window
 
             // Cleanup: Reset to static on state
             await SetImageAsync(iconImageBox, onPath);
-            await SetImageAsync(iconOverlayImageBox, emptyPath);
+            iconOverlayImageBox.Opacity = 0;
             iconImageBox.Opacity = 1.0;
-            iconOverlayImageBox.Opacity = 0.0;
-            await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
+            await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs); // default opacity as defined in xaml
         }
 
         double GetRandomRampDuration()
