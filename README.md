@@ -37,8 +37,6 @@ Below you'll find a comprehensive list of features and functionalities included 
   Creates grainy materials by adding a layer of noise, user input determines the maximum deviation.
   This is done in a safe manner with a special algorithm that makes it nearly impossible to take away from the pack's intended look.
   
-  ![grain-panel](https://github.com/user-attachments/assets/34af1221-8649-4976-80cf-d013cf21fa38)
-
 - **`Roughen Up`**  
   Increases roughness on materials using an inverse curve function to impact lower values more than higher ones to more closely match Vibrant Visuals' artstyle.
   
@@ -105,9 +103,3 @@ Join the Vanilla RTX community on Discord & ask away! [https://discord.gg/A4wv4w
 
 The scope of this project as it stands is small, but contributions are welcome.
 You’ll find TODOs scattered in the code if you’re looking for a place to start.
-
-## Known Issues
-- Initial window size may be off with windows scaling setting other than 100%; resize manually.
-- The app doesn't adapt if windows text size is set too large.
-- The app's window may restore to a non-existent place and become invisible if the monitor it was previously closed on is turned off or unplugged; Temp solution: Reset app's data.
-- Grainy materials produced by Material Noise Offset slider don't carry over the same noise to textures (e.g. currently noise varies between redstone lamp off and on)
