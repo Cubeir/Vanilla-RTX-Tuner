@@ -221,11 +221,11 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 FontWeight="SemiBold"
-                ToolTipService.ToolTip="Reset sliders back to their original values.">
+                ToolTipService.ToolTip="Reset sliders back to their original values. (Note: this doesn't reset packs back to their defaults! To do that, reinstall the packages)">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <FontIcon Glyph="&#xE72C;"
-                          FontSize="14"
+                          FontSize="16"
                           Margin="0,0,8,0"
                           VerticalAlignment="Center" />
                 <TextBlock Text="Reset"
