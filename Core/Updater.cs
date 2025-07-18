@@ -299,7 +299,7 @@ public class AppUpdater
                 return (false, "Error: No update URL or version available");
             }
 
-            // Clean up old cache files first (but preserve current cache)
+            // Clean up old cache files first, preserves the current one
             CleanupOldCacheFiles();
 
             string zipFilePath = null;
@@ -404,7 +404,7 @@ public class AppUpdater
                 catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
                 {
                     // User cancelled UAC - keep cache data for next attempt
-                    return (false, "Installation cancelled - Administrator privileges are required. Try updating again.");
+                    return (false, "Installation cancelled ❗ Administrator privileges are required. Try updating again.\n");
                 }
                 catch (Exception ex)
                 {

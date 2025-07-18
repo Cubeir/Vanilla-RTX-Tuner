@@ -308,7 +308,7 @@ public static class Helpers
                         savingLocation = finalPath;
                         if (testPath != fallbackLocations[2]())
                         {
-                            Log($"Using save location: {savingLocation}");
+                            Log($"Save location: {savingLocation}");
                         }
                         break;
                     }
