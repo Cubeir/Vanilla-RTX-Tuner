@@ -631,12 +631,13 @@ public class PackUpdater
             }
 
             var rtxManifest = await TryReadManifest("Vanilla-RTX/manifest.json");
-            if (rtxManifest != null && IsRemoteVersionNewer(rtxManifest, remoteManifests.rtx))
-                return true;
+            bool rtxIsNewer = rtxManifest != null && IsRemoteVersionNewer(rtxManifest, remoteManifests.rtx);
 
             var normalsManifest = await TryReadManifest("Vanilla-RTX-Normals/manifest.json");
-            if (normalsManifest != null && IsRemoteVersionNewer(normalsManifest, remoteManifests.normals))
-                return true;
+            bool normalsIsNewer = normalsManifest != null && IsRemoteVersionNewer(normalsManifest, remoteManifests.normals);
+
+            return rtxIsNewer || normalsIsNewer;
+
 
             return false;
         }
