@@ -30,6 +30,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### TODO ###
+- Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
+
 - Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
 For example, sliders must definitely be binded, make the code cleaner.
 
@@ -133,16 +135,25 @@ public sealed partial class MainWindow : Window
     {
         SetMainWindowProperties();
         InitializeComponent();
+
+        // Initialize WindowStateManager (enable/disable debug logging here)
+        _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
+
         LoadSettings();
         UpdateUI();
-
         Instance = this;
 
-        var version = Windows.ApplicationModel.Package.Current.Id.Version; var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        var version = Windows.ApplicationModel.Package.Current.Id.Version;
+        var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
         appVersion = versionString;
+
         Log($"App Version: {versionString}" + new string('\n', 2) +
-             "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder."); // shockers!
+             "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
+
+        // Apply window state after everything is initialized
+        var defaultSize = new SizeInt32(980, 690);
+        _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
 
         // Silent background credits retriever
         CreditsUpdater.GetCredits(false);
@@ -158,19 +169,12 @@ public sealed partial class MainWindow : Window
     #region Main Window properties and essential components used throughout the app
     private void SetMainWindowProperties()
     {
-        // Initialize the window state manager
-        _windowStateManager = new WindowStateManager(this, msg => Log(msg));
-
         ExtendsContentIntoTitleBar = true;
+
 
         var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-        var sizeMax = new SizeInt32(980, 690);
-        var sizeMin = new SizeInt32(685, 500);
-
-        // Window Position
-        _windowStateManager.ApplySavedStateOrDefaults(sizeMax);
 
         appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
         if (appWindow.Presenter is OverlappedPresenter presenter)
@@ -182,6 +186,8 @@ public sealed partial class MainWindow : Window
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
     }
+
+
 
     public enum LogLevel
     {
@@ -231,6 +237,8 @@ public sealed partial class MainWindow : Window
         else
             Instance.DispatcherQueue.TryEnqueue(Prepend);
     }
+
+
     public static void OpenUrl(string url)
     {
         try
@@ -246,6 +254,8 @@ public sealed partial class MainWindow : Window
             Log($"Details: {ex.Message}", LogLevel.Informational);
         }
     }
+
+
     public async Task BlinkingLamp(bool enable)
     {
         const double initialDelayMs = 900; // Initial speed of blinking *also the slowest possible blinking interval*
@@ -315,123 +325,132 @@ public sealed partial class MainWindow : Window
 
         async Task BlinkLoop(CancellationToken token, string onPath, string superOnPath, string offPath)
         {
-            // Setup layered images
-            await SetImageAsync(iconImageBox, onPath);      // Base layer (always visible)
-            await SetImageAsync(iconOverlayImageBox, offPath); // Overlay layer (fades in/out)
-
-            iconImageBox.Opacity = 1.0;
-            iconOverlayImageBox.Opacity = 0.0;
-
-            bool state = true;
-            double phaseTime = 0;
-            bool rampingUp = true;
-            double currentRampDuration = GetRandomRampDuration();
-            var rampStartTime = DateTime.UtcNow;
-            var nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 0 + 0); // First schedule (0 seconds makes it happen the first time) 
-                                                                                          // it is rescheduled again after it is triggered
-
-            while (!token.IsCancellationRequested)
+            try
             {
-                var now = DateTime.UtcNow;
+                // Setup layered images
+                await SetImageAsync(iconImageBox, onPath);      // Base layer (always visible)
+                await SetImageAsync(iconOverlayImageBox, offPath); // Overlay layer (fades in/out)
 
-                if (now >= nextSuperFlash)
+                iconImageBox.Opacity = 1.0;
+                iconOverlayImageBox.Opacity = 0.0;
+
+                bool state = true;
+                double phaseTime = 0;
+                bool rampingUp = true;
+                double currentRampDuration = GetRandomRampDuration();
+                var rampStartTime = DateTime.UtcNow;
+                var nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 0 + 0); // First schedule (0 seconds makes it happen the first time) 
+                                                                                              // it is rescheduled again after it is triggered
+
+                while (!token.IsCancellationRequested)
                 {
-                    // Randomly choose between two superflash varaints - % chacne to trigger
-                    bool isRapidFlash = random.NextDouble() < 0.25;
+                    var now = DateTime.UtcNow;
 
-                    if (isRapidFlash)
+                    if (now >= nextSuperFlash)
                     {
-                        // Second variant: Rapid continuous flash (overcharged lamp effect)
-                        var flashCount = random.Next(3, 8); // 3-7 rapid flashes
-                        var flashSpeed = random.Next(50, 100); // random time between flashes
+                        // Randomly choose between two superflash varaints 10% chance to trigger
+                        bool isRapidFlash = random.NextDouble() < 0.10;
 
-                        for (int i = 0; i < flashCount; i++)
+                        if (isRapidFlash)
                         {
-                            // Flash to super bright
+                            // Second variant: Rapid continuous flash (overcharged lamp effect)
+                            var flashCount = random.Next(3, 8); // 3-7 rapid flashes
+                            var flashSpeed = random.Next(50, 100); // random time between flashes
+
+                            for (int i = 0; i < flashCount; i++)
+                            {
+                                // Flash to super bright
+                                await SetImageAsync(iconImageBox, superOnPath);
+                                iconOverlayImageBox.Opacity = 0;
+                                var superTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                                await Task.Delay(75, token); // Hold super state for 75ms
+
+                                // Flash back to normal on (but never off)
+                                await SetImageAsync(iconImageBox, onPath);
+                                var normalTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
+                                await Task.Delay(flashSpeed, token); // Variable speed between flashes
+                            }
+                        }
+                        else
+                        {
+                            // First variant: Long-lasting static superflash
+                            var superFlashDuration = random.Next(300, 1500); // 900 ms on avg
+
+                            // Switch to super-bright mode and stay there
                             await SetImageAsync(iconImageBox, superOnPath);
                             iconOverlayImageBox.Opacity = 0;
-                            var superTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
-                            await Task.Delay(75, token); // Hold super state for 75ms
 
-                            // Flash back to normal on (but never off)
-                            await SetImageAsync(iconImageBox, onPath);
-                            var normalTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
-                            await Task.Delay(flashSpeed, token); // Variable speed between flashes
+                            // Animate to super bright state and hold the super state for the duration
+                            var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
+                            var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                            await Task.WhenAll(superBaseTask, superHaloTask);
+
+                            await Task.Delay(superFlashDuration, token);
                         }
+
+                        // Common cleanup for both variants - reset to normal mode
+                        await SetImageAsync(iconImageBox, onPath);
+                        await SetImageAsync(iconOverlayImageBox, offPath);
+
+                        // Now animate both halo and overlay to "off" state simultaneously
+                        var resetHaloTask = AnimateOpacity(iconHaloImageBox, 0.025, fadeAnimationMs);
+                        var resetOverlayTask = AnimateOpacity(iconOverlayImageBox, 1.0, fadeAnimationMs);
+
+                        // Wait for both animations to complete together
+                        await Task.WhenAll(resetOverlayTask, resetHaloTask);
+
+                        // Ensure we're in the "off" state for the next cycle
+                        state = false;
+                        rampingUp = true;
+                        currentRampDuration = GetRandomRampDuration();
+                        rampStartTime = DateTime.UtcNow;
+                        nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 5 + 4); // Schedule next one for the next 5-9 seconds
+                        continue;
                     }
-                    else
+
+                    // rEGULAR blinking with smooth transitions
+                    phaseTime = (now - rampStartTime).TotalSeconds;
+                    double progress = Math.Clamp(phaseTime / currentRampDuration, 0, 1);
+                    double eased = EaseInOut(progress);
+
+                    double delay = rampingUp
+                        ? initialDelayMs - (initialDelayMs - minDelayMs) * eased
+                        : minDelayMs + (initialDelayMs - minDelayMs) * eased;
+
+                    // Smooth opacity transitions
+                    double overlayOpacity = state ? 0.0 : 1.0; // Off image overlay
+                    double normalHaloOpacity = state ? 0.6 : 0.025; // Halo intensity
+
+                    var overlayTask = AnimateOpacity(iconOverlayImageBox, overlayOpacity, fadeAnimationMs);
+                    var normalHaloTask = AnimateOpacity(iconHaloImageBox, normalHaloOpacity, fadeAnimationMs);
+
+                    await Task.WhenAll(overlayTask, normalHaloTask);
+
+                    state = !state;
+
+                    if (progress >= 1.0)
                     {
-                        // First variant: Long-lasting static superflash
-                        var superFlashDuration = random.Next(300, 1500); // 900 ms on avg
-
-                        // Switch to super-bright mode and stay there
-                        await SetImageAsync(iconImageBox, superOnPath);
-                        iconOverlayImageBox.Opacity = 0;
-
-                        // Animate to super bright state and hold the super state for the duration
-                        var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                        var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
-                        await Task.WhenAll(superBaseTask, superHaloTask);
-
-                        await Task.Delay(superFlashDuration, token);
+                        rampingUp = !rampingUp;
+                        rampStartTime = DateTime.UtcNow;
+                        currentRampDuration = GetRandomRampDuration();
                     }
 
-                    // Common cleanup for both variants - reset to normal mode
-                    await SetImageAsync(iconImageBox, onPath);
-                    await SetImageAsync(iconOverlayImageBox, offPath);
-
-                    // Now animate both halo and overlay to "off" state simultaneously
-                    var resetHaloTask = AnimateOpacity(iconHaloImageBox, 0.025, fadeAnimationMs);
-                    var resetOverlayTask = AnimateOpacity(iconOverlayImageBox, 1.0, fadeAnimationMs);
-
-                    // Wait for both animations to complete together
-                    await Task.WhenAll(resetOverlayTask, resetHaloTask);
-
-                    // Ensure we're in the "off" state for the next cycle
-                    state = false;
-                    rampingUp = true;
-                    currentRampDuration = GetRandomRampDuration();
-                    rampStartTime = DateTime.UtcNow;
-                    nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 5 + 4); // Schedule next one for the next 5-9 seconds
-                    continue;
+                    await Task.Delay((int)delay, token);
                 }
 
-                // rEGULAR blinking with smooth transitions
-                phaseTime = (now - rampStartTime).TotalSeconds;
-                double progress = Math.Clamp(phaseTime / currentRampDuration, 0, 1);
-                double eased = EaseInOut(progress);
-
-                double delay = rampingUp
-                    ? initialDelayMs - (initialDelayMs - minDelayMs) * eased
-                    : minDelayMs + (initialDelayMs - minDelayMs) * eased;
-
-                // Smooth opacity transitions
-                double overlayOpacity = state ? 0.0 : 1.0; // Off image overlay
-                double normalHaloOpacity = state ? 0.6 : 0.025; // Halo intensity
-
-                var overlayTask = AnimateOpacity(iconOverlayImageBox, overlayOpacity, fadeAnimationMs);
-                var normalHaloTask = AnimateOpacity(iconHaloImageBox, normalHaloOpacity, fadeAnimationMs);
-
-                await Task.WhenAll(overlayTask, normalHaloTask);
-
-                state = !state;
-
-                if (progress >= 1.0)
-                {
-                    rampingUp = !rampingUp;
-                    rampStartTime = DateTime.UtcNow;
-                    currentRampDuration = GetRandomRampDuration();
-                }
-
-                await Task.Delay((int)delay, token);
+                // Cleanup used to happen here, moved it to a finally to ensure it happens no matter how blinking is stopped
             }
-
-            // Cleanup: Reset to static on state
-            await SetImageAsync(iconImageBox, onPath);
-            iconOverlayImageBox.Opacity = 0;
-            iconImageBox.Opacity = 1.0;
-            await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs); // default opacity as defined in xaml
+            finally
+            {
+                // Cleanup: Reset to static on state
+                await SetImageAsync(iconImageBox, onPath);
+                iconOverlayImageBox.Opacity = 0.0;
+                iconImageBox.Opacity = 1.0;
+                await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs); // default opacity as defined in xaml
+            }
         }
+        // -- End of blinking loop -- 
+
 
         double GetRandomRampDuration()
             => random.NextDouble() * (maxRampSec - minRampSec) + minRampSec;
@@ -479,6 +498,9 @@ public sealed partial class MainWindow : Window
             await tcs.Task;
         }
     }
+
+
+
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
         // store slider variable, slider and box configs, add new ones here 🍝
@@ -585,7 +607,7 @@ public sealed partial class MainWindow : Window
             Log(credits);
         }
 
-        OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
+        OpenUrl("https://ko-fi.com/cubeir");
     }
     private void DonateButton_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
