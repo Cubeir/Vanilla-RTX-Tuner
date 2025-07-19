@@ -13,6 +13,12 @@ An all-in-one app to tune various aspects of Vanilla RTX to your preferences, au
 
 Below you'll find a comprehensive list of features and functionalities included in the latest version of the app.   
 
+- **`Launch Minecraft RTX`**  
+  Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance, this is a direct workaround for the following issues:  
+  [MCPE-191513](https://bugs.mojang.com/browse/MCPE/issues/MCPE-191513): Ray tracing can no longer be enabled while in the main menu.  
+  [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/MCPE-153053): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
+  [MCPE-121850](https://bugs.mojang.com/browse/MCPE/issues/MCPE-121850): Ray Tracing performance starvation when VSync is enabled.  
+
 - **`Locate Vanilla RTX Projects`**  
   Locates all currently-installed Vanilla RTX versions. Installed packs become selectable. Further changes and exporting affect only the selected packs.
 
@@ -54,12 +60,6 @@ Below you'll find a comprehensive list of features and functionalities included 
 
 - **`Export Selection`**  
   Exports selected packs. Useful for sharing your tuned packs with friends or backing up before making more changes.
-
-- **`Launch Minecraft RTX`**  
-  Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance. Direct workaround for:  
-  [MCPE-191513](https://bugs.mojang.com/browse/MCPE/issues/MCPE-191513): Ray tracing can no longer be enabled while in the main menu.  
-  [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/MCPE-153053): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
-  [MCPE-121850](https://bugs.mojang.com/browse/MCPE/issues/MCPE-121850): Ray Tracing performance starvation when VSync is enabled.  
 
 
 ## Installation Guide
