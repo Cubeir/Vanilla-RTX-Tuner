@@ -14,8 +14,15 @@ using Windows.Storage;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
+/*
+TODO:
+Updating logging of classes here to allow it to properly use the actual Logging method with logLevel
+Maybe like how it is in Helpers class
+*/
+
 /// =====================================================================================================================
-/// 
+/// App updater class (shockers) 
+/// I'll write a thorough description later, it is very similar to PackUpdater class
 /// =====================================================================================================================
 
 public class AppUpdater
@@ -507,51 +514,51 @@ public class PackUpdater
     // Updating packs splits into two major possible outcomes, the rest is here:
     private async Task<(bool Success, List<string> Logs)> HandleNoCacheScenario()
     {
-        LogMessage("Downloading latest version 📦");
+        LogMessage("📦 Downloading latest version");
 
         var (downloadSuccess, downloadPath) = await DownloadLatestPackage();
         if (!downloadSuccess || string.IsNullOrEmpty(downloadPath))
         {
-            LogMessage("Failed: Download failed and no pre-existing cache is available.");
+            LogMessage("❌ Failed: Download failed and no pre-existing cache is available.");
             return (false, new List<string>(_logMessages));
         }
 
         SaveCachedZipballPath(downloadPath);
-        LogMessage("Download cached for quicker future redeployment ✅");
+        LogMessage("✅ Download cached for quicker future redeployment");
 
         var deploySuccess = await DeployPackage(downloadPath);
         return (deploySuccess, new List<string>(_logMessages));
     }
     private async Task<(bool Success, List<string> Logs)> HandleCacheExistsScenario(string cachePath)
     {
-        LogMessage("Cache found ✅");
+        LogMessage("✅ Cache found");
 
         var needsUpdate = await CheckIfUpdateNeeded(cachePath);
 
         if (needsUpdate)
         {
-            LogMessage("Update available! 📦");
+            LogMessage("📦 Update available!");
             var (downloadSuccess, downloadPath) = await DownloadLatestPackage();
 
             if (downloadSuccess && !string.IsNullOrEmpty(downloadPath))
             {
                 SaveCachedZipballPath(downloadPath);
-                LogMessage("New version downloaded and cached successfully for future redeployment ✅");
+                LogMessage("✅ New version downloaded and cached successfully for future redeployment.");
 
                 var deploySuccess = await DeployPackage(downloadPath);
                 return (deploySuccess, new List<string>(_logMessages));
             }
             else
             {
-                LogMessage("Download failed: fell back to previously cached version.");
+                LogMessage("⚠️ Download failed: fell back to older cached version.");
                 var deploySuccess = await DeployPackage(cachePath);
                 return (deploySuccess, new List<string>(_logMessages));
             }
         }
         else
         {
-            // Either update failed, or is on cooldown, or no update is available. and this is the latest, but somehow this message calms my brain better
-            LogMessage("Current cached package is up-to-date: Redeploying ✅");
+            // Either update failed, or is on cooldown, or no update is available, whatever the case got no choice, this is the latest we got
+            LogMessage("⚠️ Current cached package is the latest available: Redeploying");
             var deploySuccess = await DeployPackage(cachePath);
             return (deploySuccess, new List<string>(_logMessages));
         }
@@ -563,7 +570,7 @@ public class PackUpdater
     {
         if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
         {
-            LogMessage("No network available 🛜 existing cache will be reused.");
+            LogMessage("🛜 No network available cached version will be reused.");
             return false;
         }
 
@@ -819,12 +826,12 @@ public class PackUpdater
             finally
             {
                 CleanupStaging(stagingDir);
-                LogMessage(success_status ? "Deployment completed ✅" : "Deployment failed❗");
+                LogMessage(success_status ? "✅ Deployment completed." : "❌ Deployment failed.");
             }
         }
         catch (Exception ex)
         {
-            LogMessage($"Deployment error: {ex.Message}");
+            LogMessage($"❌ Deployment error: {ex.Message}");
             return false;
         }
     }
