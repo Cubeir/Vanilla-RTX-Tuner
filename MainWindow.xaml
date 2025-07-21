@@ -18,7 +18,7 @@
         <Rectangle x:Name="TitleBarBackground"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Top"
-                   Height="37"
+                   Height="35"
                    IsHitTestVisible="False"
                    Visibility="Visible"
                    CacheMode="BitmapCache">
@@ -134,7 +134,7 @@
 
         <!-- Output log box -->
         <TextBox x:Name="SidebarLog"
-                 Margin="16,99,16,16"
+                 Margin="16,100,16,16"
                  Width="350"
                  VerticalAlignment="Stretch"
                  HorizontalAlignment="Left"
@@ -162,7 +162,7 @@
                 Click="LocatePacksButton_Click"
                 Width="200"
                 Height="40"
-                Margin="16,48"
+                Margin="16,47"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 FontWeight="SemiBold"
@@ -183,7 +183,7 @@
                       Content="Target Preview"
                       Width="140"
                       Height="40"
-                      Margin="226,48"
+                      Margin="226,47"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Top"
                       FontWeight="SemiBold"
@@ -194,7 +194,7 @@
         <!-- Pack Selection Options -->
         <StackPanel x:Name="PackOptionsPanel"
                     Orientation="Vertical"
-                    Margin="410,49,0,0"
+                    Margin="410,51,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
