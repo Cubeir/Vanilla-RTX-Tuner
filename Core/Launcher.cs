@@ -135,7 +135,7 @@ public class Launcher
                 statusMessages.Add("Options file updated successfully.");
 
                 // Delay just in case (miliseconds)
-                await Task.Delay(333);
+                await Task.Delay(500);
 
                 // Launch Minecraft depending on protocol
                 try
