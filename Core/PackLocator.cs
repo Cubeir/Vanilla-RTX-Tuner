@@ -15,6 +15,9 @@ public class PackLocator
     public static string vanillaRTXOpusHeaderUUID = Helpers.GetConfig<string>("vanilla_rtx_opus_uuid_header");
     public static string vanillaRTXOpusModuleUUID = Helpers.GetConfig<string>("vanilla_rtx_opus_uuid_module");
 
+    // Change the minimum version of pack detected by Tuner
+    private static readonly int[] MinVersion = new int[] { 1, 21, 150 };
+
     public static string LocatePacks(bool isTargetingPreview,
     out string vanillaRTXLocation, out string vanillaRTXVersion,
     out string vanillaRTXNormalsLocation, out string vanillaRTXNormalsVersion,
@@ -55,8 +58,6 @@ public class PackLocator
             (string path, int[] version)? latestVanillaRTX = null;
             (string path, int[] version)? latestVanillaRTXNormals = null;
             (string path, int[] version)? latestVanillaRTXOpus = null;
-
-            int[] MinVersion = new int[] { 1, 21, 150 };
 
             static int CompareVersion(int[] a, int[] b)
             {
