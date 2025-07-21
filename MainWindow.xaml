@@ -25,12 +25,35 @@
             <Rectangle.Fill>
                 <ImageBrush x:Name="TitleBarImageBrush"
                             ImageSource="/Assets/titlebar.background.png"
-                            Opacity="0.225"
+                            Opacity="0.0"
                             Stretch="Fill"
                             AlignmentX="Left"
                             AlignmentY="Top"/>
             </Rectangle.Fill>
         </Rectangle>
+
+        <!-- Static bitmap for white theme -->
+        <Rectangle x:Name="LightThemeBackground"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   IsHitTestVisible="False"
+                   Visibility="Collapsed"
+                   CacheMode="BitmapCache"
+                   Canvas.ZIndex="-1">
+            <Rectangle.Fill>
+                <ImageBrush x:Name="LightThemeImageBrush"
+                            ImageSource="/Assets/lighttheme.background.png"
+                            Opacity="0.25"
+                            Stretch="Fill"
+                            AlignmentX="Left"
+                            AlignmentY="Top"/>
+            </Rectangle.Fill>
+        </Rectangle>
+
+
+
+
+
 
         <!-- Titlebar Buttons -->
         <Button x:Name="HelpButton"
@@ -81,10 +104,13 @@
                 ToolTipService.ToolTip="Check for update" />
 
 
+        
+        
         <!-- Titlebar Logo + Text -->
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Top"
-              Margin="0, 0">
+              Margin="0, 0"
+              IsHitTestVisible="False">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -95,7 +121,8 @@
                     Width="20"
                     VerticalAlignment="Center"
                     Margin="0,0,7,0"
-                    CacheMode="BitmapCache">
+                    CacheMode="BitmapCache"
+                    Canvas.ZIndex="1">
                     
                 <!-- Halo (Bottom layer) -->
                 <Image x:Name="iconHaloImageBox"
@@ -105,21 +132,23 @@
                        Canvas.Left="-54"
                        Canvas.Top="-54"
                        Opacity="0.25"
-                       IsHitTestVisible="False"/>
+                       Canvas.ZIndex="2" />
 
                 <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
                        Source="/Assets/tuner.lamp.on.small.png"
                        Height="20"
                        Width="20"
-                       Opacity="1.0" />
+                       Opacity="1.0"
+                       Canvas.ZIndex="3" />
 
                 <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
                        Source="/Assets/tuner.lamp.off.small.png"
                        Height="20"
                        Width="20"
-                       Opacity="0.0" />
+                       Opacity="0.0"
+                       Canvas.ZIndex="4" />
             </Canvas>
 
             <TextBlock x:Name="TitleBarText"
@@ -127,7 +156,8 @@
                        FontFamily="Segoe UI"
                        Text="Vanilla RTX Tuner"
                        Margin="0,6,0,5"
-                       VerticalAlignment="Center" />
+                       VerticalAlignment="Center"
+                       Canvas.ZIndex="0" />
         </Grid>
 
         
