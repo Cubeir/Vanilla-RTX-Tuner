@@ -229,3 +229,143 @@ public static class WindowControlsManagerExtensions
         WindowControlsManager.ClearStates(window);
     }
 }
+
+
+/// <summary>
+/// This shouldn't really be here, a utility class for managing a simple progress bar on/off while preventing race conditions
+/// Update it later to use a more robust solution like IProgress<T> or async/await patterns, show real time progress, etc.
+/// </summary>
+public class ProgressBarManager
+{
+    private readonly ProgressBar _progressBar;
+    private int _activeOperations = 0;
+    private readonly object _lock = new object();
+
+    public ProgressBarManager(ProgressBar progressBar)
+    {
+        _progressBar = progressBar ?? throw new ArgumentNullException(nameof(progressBar));
+
+        // Initialize to hidden state
+        _progressBar.IsIndeterminate = false;
+        _progressBar.Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Shows the progress bar. Call this when starting a long-running operation.
+    /// Multiple calls are safe - progress bar stays visible until all operations complete.
+    /// </summary>
+    public void ShowProgress()
+    {
+        lock (_lock)
+        {
+            _activeOperations++;
+            UpdateProgressBarState();
+        }
+    }
+
+    /// <summary>
+    /// Hides the progress bar. Call this when completing a long-running operation.
+    /// Progress bar only hides when all operations have completed.
+    /// </summary>
+    public void HideProgress()
+    {
+        lock (_lock)
+        {
+            if (_activeOperations > 0)
+            {
+                _activeOperations--;
+                UpdateProgressBarState();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Forces the progress bar to hide regardless of active operations count.
+    /// Use sparingly, typically only for error handling or app shutdown.
+    /// </summary>
+    public void ForceHide()
+    {
+        lock (_lock)
+        {
+            _activeOperations = 0;
+            UpdateProgressBarState();
+        }
+    }
+
+    /// <summary>
+    /// Gets whether the progress bar is currently visible.
+    /// </summary>
+    public bool IsVisible
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _activeOperations > 0;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the current number of active operations.
+    /// </summary>
+    public int ActiveOperationsCount
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _activeOperations;
+            }
+        }
+    }
+
+    private void UpdateProgressBarState()
+    {
+        bool shouldShow = _activeOperations > 0;
+
+        _progressBar.IsIndeterminate = shouldShow;
+        _progressBar.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
+    }
+}
+public static class ProgressBarExtensions
+{
+    private static readonly Dictionary<ProgressBar, ProgressBarManager> _managers = new();
+
+    /// <summary>
+    /// Gets or creates a ProgressBarManager for this ProgressBar instance.
+    /// </summary>
+    public static ProgressBarManager GetManager(this ProgressBar progressBar)
+    {
+        if (!_managers.TryGetValue(progressBar, out var manager))
+        {
+            manager = new ProgressBarManager(progressBar);
+            _managers[progressBar] = manager;
+        }
+        return manager;
+    }
+
+    /// <summary>
+    /// Shows progress on this ProgressBar. Thread-safe and handles multiple concurrent operations.
+    /// </summary>
+    public static void ShowProgress(this ProgressBar progressBar)
+    {
+        progressBar.GetManager().ShowProgress();
+    }
+
+    /// <summary>
+    /// Hides progress on this ProgressBar. Only hides when all operations complete.
+    /// </summary>
+    public static void HideProgress(this ProgressBar progressBar)
+    {
+        progressBar.GetManager().HideProgress();
+    }
+
+    /// <summary>
+    /// Forces the ProgressBar to hide regardless of active operations.
+    /// </summary>
+    public static void ForceHideProgress(this ProgressBar progressBar)
+    {
+        progressBar.GetManager().ForceHide();
+    }
+}
