@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
@@ -29,17 +30,19 @@ public class PackLocator
 
         try
         {
-            // TODO: Construct the path the same way you do in Updater.cs for updating the packs.
-            var resolvedPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Packages",
-                isTargetingPreview ? "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-                "LocalState",
-                "games",
-                "com.mojang",
-                "resource_packs"
-            );
+            // Find the correct Minecraft package folder (pattern-based, like Updater)
+            var packagesRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
+            string mcFolderPattern = isTargetingPreview
+                ? "Microsoft.MinecraftWindowsBeta_"
+                : "Microsoft.MinecraftUWP_";
 
+            var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
+            if (mcRoot == null)
+            {
+                return "Resource pack directory not found ❌ is the correct version of Minecraft installed?";
+            }
+
+            var resolvedPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
             if (!Directory.Exists(resolvedPath))
             {
                 return "Resource pack directory not found ❌ is the correct version of Minecraft installed?";
@@ -47,6 +50,25 @@ public class PackLocator
 
             var manifestFiles = Directory.GetFiles(resolvedPath, "manifest.json", SearchOption.AllDirectories);
             var results = new List<string>();
+
+            // Track latest version for each pack type
+            (string path, int[] version)? latestVanillaRTX = null;
+            (string path, int[] version)? latestVanillaRTXNormals = null;
+            (string path, int[] version)? latestVanillaRTXOpus = null;
+
+            int[] MinVersion = new int[] { 1, 21, 150 };
+
+            static int CompareVersion(int[] a, int[] b)
+            {
+                for (int i = 0; i < Math.Max(a.Length, b.Length); i++)
+                {
+                    int va = i < a.Length ? a[i] : 0;
+                    int vb = i < b.Length ? b[i] : 0;
+                    if (va > vb) return 1;
+                    if (va < vb) return -1;
+                }
+                return 0;
+            }
 
             foreach (var file in manifestFiles)
             {
@@ -58,50 +80,34 @@ public class PackLocator
                     string headerUUID = data?.header?.uuid;
                     string moduleUUID = data?.modules?[0]?.uuid;
                     string folder = Path.GetDirectoryName(file)!;
+                    var verArray = data?.header?.version;
+                    int[] version = new int[] {
+                    (int)(verArray?[0] ?? 0),
+                    (int)(verArray?[1] ?? 0),
+                    (int)(verArray?[2] ?? 0)
+                };
 
-                    static string FormatVersion(dynamic verArray)
-                    {
-                        try
-                        {
-                            int major = verArray[0], minor = verArray[1], patch = verArray[2];
-                            return $"v{major}.{minor}.{patch}";
-                        }
-                        catch
-                        {
-                            return "";
-                        }
-                    }
-
-                    string version = FormatVersion(data?.header?.version);
+                    // Only consider packs >= 1.21.150
+                    if (CompareVersion(version, MinVersion) < 0)
+                        continue;
 
                     if (string.Equals(headerUUID, vanillaRTXHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
                         string.Equals(moduleUUID, vanillaRTXModuleUUID, StringComparison.OrdinalIgnoreCase))
                     {
-                        vanillaRTXLocation = folder;
-                        vanillaRTXVersion = version;
-                        results.Add($"✅ Found: Vanilla RTX — {version}");
+                        if (latestVanillaRTX == null || CompareVersion(version, latestVanillaRTX.Value.version) > 0)
+                            latestVanillaRTX = (folder, version);
                     }
                     else if (string.Equals(headerUUID, vanillaRTXNormalsHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
                              string.Equals(moduleUUID, vanillaRTXNormalsModuleUUID, StringComparison.OrdinalIgnoreCase))
                     {
-                        vanillaRTXNormalsLocation = folder;
-                        vanillaRTXNormalsVersion = version;
-                        results.Add($"✅ Found: Vanilla RTX Normals — {version}");
+                        if (latestVanillaRTXNormals == null || CompareVersion(version, latestVanillaRTXNormals.Value.version) > 0)
+                            latestVanillaRTXNormals = (folder, version);
                     }
                     else if (string.Equals(headerUUID, vanillaRTXOpusHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
                              string.Equals(moduleUUID, vanillaRTXOpusModuleUUID, StringComparison.OrdinalIgnoreCase))
                     {
-                        vanillaRTXOpusLocation = folder;
-                        vanillaRTXOpusVersion = version;
-                        results.Add($"✅ Found: Vanilla RTX Opus — {version}");
-                    }
-
-                    // Break early if all packs found
-                    if (!string.IsNullOrEmpty(vanillaRTXLocation) &&
-                        !string.IsNullOrEmpty(vanillaRTXNormalsLocation) &&
-                        !string.IsNullOrEmpty(vanillaRTXOpusLocation))
-                    {
-                        break;
+                        if (latestVanillaRTXOpus == null || CompareVersion(version, latestVanillaRTXOpus.Value.version) > 0)
+                            latestVanillaRTXOpus = (folder, version);
                     }
                 }
                 catch
@@ -110,13 +116,39 @@ public class PackLocator
                 }
             }
 
-            // Add not found messages
-            if (string.IsNullOrEmpty(vanillaRTXLocation))
+            // Set out parameters and results
+            if (latestVanillaRTX != null)
+            {
+                vanillaRTXLocation = latestVanillaRTX.Value.path;
+                vanillaRTXVersion = $"v{latestVanillaRTX.Value.version[0]}.{latestVanillaRTX.Value.version[1]}.{latestVanillaRTX.Value.version[2]}";
+                results.Add($"✅ Found: Vanilla RTX — {vanillaRTXVersion}");
+            }
+            else
+            {
                 results.Add("⚠️ Not found: Vanilla RTX");
-            if (string.IsNullOrEmpty(vanillaRTXNormalsLocation))
+            }
+
+            if (latestVanillaRTXNormals != null)
+            {
+                vanillaRTXNormalsLocation = latestVanillaRTXNormals.Value.path;
+                vanillaRTXNormalsVersion = $"v{latestVanillaRTXNormals.Value.version[0]}.{latestVanillaRTXNormals.Value.version[1]}.{latestVanillaRTXNormals.Value.version[2]}";
+                results.Add($"✅ Found: Vanilla RTX Normals — {vanillaRTXNormalsVersion}");
+            }
+            else
+            {
                 results.Add("⚠️ Not found: Vanilla RTX Normals");
-            if (string.IsNullOrEmpty(vanillaRTXOpusLocation))
+            }
+
+            if (latestVanillaRTXOpus != null)
+            {
+                vanillaRTXOpusLocation = latestVanillaRTXOpus.Value.path;
+                vanillaRTXOpusVersion = $"v{latestVanillaRTXOpus.Value.version[0]}.{latestVanillaRTXOpus.Value.version[1]}.{latestVanillaRTXOpus.Value.version[2]}";
+                results.Add($"✅ Found: Vanilla RTX Opus — {vanillaRTXOpusVersion}");
+            }
+            else
+            {
                 results.Add("⚠️ Not found: Vanilla RTX Opus");
+            }
 
             return string.Join(Environment.NewLine, results);
         }
