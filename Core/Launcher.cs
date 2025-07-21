@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Vanilla_RTX_Tuner_WinUI.Core;
 public class Launcher
 {
-    public static string LaunchMinecraftRTX(bool isTargetingPreview)
+    public static async Task<string> LaunchMinecraftRTXAsync(bool isTargetingPreview)
     {
         try
         {
@@ -38,13 +38,13 @@ public class Launcher
 
             if (string.IsNullOrEmpty(optionsFilePath))
             {
-                return "Failed to construct options file path ❗";
+                return "❗ Failed to construct options file path.";
             }
 
             if (!File.Exists(optionsFilePath))
             {
                 return $"Options file for {versionName} not found at: {optionsFilePath}\n" +
-                       "Make sure the game is installed and has been launched at least once ❗";
+                       "❗ Make sure the correct version of the game is installed and has been launched at least once.";
             }
 
             // Check file accessibility
@@ -81,7 +81,7 @@ public class Launcher
             // Update graphics mode
             try
             {
-                var lines = File.ReadAllLines(optionsFilePath);
+                var lines = await File.ReadAllLinesAsync(optionsFilePath);
                 var statusMessages = new List<string>();
                 bool graphicsModeFound = false;
 
@@ -131,8 +131,11 @@ public class Launcher
                 File.Copy(optionsFilePath, backupPath, true);
                 statusMessages.Add("Created backup of options file.");
 
-                File.WriteAllLines(optionsFilePath, lines);
+                await File.WriteAllLinesAsync(optionsFilePath, lines);
                 statusMessages.Add("Options file updated successfully.");
+
+                // Delay just in case (miliseconds)
+                await Task.Delay(333);
 
                 // Launch Minecraft depending on protocol
                 try
@@ -170,4 +173,3 @@ public class Launcher
         }
     }
 }
-

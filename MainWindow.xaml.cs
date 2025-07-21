@@ -1119,10 +1119,18 @@ public sealed partial class MainWindow : Window
 
 
 
-    private void LaunchButton_Click(object sender, RoutedEventArgs e)
+    private async void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
-        var logs = Launcher.LaunchMinecraftRTX(IsTargetingPreview);
-        Log(logs, LogLevel.Informational);
+        _ = BlinkingLamp(true);
+        try
+        {
+            var logs = await Launcher.LaunchMinecraftRTXAsync(IsTargetingPreview);
+            Log(logs, LogLevel.Informational);
+        }
+        finally
+        {
+            _ = BlinkingLamp(false);
+        }
     }
 
 
