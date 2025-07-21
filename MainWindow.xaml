@@ -14,6 +14,24 @@
 
     <Grid x:Name="MainGrid">
 
+        <!-- Static bitmap for titlebar -->
+        <Rectangle x:Name="TitleBarBackground"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Top"
+                   Height="37"
+                   IsHitTestVisible="False"
+                   Visibility="Visible"
+                   CacheMode="BitmapCache">
+            <Rectangle.Fill>
+                <ImageBrush x:Name="TitleBarImageBrush"
+                            ImageSource="/Assets/titlebar.background.png"
+                            Opacity="0.225"
+                            Stretch="Fill"
+                            AlignmentX="Left"
+                            AlignmentY="Top"/>
+            </Rectangle.Fill>
+        </Rectangle>
+
         <!-- Titlebar Buttons -->
         <Button x:Name="HelpButton"
                 Content="&#xE897;"
@@ -60,13 +78,13 @@
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
-                ToolTipService.ToolTip="Check for updates" />
+                ToolTipService.ToolTip="Check for update" />
 
 
         <!-- Titlebar Logo + Text -->
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Top"
-              Margin="0, 1">
+              Margin="0, 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -116,7 +134,7 @@
 
         <!-- Output log box -->
         <TextBox x:Name="SidebarLog"
-                 Margin="15,80,15,15"
+                 Margin="16,99,16,16"
                  Width="350"
                  VerticalAlignment="Stretch"
                  HorizontalAlignment="Left"
@@ -127,22 +145,24 @@
                  AllowFocusOnInteraction="True"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ToolTipService.ToolTip="All relevant logs appear here." />
-        <!-- ProgressBar above logbox -->
-        <ProgressBar x:Name="SidelogProgressBar"
-                     Width="348"
+        
+        <!-- Progress Bar -->
+        <ProgressBar x:Name="ProgressBar"
+                     Width="Auto"
+                     Margin="0,32,0,0"
+                     VerticalAlignment="Top"
+                     HorizontalAlignment="Stretch"
                      IsIndeterminate="False"
                      ShowPaused="False"
-                     ShowError="False"
-                     Margin="16.25,80,15,15"
-                     VerticalAlignment="Top"
-                     HorizontalAlignment="Left" />
+                     ShowError="False"/>
         
 
         <!-- Locate Pack Button -->
         <Button x:Name="LocatePacksButton"
                 Click="LocatePacksButton_Click"
-                Width="206"
-                Margin="15,40,0,15"
+                Width="200"
+                Height="40"
+                Margin="16,48"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 FontWeight="SemiBold"
@@ -158,22 +178,23 @@
             </StackPanel>
         </Button>
 
-        <!-- Target Preview? -->
+        <!-- Target Preview Button -->
         <ToggleButton x:Name="TargetPreviewToggle"
                       Content="Target Preview"
-                      Margin="229,40,0,15"
-                      Width="136"
+                      Width="140"
+                      Height="40"
+                      Margin="226,48"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Top"
                       FontWeight="SemiBold"
                       Checked="TargetPreviewToggle_Checked"
                       Unchecked="TargetPreviewToggle_Unchecked"
-                      ToolTipService.ToolTip="Decides whether the app targets Minecraft or Minecraft Preview." />
+                      ToolTipService.ToolTip="If enabled, all of app's functionality targets Minecraft Preview instead of regular Minecraft." />
 
         <!-- Pack Selection Options -->
         <StackPanel x:Name="PackOptionsPanel"
                     Orientation="Vertical"
-                    Margin="399,40,0,0"
+                    Margin="410,49,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
@@ -217,9 +238,9 @@
         <!-- Reset Sliders Button -->
         <Button x:Name="ResetButton"
                 Click="ResetButton_Click"
-                Width="85"
-                Margin="866,160,0,15"
-                HorizontalAlignment="Left"
+                Width="92"
+                Margin="16,180,16,16"
+                HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 FontWeight="SemiBold"
                 ToolTipService.ToolTip="Reset sliders back to their original values. (Note: this doesn't reset packs back to their defaults! To do that, reinstall the packs)">
@@ -240,7 +261,7 @@
         <!-- Multiplier Sliders -->
         <StackPanel x:Name="SlidersPanel"
                     Orientation="Vertical"
-                    Margin="380,200,0,0"
+                    Margin="382,220,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Spacing="0">
@@ -295,7 +316,7 @@
             <!-- Normalmaps -->
             <TextBlock Text="Normal Intensity (0-600%)"
                        FontWeight="Bold"
-                       ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks (Affects: All)" />
+                       ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks (Affects: All Packs)" />
             <StackPanel Orientation="Horizontal"
                         Spacing="12">
                 <Slider x:Name="NormalIntensitySlider"
@@ -314,19 +335,16 @@
         </StackPanel>
 
 
-
-
-
         <!-- Multiplier Sliders, Series 2 -->
         <StackPanel x:Name="SlidersPanel_S2"
                     Orientation="Vertical"
-                    Margin="675,200,0,0"
+                    Margin="675,220,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Spacing="0">
 
             <!-- Noisy Materials -->
-            <TextBlock Text="Material Noise Offset (0-25)"
+            <TextBlock Text="Material Grain Offset (0-25)"
                        FontWeight="Bold"
                        ToolTipService.ToolTip="Creates grainy materials by adding a layer of noise in a manner that keeps the pack's intended look intact, your input determines the maximum deviation. (Affects: All Packs)" />
             <StackPanel Orientation="Horizontal"
@@ -396,91 +414,108 @@
         </StackPanel>
 
 
+        
+        
+        
+        <!-- Bottom Buttons Grid 2x2 -->
+        <Grid Margin="382,16,16,16"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Bottom"
+              Height="80">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Tune Button -->
+            <Button x:Name="TuneSelectionButton"
+                    Click="TuneSelectionButton_Click"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ToolTipService.ToolTip="Begins the tuning process. Do not tamper with the program while it finishes.">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE9F5;"
+                              FontSize="18"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center" />
+                    <TextBlock Text="Tune Selection"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <!-- Reinstall Button -->
+            <Button x:Name="UpdateVanillaRTXButton"
+                    Click="UpdateVanillaRTXButton_Click"
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are deployed from cache unless an update is available.">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xEBD3;"
+                              FontSize="18"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center" />
+                    <TextBlock Text="Reinstall Latest Packs"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <!-- Launch Button -->
+            <Button x:Name="LaunchButton"
+                    Click="LaunchButton_Click"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Disables VSync for better performance.">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE78B;"
+                              FontSize="18"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center" />
+                    <TextBlock Text="Launch Minecraft RTX"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+            <!-- Export Button -->
+            <Button x:Name="ExportButton"
+                    Click="ExportButton_Click"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    ToolTipService.ToolTip="Exports selected packages.">
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xEDE2;"
+                              FontSize="18"
+                              Margin="0,0,8,0"
+                              VerticalAlignment="Center" />
+                    <TextBlock Text="Export Selection"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
 
 
 
-
-        <!-- Update Button -->
-        <Button x:Name="UpdateVanillaRTXButton"
-                Click="UpdateVanillaRTXButton_Click"
-                Width="280"
-                FontWeight="SemiBold"
-                Margin="380,0,0,55"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are deployed from cache unless an update is available.">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <FontIcon Glyph="&#xEBD3;"
-                          FontSize="18"
-                          Margin="0,0,8,0"
-                          VerticalAlignment="Center" />
-                <TextBlock Text="Reinstall Latest Packs"
-                           VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
-
-        <!-- TuneButton -->
-        <Button x:Name="TuneSelectionButton"
-                Click="TuneSelectionButton_Click"
-                Width="280"
-                FontWeight="SemiBold"
-                Margin="380,0,0,15"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Begins the tuning process. Do not tamper with the program while it finishes.">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <FontIcon Glyph="&#xE9F5;"
-                          FontSize="18"
-                          Margin="0,0,8,0"
-                          VerticalAlignment="Center" />
-                <TextBlock Text="Tune Selection"
-                           VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
-
-
-        <!-- Export Selection Button -->
-        <Button x:Name="ExportButton"
-                Click="ExportButton_Click"
-                Width="280"
-                FontWeight="SemiBold"
-                Margin="670,0,0,55"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Exports selected packages.">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <FontIcon Glyph="&#xEDE2;"
-                          FontSize="18"
-                          Margin="0,0,8,0"
-                          VerticalAlignment="Center" />
-                <TextBlock Text="Export Selection"
-                           VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
-
-
-        <!-- Launch MCRTX button -->
-        <Button x:Name="LaunchButton"
-                Click="LaunchButton_Click"
-                Width="280"
-                FontWeight="SemiBold"
-                Margin="670,0,0,15"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Disables VSync for better performance.">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                <FontIcon Glyph="&#xE78B;"
-                          FontSize="18"
-                          Margin="0,0,8,0"
-                          VerticalAlignment="Center" />
-                <TextBlock Text="Launch Minecraft RTX"
-                           VerticalAlignment="Center" />
-            </StackPanel>
-        </Button>
 
     </Grid>
 

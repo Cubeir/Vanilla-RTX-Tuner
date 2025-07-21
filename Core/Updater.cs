@@ -28,8 +28,8 @@ Maybe like how it is in Helpers class
 public class AppUpdater
 {
     public const string API_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX-Tuner/releases/latest";
-    public static string latestAppVersion = null;
-    public static string latestAppRemote_URL = null;
+    public static string? latestAppVersion = null;
+    public static string? latestAppRemote_URL = null;
 
     private const string CacheVersionKey = "CachedAppUpdateVersion";
     private const string CacheZipPathKey = "CachedAppUpdateZipPath";
@@ -1013,7 +1013,7 @@ public class CreditsUpdater
     private const string CREDITS_TIMESTAMP_KEY = "credits_timestamp";
     private const string CREDITS_LAST_SHOWN_KEY = "credits_last_shown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
-    private const int CACHE_UPDATE_COOLDOWN_DAYS = 7;
+    private const int CACHE_UPDATE_COOLDOWN_DAYS = 3;
     private const int DISPLAY_COOLDOWN_DAYS = 1;
 
     public static string Credits { get; private set; } = string.Empty;
@@ -1216,7 +1216,8 @@ public class CreditsUpdater
                 if (delimiterIndex == -1)
                     return null;
 
-                return afterCredits.Substring(0, delimiterIndex).Trim();
+                return afterCredits.Substring(0, delimiterIndex).Trim() +
+                       "\n\nConsider supporting development of Vanilla RTX, maybe you'll find your name here next time! ❤️";
             }
         }
         catch

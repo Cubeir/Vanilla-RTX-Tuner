@@ -126,9 +126,10 @@ public static class TunerVariables
 public sealed partial class MainWindow : Window
 {
     public static MainWindow? Instance { get; private set; }
-    private WindowStateManager _windowStateManager;
+    private readonly WindowStateManager _windowStateManager;
+    private readonly ProgressBarManager _progressManager;
 
-    private static CancellationTokenSource _lampBlinkCts;
+    private static CancellationTokenSource? _lampBlinkCts;
     private static readonly Dictionary<string, BitmapImage> _imageCache = new();
 
     public MainWindow()
@@ -138,6 +139,7 @@ public sealed partial class MainWindow : Window
 
         // Initialize WindowStateManager (enable/disable debug logging here)
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
+        _progressManager = new ProgressBarManager(ProgressBar);
 
         LoadSettings();
         UpdateUI();
@@ -169,8 +171,9 @@ public sealed partial class MainWindow : Window
     #region Main Window properties and essential components used throughout the app
     private void SetMainWindowProperties()
     {
+        // Putting this here to remember for a future Tuner fork that uses tall title
         ExtendsContentIntoTitleBar = true;
-
+        this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
 
         var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -442,11 +445,51 @@ public sealed partial class MainWindow : Window
             }
             finally
             {
-                // Cleanup: Reset to static on state
+                // Final SuperFlash before cleanup - but only if we're not being cancelled by a new blinking call
+                try
+                {
+                    // Check if cancellation was requested - if so, we might be in the middle of starting a new blink cycle
+                    // We'll still do the final flash, but with a shorter duration to avoid conflicts
+                    if (!token.IsCancellationRequested)
+                    {
+                        // Full final SuperFlash when naturally ending
+                        await PerformFinalSuperFlash(onPath, superOnPath, random.Next(400, 800));
+                    }
+                    else
+                    {
+                        // Quick final SuperFlash when being cancelled (new blink cycle starting)
+                        await PerformFinalSuperFlash(onPath, superOnPath, 200);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // If the final superflash gets cancelled, that's fine - just proceed to cleanup
+                }
+                catch
+                {
+                    // Any other exception during final flash - proceed to cleanup to ensure proper state
+                }
+
+                // Always reset to default state regardless of what happened above
                 await SetImageAsync(iconImageBox, onPath);
                 iconOverlayImageBox.Opacity = 0.0;
                 iconImageBox.Opacity = 1.0;
                 await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs); // default opacity as defined in xaml
+            }
+
+            async Task PerformFinalSuperFlash(string onPath, string superOnPath, int duration)
+            {
+                // Switch to super-bright mode
+                await SetImageAsync(iconImageBox, superOnPath);
+                iconOverlayImageBox.Opacity = 0;
+
+                // Animate to super bright state
+                var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
+                var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                await Task.WhenAll(superBaseTask, superHaloTask);
+
+                // Hold the super state
+                await Task.Delay(duration, CancellationToken.None); // Use CancellationToken.None to ensure final flash completes
             }
         }
         // -- End of blinking loop -- 
@@ -636,7 +679,7 @@ public sealed partial class MainWindow : Window
         // Downloading department: Check if we already found an update and should proceed with download/install
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
-            SidelogProgressBar.IsIndeterminate = true;
+                _progressManager.ShowProgress();
             ToggleControls(this, false);
             BlinkingLamp(true);
 
@@ -650,13 +693,13 @@ public sealed partial class MainWindow : Window
                 Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.", LogLevel.Error);
             }
 
-            SidelogProgressBar.IsIndeterminate = false;
+                _progressManager.HideProgress();
             ToggleControls(this, true);
             BlinkingLamp(false);
 
             // Button Visuals -> default (we're done with the update)
             AppUpdaterButton.Content = "\uE895";
-            ToolTipService.SetToolTip(AppUpdaterButton, "Check for updates");
+            ToolTipService.SetToolTip(AppUpdaterButton, "Check for update");
             AppUpdaterButton.Background = new SolidColorBrush(Colors.Transparent);
             AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
@@ -670,7 +713,7 @@ public sealed partial class MainWindow : Window
         else
         {
             AppUpdaterButton.IsEnabled = false;
-            SidelogProgressBar.IsIndeterminate = true;
+            _progressManager.ShowProgress();
             BlinkingLamp(true);
             try
             {
@@ -701,7 +744,7 @@ public sealed partial class MainWindow : Window
             {
                 BlinkingLamp(false);
                 AppUpdaterButton.IsEnabled = true;
-                SidelogProgressBar.IsIndeterminate = false;
+                    _progressManager.HideProgress();
             }
         }
     }
@@ -955,7 +998,7 @@ public sealed partial class MainWindow : Window
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
         BlinkingLamp(true);
-        SidelogProgressBar.IsIndeterminate = true;
+        _progressManager.ShowProgress();
         ToggleControls(this, false);
         try
         {
@@ -990,7 +1033,7 @@ public sealed partial class MainWindow : Window
                 Log("Export Queue Finished.", LogLevel.Success);
             }
             BlinkingLamp(false);
-            SidelogProgressBar.IsIndeterminate = false;
+            _progressManager.HideProgress();
             ToggleControls(this, true);
         }
 
@@ -1010,7 +1053,7 @@ public sealed partial class MainWindow : Window
             }
             else
             {
-                SidelogProgressBar.IsIndeterminate = true;
+                    _progressManager.ShowProgress();
                 BlinkingLamp(true);
                 ToggleControls(this, false);
 
@@ -1022,7 +1065,7 @@ public sealed partial class MainWindow : Window
         {
             BlinkingLamp(false);
             ToggleControls(this, true);
-            SidelogProgressBar.IsIndeterminate = false;
+                _progressManager.HideProgress();
         }
     }
 
@@ -1033,7 +1076,7 @@ public sealed partial class MainWindow : Window
         try
         {
             ToggleControls(this, false);
-            SidelogProgressBar.IsIndeterminate = true;
+                _progressManager.ShowProgress();
             BlinkingLamp(true);
 
             var updater = new PackUpdater();
@@ -1069,7 +1112,7 @@ public sealed partial class MainWindow : Window
         {
             BlinkingLamp(false);
             ToggleControls(this, true);
-            SidelogProgressBar.IsIndeterminate = false;
+                _progressManager.HideProgress();
             FlushTheseVariables(true, true);
         }
     }
