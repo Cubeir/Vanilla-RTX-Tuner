@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
@@ -23,6 +20,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Graphics;
 using Windows.Storage;
+using Windows.UI;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 
@@ -30,7 +28,29 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### TODO ###
+
+- Two interesting ideas to explore for:
+1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
+e.g. someone does a 10x on a fog that is already 1.0 in density
+its scattering triplets will be multipled by a toned-down number, e.g. a 10x results in a 2.5x for scattering valuesm a quarter
+
+2. For Emissivity adjustment, Desaturate pixels towards white with the excess -- dampened
+
+these aren't really standard adjustments, but it allows obscene values to work
+
+- Update UI xamls to: work with relative percentages instead of hard paths
+For sliders, let sliders stretch, text boxes remain the same
+For the sidebar log and buttons above it, they Preserve the relative % of screen they occupy at default sizes but with size change, they too stretch or change
+
+- A modern settings pane to host non-functionality related controls in the future
+Such as selecting light/dark theme or auto from there (Almost every winui 3.0 app does this)
+Move disclaimers, credits, etc.. in there too instead of logging them at the start
+
+Once startup log is less busy, instead log KoFi member names once in a while (same 1 day CD)
+
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
+
+// 1.2 plans end here for now
 
 - Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
 For example, sliders must definitely be binded, make the code cleaner.
@@ -145,6 +165,7 @@ public sealed partial class MainWindow : Window
         UpdateUI();
         Instance = this;
 
+        // Version and initial logs
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
@@ -160,6 +181,7 @@ public sealed partial class MainWindow : Window
         // Silent background credits retriever
         CreditsUpdater.GetCredits(false);
 
+        // Release Mutex and save some of the variables upon closure
         this.Closed += (s, e) =>
         {
             SaveSettings();
@@ -171,7 +193,6 @@ public sealed partial class MainWindow : Window
     #region Main Window properties and essential components used throughout the app
     private void SetMainWindowProperties()
     {
-        // Putting this here to remember for a future Tuner fork that uses tall title
         ExtendsContentIntoTitleBar = true;
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
 
@@ -185,9 +206,69 @@ public sealed partial class MainWindow : Window
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
         }
+
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
+
+        // Watches theme changes and adjusts based on theme
+        ThemeWatcher(this, theme =>
+        {
+            if (theme == ElementTheme.Light)
+            {
+                LightThemeBackground.Visibility = Visibility.Visible;
+                TitleBarImageBrush.Opacity = 0.1;
+            }
+            else
+            {
+                LightThemeBackground.Visibility = Visibility.Collapsed;
+                TitleBarImageBrush.Opacity = 0.3;
+            }
+
+            var titleBar = appWindow.TitleBar;
+            if (titleBar == null) return;
+
+            bool isLight = theme == ElementTheme.Light;
+
+            titleBar.ButtonForegroundColor = isLight ? Colors.Black : Colors.White;
+            titleBar.ButtonHoverForegroundColor = isLight ? Colors.Black : Colors.White;
+            titleBar.ButtonPressedForegroundColor = isLight ? Colors.Black : Colors.White;
+            titleBar.ButtonInactiveForegroundColor = isLight
+                ? Color.FromArgb(255, 100, 100, 100)
+                : Color.FromArgb(255, 160, 160, 160);
+
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            titleBar.ButtonHoverBackgroundColor = isLight
+                ? Color.FromArgb(20, 0, 0, 0)
+                : Color.FromArgb(40, 255, 255, 255);
+            titleBar.ButtonPressedBackgroundColor = isLight
+                ? Color.FromArgb(40, 0, 0, 0)
+                : Color.FromArgb(60, 255, 255, 255);
+        });
+    }
+
+    public static void ThemeWatcher(Window window, Action<ElementTheme> onThemeChanged)
+    {
+        void HookThemeChangeListener()
+        {
+            if (window.Content is FrameworkElement root)
+            {
+                root.ActualThemeChanged += (_, __) =>
+                {
+                    onThemeChanged(root.ActualTheme);
+                };
+
+                // also call once now
+                onThemeChanged(root.ActualTheme);
+            }
+        }
+
+        // Safe way to defer until content is ready
+        window.Activated += (_, __) =>
+        {
+            HookThemeChangeListener();
+        };
     }
 
 
@@ -357,7 +438,7 @@ public sealed partial class MainWindow : Window
                         if (isRapidFlash)
                         {
                             // Second variant: Rapid continuous flash (overcharged lamp effect)
-                            var flashCount = random.Next(3, 8); // 3-7 rapid flashes
+                            var flashCount = random.Next(1, 6); // Number of rapid flashes
                             var flashSpeed = random.Next(50, 100); // random time between flashes
 
                             for (int i = 0; i < flashCount; i++)
