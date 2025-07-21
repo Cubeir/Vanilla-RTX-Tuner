@@ -29,6 +29,7 @@ public class PackLocator
 
         try
         {
+            // TODO: Construct the path the same way you do in Updater.cs for updating the packs.
             var resolvedPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Packages",

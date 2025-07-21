@@ -8,6 +8,15 @@ using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.Core.Helpers;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
+
+
+// Add thorough logging here for special things
+// Throw warnings for dimension mismatches wherever neccessery
+// Throw warnings for unexpected opacity
+// Throw warnings for basically most things you don't deem ideal for Vanilla RTX's usual workflow and formatting
+// So if you forget to format something properly in Vanilla RTX, you will be made aware here to fix it upstream
+// just a little helpful secondary check for Vanilla RTX's development
+
 public class Processor
 {
     private struct PackInfo
@@ -26,7 +35,7 @@ public class Processor
 
     public static void TuneSelectedPacks()
     {
-        MainWindow.Log("Options left at default will be skipped", MainWindow.LogLevel.Informational);
+        MainWindow.Log("Options left at default will be skipped.", MainWindow.LogLevel.Informational);
         MainWindow.Log("Tuning selected packages...", MainWindow.LogLevel.Lengthy);
 
         var packs = new[]

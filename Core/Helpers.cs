@@ -18,7 +18,7 @@ namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 public static class Helpers
 {
-    // Direct TGA handling for raw PBR data - avoids color space conversions with better performance
+    // Direct TGA handling for raw PBR data - avoids unwanted colorspace conversions with better performance
     public static Bitmap ReadImage(string imagePath, bool maxOpacity = false)
     {
         try
@@ -211,7 +211,7 @@ public static class Helpers
 
 
 
-    private static readonly HttpClient SharedHttpClient = new HttpClient();
+    private static readonly HttpClient SharedHttpClient = new();
     public static async Task<(bool, string?)> Download(string url, CancellationToken cancellationToken = default)
     {
         var retries = 3;
@@ -230,7 +230,7 @@ public static class Helpers
                 // === DOWNLOAD ===
                 using var response = await SharedHttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
-                Log("Starting Download.", LogLevel.Network);
+                Log("Starting Download.", LogLevel.Lengthy);
 
                 var totalBytes = response.Content.Headers.ContentLength;
                 if (!totalBytes.HasValue)
