@@ -473,7 +473,7 @@
                     FontWeight="SemiBold"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    ToolTipService.ToolTip="Begins the tuning process. Do not tamper with the program while it finishes.">
+                    ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is finished.">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center">
                     <FontIcon Glyph="&#xE9F5;"

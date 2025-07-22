@@ -38,7 +38,7 @@ its scattering triplets will be multipled by a toned-down number, e.g. a 10x res
 
 these aren't really standard adjustments, but it allows obscene values to work
 
-- Update UI xamls to: work with relative percentages instead of hard paths
+- Update UI xamls to: work with relative percentages instead of hard numbers
 For sliders, let sliders stretch, text boxes remain the same
 For the sidebar log and buttons above it, they Preserve the relative % of screen they occupy at default sizes but with size change, they too stretch or change
 
@@ -446,12 +446,12 @@ public sealed partial class MainWindow : Window
                                 // Flash to super bright
                                 await SetImageAsync(iconImageBox, superOnPath);
                                 iconOverlayImageBox.Opacity = 0;
-                                var superTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                                var superTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
                                 await Task.Delay(75, token); // Hold super state for 75ms
 
                                 // Flash back to normal on (but never off)
                                 await SetImageAsync(iconImageBox, onPath);
-                                var normalTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
+                                var normalTask = AnimateOpacity(iconHaloImageBox, 0.5, fadeAnimationMs);
                                 await Task.Delay(flashSpeed, token); // Variable speed between flashes
                             }
                         }
@@ -466,7 +466,7 @@ public sealed partial class MainWindow : Window
 
                             // Animate to super bright state and hold the super state for the duration
                             var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                            var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                            var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
                             await Task.WhenAll(superBaseTask, superHaloTask);
 
                             await Task.Delay(superFlashDuration, token);
@@ -503,7 +503,7 @@ public sealed partial class MainWindow : Window
 
                     // Smooth opacity transitions
                     double overlayOpacity = state ? 0.0 : 1.0; // Off image overlay
-                    double normalHaloOpacity = state ? 0.6 : 0.025; // Halo intensity
+                    double normalHaloOpacity = state ? 0.5 : 0.025; // Halo intensity
 
                     var overlayTask = AnimateOpacity(iconOverlayImageBox, overlayOpacity, fadeAnimationMs);
                     var normalHaloTask = AnimateOpacity(iconHaloImageBox, normalHaloOpacity, fadeAnimationMs);
@@ -566,7 +566,7 @@ public sealed partial class MainWindow : Window
 
                 // Animate to super bright state
                 var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                var superHaloTask = AnimateOpacity(iconHaloImageBox, 1.0, fadeAnimationMs);
+                var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
                 await Task.WhenAll(superBaseTask, superHaloTask);
 
                 // Hold the super state

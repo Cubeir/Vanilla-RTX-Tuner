@@ -1217,7 +1217,7 @@ public class CreditsUpdater
                     return null;
 
                 return afterCredits.Substring(0, delimiterIndex).Trim() +
-                       "\n\nConsider supporting development of Vanilla RTX, maybe you'll find your name here next time! ❤️";
+                       "\n\nConsider supporting development of Vanilla RTX, maybe you'll find your name here next time?! ❤️";
             }
         }
         catch

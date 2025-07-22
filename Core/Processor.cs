@@ -82,10 +82,12 @@ public class Processor
     private static void ProcessFog(PackInfo pack)
     {
         var uniformDensity = GetConfig<bool>("remove_height_based_fog");
+        var excessFogDensityDampener = GetConfig<double>("excess_fog_multiplier_dampening_constant");
+        var excessFogDensityToScatterDampener = GetConfig<double>("excess_scattering_multiplier_dampening_constant");
+        var excessScatteringDampener = GetConfig<double>("excess_fog_multiplier_to_scattering_dampening_constant");
 
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
-
 
         var files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
         if (!files.Any())
@@ -114,6 +116,184 @@ public class Processor
 
                 var modified = false;
 
+                // Process density sections and collect non-zero densities
+                var airSection = density.SelectToken("air") as JObject;
+                var weatherSection = density.SelectToken("weather") as JObject;
+
+                var nonZeroDensities = new List<(string name, JObject section, double currentDensity)>();
+                var zeroDensities = new List<(string name, JObject section)>();
+
+                // Check air density
+                if (airSection != null)
+                {
+                    var airMaxDensityToken = airSection.SelectToken("max_density");
+                    if (airMaxDensityToken != null && TryGetDensityValue(airMaxDensityToken, out var airDensity))
+                    {
+                        if (Math.Abs(airDensity) >= 0.0001) // Non-zero
+                        {
+                            nonZeroDensities.Add(("air", airSection, airDensity));
+                        }
+                        else
+                        {
+                            // Handle zero density with special logic
+                            var newDensity = CalculateNewDensity(airDensity, FogMultiplier);
+                            if (Math.Abs(newDensity - airDensity) >= 0.0000001)
+                            {
+                                airSection["max_density"] = Math.Round(newDensity, 7);
+                                modified = true;
+                            }
+                            zeroDensities.Add(("air", airSection));
+                        }
+                    }
+                }
+
+                // Check weather density
+                if (weatherSection != null)
+                {
+                    var weatherMaxDensityToken = weatherSection.SelectToken("max_density");
+                    if (weatherMaxDensityToken != null && TryGetDensityValue(weatherMaxDensityToken, out var weatherDensity))
+                    {
+                        if (Math.Abs(weatherDensity) >= 0.0001) // Non-zero
+                        {
+                            nonZeroDensities.Add(("weather", weatherSection, weatherDensity));
+                        }
+                        else
+                        {
+                            // Handle zero density with special logic
+                            var newDensity = CalculateNewDensity(weatherDensity, FogMultiplier);
+                            if (Math.Abs(newDensity - weatherDensity) >= 0.0000001)
+                            {
+                                weatherSection["max_density"] = Math.Round(newDensity, 7);
+                                modified = true;
+                            }
+                            zeroDensities.Add(("weather", weatherSection));
+                        }
+                    }
+                }
+
+                // Apply enhanced fog logic for non-zero densities
+                if (nonZeroDensities.Any())
+                {
+                    var maxDensity = nonZeroDensities.Max(x => x.currentDensity);
+                    double appliedMultiplier;
+                    double excessMultiplier;
+
+                    // Check if densities are already at or near maximum (from previous applications)
+                    if (maxDensity >= 0.9999)
+                    {
+                        // All densities are already maxed, treat entire multiplier as excess
+                        appliedMultiplier = 1.0;
+                        excessMultiplier = FogMultiplier;
+                    }
+                    else
+                    {
+                        // Find the multiplier that would make the highest density reach exactly 1.0
+                        var limitingMultiplier = 1.0 / maxDensity;
+                        appliedMultiplier = Math.Min(FogMultiplier, limitingMultiplier);
+
+                        // Apply base multiplication to all densities
+                        foreach (var (name, section, currentDensity) in nonZeroDensities)
+                        {
+                            var newDensity = Math.Clamp(currentDensity * appliedMultiplier, 0.0, 1.0);
+                            section["max_density"] = Math.Round(newDensity, 7);
+                            modified = true;
+                        }
+
+                        excessMultiplier = FogMultiplier / appliedMultiplier;
+                    }
+
+                    // Handle excess if there is any
+                    if (excessMultiplier > 1.0)
+                    {
+                        var excessIncrease = excessMultiplier - 1.0;
+
+                        // Apply excess to densities that didn't reach 1.0 (only if we have multiple non-zero densities)
+                        if (nonZeroDensities.Count > 1 && excessIncrease > 0)
+                        {
+                            foreach (var (name, section, currentDensity) in nonZeroDensities)
+                            {
+                                var currentValue = section["max_density"].Value<double>();
+                                if (currentValue < 1.0)
+                                {
+                                    var dampenedIncrease = excessIncrease * excessFogDensityDampener;
+                                    var newValue = Math.Clamp(currentValue + dampenedIncrease, 0.0, 1.0);
+                                    section["max_density"] = Math.Round(newValue, 7);
+                                    modified = true;
+                                }
+                            }
+                        }
+
+                        // Apply excess to scattering values
+                        var mediaCoefficients = volumetric?.SelectToken("media_coefficients") as JObject;
+                        var airCoefficients = mediaCoefficients?.SelectToken("air") as JObject;
+                        if (airCoefficients != null)
+                        {
+                            var scatteringToken = airCoefficients.SelectToken("scattering") as JArray;
+                            if (scatteringToken != null && scatteringToken.Count >= 3)
+                            {
+                                // Apply excessFogDensityToScatterDampener to the excess before applying to scattering
+                                var scatteringIncrease = excessIncrease * excessFogDensityToScatterDampener;
+                                var rgbValues = new double[3];
+                                var canIncrease = new bool[3];
+
+                                // Get current RGB values
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    if (TryGetDensityValue(scatteringToken[i], out var value))
+                                    {
+                                        rgbValues[i] = value;
+                                        canIncrease[i] = true;
+                                    }
+                                }
+
+                                // Apply initial scattering increase
+                                var totalOverflow = 0.0;
+                                var componentsToProcess = canIncrease.Count(x => x);
+
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    if (canIncrease[i])
+                                    {
+                                        var newValue = rgbValues[i] + scatteringIncrease;
+                                        if (newValue > 1.0)
+                                        {
+                                            totalOverflow += (newValue - 1.0);
+                                            rgbValues[i] = 1.0;
+                                            canIncrease[i] = false;
+                                            componentsToProcess--;
+                                        }
+                                        else
+                                        {
+                                            rgbValues[i] = newValue;
+                                        }
+                                    }
+                                }
+
+                                // Apply overflow with final dampener to components that didn't max out
+                                if (totalOverflow > 0 && componentsToProcess > 0)
+                                {
+                                    var dampenedOverflow = totalOverflow * excessScatteringDampener / componentsToProcess;
+                                    for (int i = 0; i < 3; i++)
+                                    {
+                                        if (canIncrease[i])
+                                        {
+                                            rgbValues[i] = Math.Clamp(rgbValues[i] + dampenedOverflow, 0.0, 1.0);
+                                        }
+                                    }
+                                }
+
+                                // Update the scattering values
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    scatteringToken[i] = Math.Round(rgbValues[i], 7);
+                                }
+                                modified = true;
+                            }
+                        }
+                    }
+                }
+
+                // Process uniform density settings
                 modified |= ProcessDensitySection(density, "air", uniformDensity);
                 modified |= ProcessDensitySection(density, "weather", uniformDensity);
 
@@ -140,22 +320,6 @@ public class Processor
                 return false;
 
             var sectionModified = false;
-            var maxDensityToken = section.SelectToken("max_density");
-
-            if (maxDensityToken != null)
-            {
-                if (TryGetDensityValue(maxDensityToken, out var currentDensity))
-                {
-                    var newDensity = CalculateNewDensity(currentDensity, FogMultiplier);
-
-                    // Only update files if the value meaningfully changed
-                    if (Math.Abs(newDensity - currentDensity) >= 0.0000001)
-                    {
-                        section["max_density"] = Math.Round(newDensity, 7);
-                        sectionModified = true;
-                    }
-                }
-            }
 
             if (makeUniform)
             {

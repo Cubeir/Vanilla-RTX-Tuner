@@ -7,8 +7,11 @@
     "vanilla_rtx_opus_uuid_header": "7c87f859-4d79-4d51-8887-bf450b2b2bfa",
     "vanilla_rtx_opus_uuid_module": "be0b22f0-ad13-4bbd-81ba-b457fd9e38b8"
   },
-  "options": {
-    "remove_height_based_fog": false, // Not shown in the UI, if set to true should make all fog uniform across all heights
+  "options": { // Stuff here are not user friendly, but it was right to expose them
+    "remove_height_based_fog": false, // Removes max/min height values and replaces them with uniform density
+    "excess_fog_multiplier_dampening_constant": 0.001, // Excess of one fog density multipler is dampened by this constant before being applied to other density parameters
+    "excess_fog_multiplier_to_scattering_dampening_constant": 0.005, // Excess of fog density multiplier is damepened by this constant before being applied to scattering values
+    "excess_scattering_multiplier_dampening_constant": 0.005, // Within scattering RGB triplets, if one is maxed early, the excess is applied to the rest using this constant
     "excess_emissive_intensity_dampening_constant": 0.1, // Excess of multipliers is multiplied by this constant before being applied to pixel
     "excess_normal_intensity_dampening_constant": 0.1 // Excess of multipliers is multiplied by this constant before being applied to pixel
   }
