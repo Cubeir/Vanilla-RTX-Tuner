@@ -1,19 +1,20 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
+
+// TODO: Utility methods for this class to identify type, belonging, version, and location of add-ons and extensions to pass them for tuning.
 public class PackLocator
 {
-    public static string vanillaRTXHeaderUUID = Helpers.GetConfig<string>("vanilla_rtx_uuid_header");
-    public static string vanillaRTXModuleUUID = Helpers.GetConfig<string>("vanilla_rtx_uuid_module");
-    public static string vanillaRTXNormalsHeaderUUID = Helpers.GetConfig<string>("vanilla_rtx_normals_uuid_header");
-    public static string vanillaRTXNormalsModuleUUID = Helpers.GetConfig<string>("vanilla_rtx_normals_uuid_module");
-    public static string vanillaRTXOpusHeaderUUID = Helpers.GetConfig<string>("vanilla_rtx_opus_uuid_header");
-    public static string vanillaRTXOpusModuleUUID = Helpers.GetConfig<string>("vanilla_rtx_opus_uuid_module");
+    public const string VANILLA_RTX_HEADER_UUID = "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b";
+    public const string VANILLA_RTX_MODULE_UUID = "af805084-fafa-4124-9ae2-00be4bc202dc";
+    public const string VANILLA_RTX_NORMALS_HEADER_UUID = "bbe2b225-b45b-41c2-bd3b-465cd83e6071";
+    public const string VANILLA_RTX_NORMALS_MODULE_UUID = "b2eef2c6-d893-467e-b31d-cda7bf643eaa";
+    public const string VANILLA_RTX_OPUS_HEADER_UUID = "7c87f859-4d79-4d51-8887-bf450b2b2bfa";
+    public const string VANILLA_RTX_OPUS_MODULE_UUID = "be0b22f0-ad13-4bbd-81ba-b457fd9e38b8";
 
     // Change the minimum version of pack detected by Tuner
     private static readonly int[] MinVersion = new int[] { 1, 21, 150 };
@@ -92,20 +93,20 @@ public class PackLocator
                     if (CompareVersion(version, MinVersion) < 0)
                         continue;
 
-                    if (string.Equals(headerUUID, vanillaRTXHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
-                        string.Equals(moduleUUID, vanillaRTXModuleUUID, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(headerUUID, VANILLA_RTX_HEADER_UUID, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(moduleUUID, VANILLA_RTX_MODULE_UUID, StringComparison.OrdinalIgnoreCase))
                     {
                         if (latestVanillaRTX == null || CompareVersion(version, latestVanillaRTX.Value.version) > 0)
                             latestVanillaRTX = (folder, version);
                     }
-                    else if (string.Equals(headerUUID, vanillaRTXNormalsHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
-                             string.Equals(moduleUUID, vanillaRTXNormalsModuleUUID, StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(headerUUID, VANILLA_RTX_NORMALS_HEADER_UUID, StringComparison.OrdinalIgnoreCase) &&
+                             string.Equals(moduleUUID, VANILLA_RTX_NORMALS_MODULE_UUID, StringComparison.OrdinalIgnoreCase))
                     {
                         if (latestVanillaRTXNormals == null || CompareVersion(version, latestVanillaRTXNormals.Value.version) > 0)
                             latestVanillaRTXNormals = (folder, version);
                     }
-                    else if (string.Equals(headerUUID, vanillaRTXOpusHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
-                             string.Equals(moduleUUID, vanillaRTXOpusModuleUUID, StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(headerUUID, VANILLA_RTX_OPUS_HEADER_UUID, StringComparison.OrdinalIgnoreCase) &&
+                             string.Equals(moduleUUID, VANILLA_RTX_OPUS_MODULE_UUID, StringComparison.OrdinalIgnoreCase))
                     {
                         if (latestVanillaRTXOpus == null || CompareVersion(version, latestVanillaRTXOpus.Value.version) > 0)
                             latestVanillaRTXOpus = (folder, version);
