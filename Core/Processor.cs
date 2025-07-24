@@ -6,16 +6,19 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.Core.Helpers;
+using static Vanilla_RTX_Tuner_WinUI.Core.ProcessorVariables;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
 
-
-// Add thorough logging here for special things
-// Throw warnings for dimension mismatches wherever neccessery
-// Throw warnings for unexpected opacity
-// Throw warnings for basically most things you don't deem ideal for Vanilla RTX's usual workflow and formatting
-// So if you forget to format something properly in Vanilla RTX, you will be made aware here to fix it upstream
-// just a little helpful secondary check for Vanilla RTX's development
+public static class ProcessorVariables
+{
+    public const bool FOG_UNIFORM_HEIGHT = false;
+    public const double FOG_EXCESS_DENSITY_DAMPEN = 0.001;
+    public const double FOG_EXCESS_DENSITY_TO_SCATTER_DAMPEN = 0.005;
+    public const double FOG_EXCESS_SCATTERING_DAMPEN = 0.005;
+    public const double EMISSIVE_EXCESS_INTENSITY_DAMPEN = 0.1;
+    public const double NORMALMAP_EXCESS_INTENSITY_DAMPEN = 0.1;
+}
 
 public class Processor
 {
@@ -78,13 +81,11 @@ public class Processor
 
 
     // TODO: make processors return reasons of their failure for easier debugging at the end without touching UI thread directly.
+    // Also make them log any unexpected oddities in Vanilla RTX (whether it be size, opacity, etc...) as warnings
     #region ------------------- Processors
     private static void ProcessFog(PackInfo pack)
     {
-        var uniformDensity = GetConfig<bool>("remove_height_based_fog");
-        var excessFogDensityDampener = GetConfig<double>("excess_fog_multiplier_dampening_constant");
-        var excessFogDensityToScatterDampener = GetConfig<double>("excess_scattering_multiplier_dampening_constant");
-        var excessScatteringDampener = GetConfig<double>("excess_fog_multiplier_to_scattering_dampening_constant");
+
 
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
@@ -116,7 +117,6 @@ public class Processor
 
                 var modified = false;
 
-                // Process density sections and collect non-zero densities
                 var airSection = density.SelectToken("air") as JObject;
                 var weatherSection = density.SelectToken("weather") as JObject;
 
@@ -215,7 +215,7 @@ public class Processor
                                 var currentValue = section["max_density"].Value<double>();
                                 if (currentValue < 1.0)
                                 {
-                                    var dampenedIncrease = excessIncrease * excessFogDensityDampener;
+                                    var dampenedIncrease = excessIncrease * FOG_EXCESS_DENSITY_DAMPEN;
                                     var newValue = Math.Clamp(currentValue + dampenedIncrease, 0.0, 1.0);
                                     section["max_density"] = Math.Round(newValue, 7);
                                     modified = true;
@@ -231,8 +231,8 @@ public class Processor
                             var scatteringToken = airCoefficients.SelectToken("scattering") as JArray;
                             if (scatteringToken != null && scatteringToken.Count >= 3)
                             {
-                                // Apply excessFogDensityToScatterDampener to the excess before applying to scattering
-                                var scatteringIncrease = excessIncrease * excessFogDensityToScatterDampener;
+                                // Apply FOG_EXCESS_DENSITY_TO_SCATTER_DAMPEN to the excess before applying to scattering
+                                var scatteringIncrease = excessIncrease * FOG_EXCESS_DENSITY_TO_SCATTER_DAMPEN;
                                 var rgbValues = new double[3];
                                 var canIncrease = new bool[3];
 
@@ -269,10 +269,10 @@ public class Processor
                                     }
                                 }
 
-                                // Apply overflow with final dampener to components that didn't max out
+                                // Apply overflow with final DAMPEN to components that didn't max out
                                 if (totalOverflow > 0 && componentsToProcess > 0)
                                 {
-                                    var dampenedOverflow = totalOverflow * excessScatteringDampener / componentsToProcess;
+                                    var dampenedOverflow = totalOverflow * FOG_EXCESS_SCATTERING_DAMPEN / componentsToProcess;
                                     for (int i = 0; i < 3; i++)
                                     {
                                         if (canIncrease[i])
@@ -294,8 +294,8 @@ public class Processor
                 }
 
                 // Process uniform density settings
-                modified |= ProcessDensitySection(density, "air", uniformDensity);
-                modified |= ProcessDensitySection(density, "weather", uniformDensity);
+                modified |= ProcessDensitySection(density, "air", FOG_UNIFORM_HEIGHT);
+                modified |= ProcessDensitySection(density, "weather", FOG_UNIFORM_HEIGHT);
 
                 if (modified)
                 {
@@ -392,7 +392,6 @@ public class Processor
 
     private static void ProcessEmissivity(PackInfo pack)
     {
-        var emissiveExcessDampen = GetConfig<double>("excess_emissive_intensity_dampening_constant");
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
         var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
@@ -447,7 +446,7 @@ public class Processor
                         // Apply excess of multiplier to the rest at % effectiveness to partially preserve color composition
                         if (excess > 0)
                         {
-                            newG += origG * excess * emissiveExcessDampen;
+                            newG += origG * excess * EMISSIVE_EXCESS_INTENSITY_DAMPEN;
                         }
 
                         // Custom rounding logic: if < 127.5, round up; if >= 127.5, round down
@@ -490,10 +489,10 @@ public class Processor
     }
 
 
-
+    // TODO: Force absolute perservation of contrast in Vanilla RTX heightmaps
+    // Introduce a curve function that'd make it impossible for values super close to each other to blend in or become the same color
     private static void ProcessNormalIntensity(PackInfo pack)
     {
-        var normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
@@ -613,7 +612,7 @@ public class Processor
             // Apply excess at lower % effectiveness
             if (excess > 0 && Math.Abs(deviation) > 0.001) // Only if there was meaningful deviation
             {
-                newDeviation += deviation * excess * normalExcessDampen;
+                newDeviation += deviation * excess * NORMALMAP_EXCESS_INTENSITY_DAMPEN;
             }
 
             // Convert back to color value
@@ -629,7 +628,6 @@ public class Processor
         // Secondary Pass for Heightmaps
         void ProcessHeightmapsIntensity(string[] heightmapFiles)
         {
-            normalExcessDampen = GetConfig<double>("excess_normal_intensity_dampening_constant");
             double userIntensity = NormalIntensity / 100.0;
 
             foreach (var file in heightmapFiles)
@@ -700,7 +698,7 @@ public class Processor
                         continue;
                     }
 
-                    // If userIntensity exceeds maxPossibleMult, apply excess with dampener
+                    // If userIntensity exceeds maxPossibleMult, apply excess with DAMPEN
                     double excess = userIntensity - maxPossibleMult;
                     bool hasFullContrast = minGray == 0 && maxGray == 255;
 
@@ -714,10 +712,10 @@ public class Processor
                             // First, bring to full contrast
                             double newDeviation = deviation * maxPossibleMult;
 
-                            // If image already has full contrast, or after this pass, apply excess with dampener
+                            // If image already has full contrast, or after this pass, apply excess with DAMPEN
                             if (hasFullContrast || Math.Abs(newDeviation) >= 127.5)
                             {
-                                newDeviation += deviation * excess * normalExcessDampen;
+                                newDeviation += deviation * excess * NORMALMAP_EXCESS_INTENSITY_DAMPEN;
                             }
 
                             var newGray = center + newDeviation;
