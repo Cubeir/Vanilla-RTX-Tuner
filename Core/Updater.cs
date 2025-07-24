@@ -11,29 +11,26 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Storage;
+using static Vanilla_RTX_Tuner_WinUI.Core.PackLocator;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
-/*
-TODO:
-Updating logging of classes here to allow it to properly use the actual Logging method with logLevel
-Maybe like how it is in Helpers class
-*/
+// Updating logging of classes here to allow it to properly use the actual Logging method with logLevels
+
 
 /// =====================================================================================================================
-/// App updater class (shockers) 
-/// I'll write a thorough description later, it is very similar to PackUpdater class
+/// App updater class
 /// =====================================================================================================================
 
 public class AppUpdater
 {
-    public const string API_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX-Tuner/releases/latest";
     public static string? latestAppVersion = null;
     public static string? latestAppRemote_URL = null;
+    private const string API_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX-Tuner/releases/latest";
 
-    private const string CacheVersionKey = "CachedAppUpdateVersion";
-    private const string CacheZipPathKey = "CachedAppUpdateZipPath";
-    private const string CacheExtractionPathKey = "CachedAppUpdateExtractionPath";
+    private const string CACHE_APP_VERSION_KEY = "CachedAppUpdateVersion";
+    private const string CACHE_APP_ZIP_PATH_KEY = "CachedAppUpdateZipPath";
+    private const string CACHE_APP_EXTRACTION_PATH_KEY = "CachedAppUpdateExtractionPath";
 
     public static async Task<(bool, string)> CheckGitHubForUpdates()
     {
@@ -137,13 +134,13 @@ public class AppUpdater
             var localSettings = ApplicationData.Current.LocalSettings;
 
             // Check if we have cache data for this version
-            if (!(localSettings.Values[CacheVersionKey] is string cachedVersion) ||
+            if (!(localSettings.Values[CACHE_APP_VERSION_KEY] is string cachedVersion) ||
                 cachedVersion != targetVersion)
             {
                 return false;
             }
 
-            if (!(localSettings.Values[CacheZipPathKey] is string cachedZipPath) ||
+            if (!(localSettings.Values[CACHE_APP_ZIP_PATH_KEY] is string cachedZipPath) ||
                 string.IsNullOrEmpty(cachedZipPath))
             {
                 return false;
@@ -184,9 +181,9 @@ public class AppUpdater
             var localSettings = ApplicationData.Current.LocalSettings;
 
             // Clear cache keys
-            localSettings.Values.Remove(CacheVersionKey);
-            localSettings.Values.Remove(CacheZipPathKey);
-            localSettings.Values.Remove(CacheExtractionPathKey);
+            localSettings.Values.Remove(CACHE_APP_VERSION_KEY);
+            localSettings.Values.Remove(CACHE_APP_ZIP_PATH_KEY);
+            localSettings.Values.Remove(CACHE_APP_EXTRACTION_PATH_KEY);
         }
         catch (Exception ex)
         {
@@ -201,8 +198,8 @@ public class AppUpdater
             var localSettings = ApplicationData.Current.LocalSettings;
 
             // Get current cache paths to protect them
-            string currentZipPath = localSettings.Values[CacheZipPathKey] as string;
-            string currentExtractionPath = localSettings.Values[CacheExtractionPathKey] as string;
+            string currentZipPath = localSettings.Values[CACHE_APP_ZIP_PATH_KEY] as string;
+            string currentExtractionPath = localSettings.Values[CACHE_APP_EXTRACTION_PATH_KEY] as string;
 
             if (string.IsNullOrEmpty(currentZipPath) || !File.Exists(currentZipPath))
             {
@@ -262,9 +259,9 @@ public class AppUpdater
         try
         {
             var localSettings = ApplicationData.Current.LocalSettings;
-            localSettings.Values[CacheVersionKey] = version;
-            localSettings.Values[CacheZipPathKey] = zipPath;
-            localSettings.Values[CacheExtractionPathKey] = extractionPath;
+            localSettings.Values[CACHE_APP_VERSION_KEY] = version;
+            localSettings.Values[CACHE_APP_ZIP_PATH_KEY] = zipPath;
+            localSettings.Values[CACHE_APP_EXTRACTION_PATH_KEY] = extractionPath;
         }
         catch (Exception ex)
         {
@@ -317,10 +314,10 @@ public class AppUpdater
             if (IsCachedVersionValid(latestAppVersion))
             {
                 var localSettings = ApplicationData.Current.LocalSettings;
-                zipFilePath = localSettings.Values[CacheZipPathKey] as string;
+                zipFilePath = localSettings.Values[CACHE_APP_ZIP_PATH_KEY] as string;
 
                 // Check if extraction directory from cache still exists
-                if (localSettings.Values[CacheExtractionPathKey] is string cachedExtractionPath &&
+                if (localSettings.Values[CACHE_APP_EXTRACTION_PATH_KEY] is string cachedExtractionPath &&
                     Directory.Exists(cachedExtractionPath))
                 {
                     // Re-use existing extraction directory
@@ -339,7 +336,7 @@ public class AppUpdater
                     ZipFile.ExtractToDirectory(zipFilePath, extractionDir, true);
 
                     // Update cache with new extraction path
-                    localSettings.Values[CacheExtractionPathKey] = extractionDir;
+                    localSettings.Values[CACHE_APP_EXTRACTION_PATH_KEY] = extractionDir;
                     MainWindow.Log("Re-extracted cached zip to new directory.", MainWindow.LogLevel.Debug);
                 }
 
@@ -469,17 +466,12 @@ public class AppUpdater
 
 public class PackUpdater
 {
-    public const string VanillaRTX_Manifest_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
-    public const string VanillaRTXNormals_Manifest_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX-Normals/manifest.json";
-    public const string zipball_URL = "https://github.com/Cubeir/Vanilla-RTX/archive/refs/heads/master.zip";
-
-    private string vanillaRTXHeaderUUID => PackLocator.vanillaRTXHeaderUUID;
-    private string vanillaRTXModuleUUID => PackLocator.vanillaRTXModuleUUID;
-    private string vanillaRTXNormalsHeaderUUID => PackLocator.vanillaRTXNormalsHeaderUUID;
-    private string vanillaRTXNormalsModuleUUID => PackLocator.vanillaRTXNormalsModuleUUID;
+    private const string VANILLA_RTX_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
+    private const string VANILLA_RTX_NORMALS_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX-Normals/manifest.json";
+    private const string VANILLA_RTX_REPO_ZIPBALL_URL = "https://github.com/Cubeir/Vanilla-RTX/archive/refs/heads/master.zip";
 
     // Event for progress updates to avoid UI thread blocking
-    public event Action<string> ProgressUpdate;
+    public event Action<string>? ProgressUpdate;
     private readonly List<string> _logMessages = new List<string>();
 
     // For cooldown of checking for update to avoid spamming github
@@ -680,8 +672,8 @@ public class PackUpdater
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)");
 
-            var rtxTask = client.GetStringAsync(VanillaRTX_Manifest_URL);
-            var normalsTask = client.GetStringAsync(VanillaRTXNormals_Manifest_URL);
+            var rtxTask = client.GetStringAsync(VANILLA_RTX_MANIFEST_URL);
+            var normalsTask = client.GetStringAsync(VANILLA_RTX_NORMALS_MANIFEST_URL);
 
             var rtxResponse = await rtxTask;
             var normalsResponse = await normalsTask;
@@ -698,7 +690,7 @@ public class PackUpdater
     {
         try
         {
-            return await Helpers.Download(zipball_URL);
+            return await Helpers.Download(VANILLA_RTX_REPO_ZIPBALL_URL);
         }
         catch (Exception ex)
         {
@@ -744,9 +736,9 @@ public class PackUpdater
 
                         var parentDir = Path.GetDirectoryName(manifestPath);
 
-                        if (headerUUID == vanillaRTXHeaderUUID && moduleUUID == vanillaRTXModuleUUID)
+                        if (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID)
                             vanillaRTXSrc = parentDir;
-                        else if (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID)
+                        else if (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID)
                             vanillaRTXNormalsSrc = parentDir;
                     }
                     catch { }
@@ -797,8 +789,8 @@ public class PackUpdater
                         string headerUUID = data["header"]?["uuid"]?.ToString();
                         string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
 
-                        bool isOurPack = (headerUUID == vanillaRTXHeaderUUID && moduleUUID == vanillaRTXModuleUUID) ||
-                                         (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID);
+                        bool isOurPack = (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID) ||
+                                         (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID);
 
                         if (isOurPack)
                         {
@@ -862,8 +854,8 @@ public class PackUpdater
                     string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
 
                     // Only delete if it's actually our pack
-                    canSafelyDelete = (headerUUID == vanillaRTXHeaderUUID && moduleUUID == vanillaRTXModuleUUID) ||
-                                     (headerUUID == vanillaRTXNormalsHeaderUUID && moduleUUID == vanillaRTXNormalsModuleUUID);
+                    canSafelyDelete = (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID) ||
+                                     (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID);
                 }
                 catch { }
             }
@@ -1002,56 +994,22 @@ public class PackUpdater
 }
 
 /// =====================================================================================================================
-/// Silently tries to update the credits from Vanilla RTX's readme -- any failure will result in an empty string
-/// Cooldowns also result in empty string, check for null and don't show credits whereever this class is used.
+/// Silently tries to update the credits from Vanilla RTX's readme -- any failure will result in null.
+/// Cooldowns also result in null, check for null and don't show credits whereever this class is used.
 /// =====================================================================================================================
 
 public class CreditsUpdater
 {
-    // Gets credits silently in the background, returns null if it fails or if it is on cooldown
-    private const string CREDITS_CACHE_KEY = "credits_cache";
-    private const string CREDITS_TIMESTAMP_KEY = "credits_timestamp";
-    private const string CREDITS_LAST_SHOWN_KEY = "credits_last_shown";
+    private const string CREDITS_CACHE_KEY = "CreditsCache";
+    private const string CREDITS_TIMESTAMP_KEY = "CreditsTimestamp";
+    private const string CREDITS_LAST_SHOWN_KEY = "CreditsLastShown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
     private const int CACHE_UPDATE_COOLDOWN_DAYS = 3;
     private const int DISPLAY_COOLDOWN_DAYS = 1;
 
     public static string Credits { get; private set; } = string.Empty;
-    private static readonly object _updateLock = new object();
+    private static readonly object _updateLock = new();
     private static bool _isUpdating = false;
-
-    public static async Task InitializeCreditsAsync()
-    {
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var updater = new CreditsUpdater();
-
-                // Load from cache first
-                var cachedCredits = updater.GetCachedCredits();
-                if (!string.IsNullOrEmpty(cachedCredits))
-                {
-                    Credits = cachedCredits;
-                }
-
-                // Update cache if needed (9 day cooldown)
-                if (updater.ShouldUpdateCache())
-                {
-                    var freshCredits = await updater.FetchAndExtractCreditsAsync();
-                    if (!string.IsNullOrEmpty(freshCredits))
-                    {
-                        Credits = freshCredits;
-                        updater.CacheCredits(freshCredits);
-                    }
-                }
-            }
-            catch
-            {
-                // Silently fail, Credits remains empty
-            }
-        });
-    }
 
     public static string GetCredits(bool returnString = false)
     {
@@ -1240,7 +1198,6 @@ public class CreditsUpdater
         }
     }
 
-    // Temp testing method
     public static void ForceUpdateCache()
     {
         try
