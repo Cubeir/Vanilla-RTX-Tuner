@@ -8,8 +8,10 @@
         Title="Vanilla RTX Tuner"
         mc:Ignorable="d">
 
+
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
+        <!-- <MicaBackdrop Kind="BaseAlt" /> -->
     </Window.SystemBackdrop>
 
     <Grid x:Name="MainGrid">
@@ -139,6 +141,7 @@
                        Source="/Assets/tuner.lamp.on.small.png"
                        Height="20"
                        Width="20"
+                       Canvas.Top="1"
                        Opacity="1.0"
                        Canvas.ZIndex="3" />
 
@@ -147,6 +150,7 @@
                        Source="/Assets/tuner.lamp.off.small.png"
                        Height="20"
                        Width="20"
+                       Canvas.Top="1"
                        Opacity="0.0"
                        Canvas.ZIndex="4" />
             </Canvas>

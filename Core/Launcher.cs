@@ -50,10 +50,8 @@ public class Launcher
             // Check file accessibility
             try
             {
-                using (var fileStream = File.Open(optionsFilePath, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    // file is accessible
-                }
+                using var fileStream = File.Open(optionsFilePath, FileMode.Open, FileAccess.ReadWrite);
+                // file is accessible
             }
             catch (UnauthorizedAccessException)
             {
@@ -83,9 +81,9 @@ public class Launcher
             {
                 var lines = await File.ReadAllLinesAsync(optionsFilePath);
                 var statusMessages = new List<string>();
-                bool graphicsModeFound = false;
+                var graphicsModeFound = false;
 
-                for (int i = 0; i < lines.Length; i++)
+                for (var i = 0; i < lines.Length; i++)
                 {
                     if (lines[i].StartsWith("graphics_mode:", StringComparison.OrdinalIgnoreCase))
                     {
@@ -106,8 +104,8 @@ public class Launcher
                 }
 
                 // Disable VSync too while we're at it
-                bool vsyncFound = false;
-                for (int i = 0; i < lines.Length; i++)
+                var vsyncFound = false;
+                for (var i = 0; i < lines.Length; i++)
                 {
                     if (lines[i].StartsWith("gfx_vsync:", StringComparison.OrdinalIgnoreCase))
                     {

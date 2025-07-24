@@ -11,9 +11,9 @@ namespace Vanilla_RTX_Tuner_WinUI;
 // Replace this mess with something battle-tested
 public class WindowStateManager : IDisposable
 {
-    private AppWindow _appWindow;
-    private Window _window;
-    private Action<string> _logAction;
+    private AppWindow? _appWindow;
+    private Window? _window;
+    private Action<string>? _logAction;
     private readonly bool _enableLogging;
 
     private const int MIN_WINDOW_WIDTH = 400;
@@ -25,7 +25,7 @@ public class WindowStateManager : IDisposable
     private double? _cachedDpiScale;
     private const double DEFAULT_DPI = 96.0;
 
-    public WindowStateManager(Window window, bool enableLogging = false, Action<string> logAction = null)
+    public WindowStateManager(Window window, bool enableLogging = false, Action<string>? logAction = null)
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _enableLogging = enableLogging;
@@ -161,7 +161,7 @@ public class WindowStateManager : IDisposable
         try
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
-            uint dpi = GetDpiForWindow(hWnd);
+            var dpi = GetDpiForWindow(hWnd);
             _cachedDpiScale = dpi / DEFAULT_DPI;
             Log($"DPI scale factor: {_cachedDpiScale.Value:F2} (DPI: {dpi})");
             return _cachedDpiScale.Value;
@@ -233,9 +233,9 @@ public class WindowStateManager : IDisposable
                 var displayRight = bounds.X + bounds.Width;
                 var displayBottom = bounds.Y + bounds.Height;
 
-                bool horizontalOverlap = (windowRight > bounds.X + minVisibleWidth) &&
+                var horizontalOverlap = (windowRight > bounds.X + minVisibleWidth) &&
                                        (position.X < displayRight - minVisibleWidth);
-                bool verticalOverlap = (windowBottom > bounds.Y + minVisibleHeight) &&
+                var verticalOverlap = (windowBottom > bounds.Y + minVisibleHeight) &&
                                      (position.Y < displayBottom - minVisibleHeight);
 
                 if (horizontalOverlap && verticalOverlap)
@@ -263,7 +263,7 @@ public class WindowStateManager : IDisposable
         const int minY = -14400;
         const int maxY = 4320;
 
-        bool isValid = position.X >= minX && position.X <= maxX &&
+        var isValid = position.X >= minX && position.X <= maxX &&
                       position.Y >= minY && position.Y <= maxY;
 
         Log($"Fallback validation: ({position.X},{position.Y}) -> {isValid}");

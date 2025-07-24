@@ -28,15 +28,18 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### TODO ###
+- A cool "Gradual logger" -- log texts gradually but very quickly!
+It helps make it less overwhelming when dumping huge logs
+Besides that you're gonna need something to unify your logging
+A public variable that gets text dumped to perhaps, and gradually writes out its contents to sidebarlog, async
 
-- Two interesting ideas to explore for:
+- Two interesting ideas to explore:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
 e.g. someone does a 10x on a fog that is already 1.0 in density
 its scattering triplets will be multipled by a toned-down number, e.g. a 10x results in a 2.5x for scattering valuesm a quarter
 
 2. For Emissivity adjustment, Desaturate pixels towards white with the excess -- dampened
-
-these aren't really standard adjustments, but it allows obscene values to work
+these aren't really standard adjustments, but they allow absurd values to leave an impact.
 
 - Update UI xamls to: work with relative percentages instead of hard numbers
 For sliders, let sliders stretch, text boxes remain the same
@@ -52,13 +55,16 @@ Once startup log is less busy, instead log KoFi member names once in a while (sa
 
 // 1.2 plans end here for now
 
-- Refactor and use data Binding as much as possible (as long as the change doesn't cause restrictions/complications with the control and its data)
-For example, sliders must definitely be binded, make the code cleaner.
+- Refactor and use data Binding as much as possible
+Counter argument: if you do this, no more cool slider animations, besides, there won't be many more options and
+it is managable as is, if a new slider is added, it requires additional steps of:
+- It must be added in UpdateUI method
+- Save/Load settings method
 
 - Figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
+(Already have, an unused method, certain suffixes are matched up to share their noise pattern)
 
 - Processor: load images once and process them, instead of doing so in multiple individual passes
-
 You'd have to identify which types of images are going to need modifications based on packs
 Then with a wee bit more complex processor class, load once and processes as needed and finally save.
 
@@ -67,6 +73,7 @@ But it benefits Opus a lot. -- it is more managable as-is so... let the thought 
 
 - Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
   to be tuned and queue those for tuning alongside it.
+
   This must be done once addons are updated and properly moved to separate pages with each pack of each variant 
   becoming standalone.
   Addons won't be explicitly selected for tuning, try to find them and tune them automatically since they're 
@@ -80,12 +87,9 @@ But it benefits Opus a lot. -- it is more managable as-is so... let the thought 
   this way you can change which pack belongs to what upstream, and even introduce new packs without having to update tuner
 */
 
-
-
-
 public static class TunerVariables
 {
-    public static string appVersion = null;
+    public static string? appVersion = null;
 
     // Pack save locations in MC folders + versions, variables are flushed and reused for Preview
     public static string VanillaRTXLocation = string.Empty;
@@ -96,16 +100,15 @@ public static class TunerVariables
     public static string VanillaRTXNormalsVersion = string.Empty;
     public static string VanillaRTXOpusVersion = string.Empty;
 
-    // Used throughout the app let functionalities know to target MC preview or not
-    public static bool IsTargetingPreview = false;
-
-    // For checkboxes, whichever is enabled is impacted by various functionalities of the app
+    // For checkboxes
     public static bool IsVanillaRTXEnabled = false;
     public static bool IsNormalsEnabled = false;
     public static bool IsOpusEnabled = false;
 
-    // Tuning variables 
-    // TODO: Bind these (if you can do so cleanly, two-way binding seems a little worse than boilerplate-heavy)
+    // Used throughout the app to target Minecraft Preview instead of regular Minecraft
+    public static bool IsTargetingPreview = false;
+
+    // Tuning variables
     public static double FogMultiplier = 1.0;
     public static double EmissivityMultiplier = 1.0;
     public static int NormalIntensity = 100;
@@ -113,6 +116,7 @@ public static class TunerVariables
     public static int RoughenUpIntensity = 0;
     public static int ButcheredHeightmapAlpha = 0;
 
+    // Settings we want saved and loaded upon startup, use in conjunction with UpdateUI method.
     public static void SaveSettings()
     {
         var localSettings = ApplicationData.Current.LocalSettings;
@@ -129,6 +133,7 @@ public static class TunerVariables
     public static void LoadSettings()
     {
         var localSettings = ApplicationData.Current.LocalSettings;
+
         // load with fallback to initialised values
         FogMultiplier = (double)(localSettings.Values["FogMultiplier"] ?? FogMultiplier);
         EmissivityMultiplier = (double)(localSettings.Values["EmissivityMultiplier"] ?? EmissivityMultiplier);
@@ -157,7 +162,7 @@ public sealed partial class MainWindow : Window
         SetMainWindowProperties();
         InitializeComponent();
 
-        // Initialize WindowStateManager (enable/disable debug logging here)
+        // Initialize WindowStateManager    —   (Enable/disable debug logging here)
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
 

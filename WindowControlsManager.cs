@@ -133,7 +133,7 @@ public class WindowControlsManager
         states.Clear();
     }
 
-    private static IEnumerable<Control> GetAllSupportedControls(DependencyObject parent, HashSet<string> exclusions = null)
+    private static IEnumerable<Control> GetAllSupportedControls(DependencyObject parent, HashSet<string>? exclusions = null)
     {
         if (parent == null) yield break;
 
@@ -239,7 +239,7 @@ public class ProgressBarManager
 {
     private readonly ProgressBar _progressBar;
     private int _activeOperations = 0;
-    private readonly object _lock = new object();
+    private readonly object _lock = new();
 
     public ProgressBarManager(ProgressBar progressBar)
     {
@@ -322,7 +322,7 @@ public class ProgressBarManager
 
     private void UpdateProgressBarState()
     {
-        bool shouldShow = _activeOperations > 0;
+        var shouldShow = _activeOperations > 0;
 
         _progressBar.IsIndeterminate = shouldShow;
         _progressBar.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
