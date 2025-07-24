@@ -28,6 +28,14 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### TODO ###
+
+- Update maingrid xaml:
+1. The textbox pairs of sliders must also be 16px away from right side of window
+2. On very high scalings and low min sizes, the scrollview doesn't kick in and controls get mashed into each other
+3. Try to make relative % idea work
+2/3rd of width must be occupied by locate and preview buttons + Sidebarlog, the rest for sliders and button grids
+
+
 - A cool "Gradual logger" -- log texts gradually but very quickly!
 It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify your logging
@@ -40,10 +48,6 @@ its scattering triplets will be multipled by a toned-down number, e.g. a 10x res
 
 2. For Emissivity adjustment, Desaturate pixels towards white with the excess -- dampened
 these aren't really standard adjustments, but they allow absurd values to leave an impact.
-
-- Update UI xamls to: work with relative percentages instead of hard numbers
-For sliders, let sliders stretch, text boxes remain the same
-For the sidebar log and buttons above it, they Preserve the relative % of screen they occupy at default sizes but with size change, they too stretch or change
 
 - A modern settings pane to host non-functionality related controls in the future
 Such as selecting light/dark theme or auto from there (Almost every winui 3.0 app does this)
@@ -210,6 +214,8 @@ public sealed partial class MainWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
+            presenter.PreferredMinimumWidth = 1000;
+            presenter.PreferredMinimumHeight = 500;
         }
 
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
