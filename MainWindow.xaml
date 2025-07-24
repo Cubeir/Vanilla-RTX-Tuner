@@ -14,6 +14,8 @@
         <!-- <MicaBackdrop Kind="BaseAlt" /> -->
     </Window.SystemBackdrop>
 
+
+
     <Grid x:Name="MainGrid">
 
         <!-- Static bitmap for titlebar -->
@@ -30,7 +32,7 @@
                             Opacity="0.0"
                             Stretch="Fill"
                             AlignmentX="Left"
-                            AlignmentY="Top"/>
+                            AlignmentY="Top" />
             </Rectangle.Fill>
         </Rectangle>
 
@@ -48,7 +50,7 @@
                             Opacity="0.25"
                             Stretch="Fill"
                             AlignmentX="Left"
-                            AlignmentY="Top"/>
+                            AlignmentY="Top" />
             </Rectangle.Fill>
         </Rectangle>
 
@@ -103,8 +105,8 @@
                 ToolTipService.ToolTip="Check for update" />
 
 
-        
-        
+
+
         <!-- Titlebar Logo + Text -->
         <Grid HorizontalAlignment="Center"
               VerticalAlignment="Top"
@@ -122,7 +124,7 @@
                     Margin="0,0,7,0"
                     CacheMode="BitmapCache"
                     Canvas.ZIndex="1">
-                    
+
                 <!-- Halo (Bottom layer) -->
                 <Image x:Name="iconHaloImageBox"
                        Source="/Assets/tuner.lamp.halo.png"
@@ -161,7 +163,7 @@
                        Canvas.ZIndex="0" />
         </Grid>
 
-        
+
 
         <!-- Sidebar Log Box -->
         <TextBox x:Name="SidebarLog"
@@ -176,7 +178,7 @@
                  AllowFocusOnInteraction="True"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ToolTipService.ToolTip="All relevant logs appear here." />
-        
+
         <!-- Progress Bar -->
         <ProgressBar x:Name="ProgressBar"
                      Width="345"
@@ -185,8 +187,8 @@
                      HorizontalAlignment="Left"
                      IsIndeterminate="False"
                      ShowPaused="False"
-                     ShowError="False"/>
-        
+                     ShowError="False" />
+
 
         <!-- Locate Pack Button -->
         <Button x:Name="LocatePacksButton"
@@ -265,8 +267,8 @@
                       FontWeight="SemiBold" />
         </StackPanel>
 
-        
-        
+
+
 
         <!-- Reset Sliders Button -->
         <Button x:Name="ResetButton"
@@ -293,7 +295,7 @@
 
         <!-- Sliders Grid -->
         <Grid x:Name="SlidersGrid"
-              Margin="382,205, 16, 0"
+              Margin="382,205,16,0"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Top">
 
@@ -315,7 +317,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- Column 1, Row 1 - Fog Multiplier -->
+            <!-- Fog Multiplier -->
             <StackPanel Grid.Column="0"
                         Grid.Row="0"
                         Spacing="0">
@@ -324,13 +326,13 @@
                            ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.1–0.8 for light fog, 1–3 for thick fog. 0 to disable air fog (Affects: All Packs)" />
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <!-- Slider room -->
                         <ColumnDefinition Width="*"
-                                          MinWidth="120" />
-                        <!-- Slider stretches, min 120px -->
-                        <ColumnDefinition Width="12" />
+                                          MinWidth="80" />
                         <!-- Spacing -->
-                        <ColumnDefinition Width="60" />
-                        <!-- TextBox fixed width -->
+                        <ColumnDefinition Width="8" />
+                        <!-- TextBox room -->
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
 
                     <Slider x:Name="FogMultiplierSlider"
@@ -349,7 +351,7 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Column 1, Row 3 - Emissivity Multiplier -->
+            <!-- Emissivity Multiplier -->
             <StackPanel Grid.Column="0"
                         Grid.Row="2"
                         Spacing="0">
@@ -359,9 +361,9 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"
-                                          MinWidth="120" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="60" />
+                                          MinWidth="80" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
 
                     <Slider x:Name="EmissivityMultiplierSlider"
@@ -380,7 +382,7 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Column 1, Row 5 - Normal Intensity -->
+            <!-- Normal Intensity -->
             <StackPanel Grid.Column="0"
                         Grid.Row="4"
                         Spacing="0">
@@ -390,9 +392,9 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"
-                                          MinWidth="120" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="60" />
+                                          MinWidth="80" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
 
                     <Slider x:Name="NormalIntensitySlider"
@@ -411,7 +413,7 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Column 3, Row 1 - Material Grain Offset -->
+            <!-- Material Grain Offset -->
             <StackPanel Grid.Column="2"
                         Grid.Row="0"
                         Spacing="0">
@@ -421,9 +423,9 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"
-                                          MinWidth="120" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="60" />
+                                          MinWidth="80" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
 
                     <Slider x:Name="MaterialNoiseSlider"
@@ -442,7 +444,7 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Column 3, Row 3 - Roughen Up -->
+            <!-- Roughen Up -->
             <StackPanel Grid.Column="2"
                         Grid.Row="2"
                         Spacing="0">
@@ -452,9 +454,9 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"
-                                          MinWidth="120" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="60" />
+                                          MinWidth="80" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
 
                     <Slider x:Name="RoughenUpSlider"
@@ -473,7 +475,7 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Column 3, Row 5 - Butcher Heightmaps -->
+            <!-- Butcher Heightmaps -->
             <StackPanel Grid.Column="2"
                         Grid.Row="4"
                         Spacing="0">
@@ -483,9 +485,9 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"
-                                          MinWidth="120" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="60" />
+                                          MinWidth="80" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
 
                     <Slider x:Name="ButcherHeightmapsSlider"
@@ -504,6 +506,7 @@
                 </Grid>
             </StackPanel>
         </Grid>
+        <!-- End of Sliders Grid-->
 
 
 
@@ -515,7 +518,7 @@
               Height="80">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="10"/>
+                <RowDefinition Height="10" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -609,5 +612,4 @@
 
 
     </Grid>
-
 </Window>
