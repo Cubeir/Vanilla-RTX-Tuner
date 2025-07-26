@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -29,19 +28,14 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
-- Update maingrid xaml:
-1. The textbox pairs of sliders must also be 16px away from right side of window
-2. On very high scalings and low min sizes, the scrollview doesn't kick in and controls get mashed into each other
-3. Try to make relative % idea work
-2/3rd of width must be occupied by locate and preview buttons + Sidebarlog, the rest for sliders and button grids
-
+- On very high scalings and low min sizes, the scrollview doesn't kick in and controls get mashed into each other
 
 - A cool "Gradual logger" -- log texts gradually but very quickly!
 It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify your logging
 A public variable that gets text dumped to perhaps, and gradually writes out its contents to sidebarlog, async
 
-- Two interesting ideas to explore:
+- Two interesting ideas to explore further:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
 e.g. someone does a 10x on a fog that is already 1.0 in density
 its scattering triplets will be multipled by a toned-down number, e.g. a 10x results in a 2.5x for scattering valuesm a quarter
@@ -52,12 +46,9 @@ these aren't really standard adjustments, but they allow absurd values to leave 
 - A modern settings pane to host non-functionality related controls in the future
 Such as selecting light/dark theme or auto from there (Almost every winui 3.0 app does this)
 Move disclaimers, credits, etc.. in there too instead of logging them at the start
-
-Once startup log is less busy, instead log KoFi member names once in a while (same 1 day CD)
+Once startup log is less busy, log KoFi member names once in a while (same 1 day CD?)
 
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
-
-// 1.2 plans end here for now
 
 - Refactor and use data Binding as much as possible
 Counter argument: if you do this, no more cool slider animations, besides, there won't be many more options and
@@ -181,7 +172,7 @@ public sealed partial class MainWindow : Window
         appVersion = versionString;
 
         Log($"App Version: {versionString}" + new string('\n', 2) +
-             "This app is not affiliated with Mojang or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
+             "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
 
         // Apply window state after everything is initialized
         var defaultSize = new SizeInt32(980, 690);
@@ -214,8 +205,8 @@ public sealed partial class MainWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 1000;
-            presenter.PreferredMinimumHeight = 500;
+            presenter.PreferredMinimumWidth = 950;
+            presenter.PreferredMinimumHeight = 510;
         }
 
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
