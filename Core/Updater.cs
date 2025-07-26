@@ -45,7 +45,7 @@ public class AppUpdater
             if (now < cooldownEnd)
             {
                 var secondsLeft = (int)Math.Ceiling((cooldownEnd - now).TotalSeconds);
-                return (false, $"⏳ Please wait {secondsLeft} seconds before checking for update again.");
+                return (false, $"⏳ Wait {secondsLeft}s before checking for app update again.");
             }
         }
 
@@ -57,7 +57,7 @@ public class AppUpdater
 
         try
         {
-            MainWindow.Log("Checking GitHub for updates.", MainWindow.LogLevel.Network);
+            MainWindow.Log("Checking for app updates.", MainWindow.LogLevel.Network);
 
             using (HttpClient client = new HttpClient())
             {
