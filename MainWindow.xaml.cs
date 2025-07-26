@@ -28,6 +28,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
+- Fix the funny behavior of textboxes when typing numbers
+
 - On very high scalings and low min sizes, the scrollview doesn't kick in and controls get mashed into each other
 
 - A cool "Gradual logger" -- log texts gradually but very quickly!
