@@ -53,7 +53,7 @@ public class Processor
             foreach (var p in packs) ProcessFog(p); // All
         }
 
-        if (EmissivityMultiplier != 1.0)
+        if (EmissivityMultiplier != 1.0 || AddEmissivityAmbientLight == true)
         {
             foreach (var p in packs) ProcessEmissivity(p); // All
         }
@@ -408,68 +408,101 @@ public class Processor
                 using var bmp = ReadImage(file, false);
                 var width = bmp.Width;
                 var height = bmp.Height;
-                // Max green value within image
-                var maxGreen = 0;
-                for (var y = 0; y < height; y++)
-                {
-                    for (var x = 0; x < width; x++)
-                    {
-                        int g = bmp.GetPixel(x, y).G;
-                        if (g > maxGreen) maxGreen = g;
-                    }
-                }
-                // No green pixels? skip processing
-                if (maxGreen == 0)
-                {
-                    // MainWindow.Log($"{packName}: {Path.GetFileName(file)} has no emissive pixels; skipped.");
-                    continue;
-                }
-                
-                // Excess Multiplier Dampner
-                var ratio = 255.0 / maxGreen;
-                var neededMult = ratio;
-                var effectiveMult = userMult < neededMult ? userMult : neededMult;
-                var excess = Math.Max(0, userMult - effectiveMult);
-
-                // Process
                 var wroteBack = false;
-                for (var y = 0; y < height; y++)
+
+                // First pass: missivity processing
+                if (userMult != 1.0)
                 {
-                    for (var x = 0; x < width; x++)
+                    // Max green value within image
+                    var maxGreen = 0;
+                    for (var y = 0; y < height; y++)
                     {
-                        var origColor = bmp.GetPixel(x, y);
-                        int origG = origColor.G;
-                        if (origG == 0)
-                            continue;
-                        // Multiply all by "effective" or necessary portion of the multiplier
-                        var newG = origG * effectiveMult;
-                        // Apply excess of multiplier to the rest at % effectiveness to partially preserve color composition
-                        if (excess > 0)
+                        for (var x = 0; x < width; x++)
                         {
-                            newG += origG * excess * EMISSIVE_EXCESS_INTENSITY_DAMPEN;
+                            int g = bmp.GetPixel(x, y).G;
+                            if (g > maxGreen) maxGreen = g;
                         }
+                    }
 
-                        // Custom rounding logic: if < 127.5, round up; if >= 127.5, round down
-                        int finalG;
-                        if (newG < 127.5)
-                        {
-                            finalG = (int)Math.Ceiling(newG);
-                        }
-                        else
-                        {
-                            finalG = (int)Math.Floor(newG);
-                        }
+                    // Only process if there are green pixels
+                    if (maxGreen > 0)
+                    {
+                        // Excess Multiplier Dampner
+                        var ratio = 255.0 / maxGreen;
+                        var neededMult = ratio;
+                        var effectiveMult = userMult < neededMult ? userMult : neededMult;
+                        var excess = Math.Max(0, userMult - effectiveMult);
 
-                        finalG = Math.Clamp(finalG, 0, 255);
-
-                        if (finalG != origG)
+                        // Process existing emissivity
+                        for (var y = 0; y < height; y++)
                         {
-                            wroteBack = true;
-                            var newColor = Color.FromArgb(origColor.A, origColor.R, finalG, origColor.B);
-                            bmp.SetPixel(x, y, newColor);
+                            for (var x = 0; x < width; x++)
+                            {
+                                var origColor = bmp.GetPixel(x, y);
+                                int origG = origColor.G;
+                                if (origG == 0)
+                                    continue;
+                                // Multiply all by "effective" or necessary portion of the multiplier
+                                var newG = origG * effectiveMult;
+                                // Apply excess of multiplier to the rest at % effectiveness to partially preserve color composition
+                                if (excess > 0)
+                                {
+                                    newG += origG * excess * EMISSIVE_EXCESS_INTENSITY_DAMPEN;
+                                }
+
+                                // Custom rounding logic: if < 127.5, round up; if >= 127.5, round down
+                                int finalG;
+                                if (newG < 127.5)
+                                {
+                                    finalG = (int)Math.Ceiling(newG);
+                                }
+                                else
+                                {
+                                    finalG = (int)Math.Floor(newG);
+                                }
+
+                                finalG = Math.Clamp(finalG, 0, 255);
+
+                                if (finalG != origG)
+                                {
+                                    wroteBack = true;
+                                    var newColor = Color.FromArgb(origColor.A, origColor.R, finalG, origColor.B);
+                                    bmp.SetPixel(x, y, newColor);
+                                }
+                            }
                         }
                     }
                 }
+
+                // Second pass: Add ambient light to all pixels
+                if (AddEmissivityAmbientLight)
+                {
+                    // Determine & aply ambient light amount
+                    int ambientAmount;
+                    if (userMult < 3.0)
+                        ambientAmount = 2;
+                    else if (userMult <= 6.0)
+                        ambientAmount = 4;
+                    else
+                        ambientAmount = 6;
+
+                    for (var y = 0; y < height; y++)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            var origColor = bmp.GetPixel(x, y);
+                            int newG = Math.Clamp(origColor.G + ambientAmount, 0, 255);
+
+                            if (newG != origColor.G)
+                            {
+                                wroteBack = true;
+                                var newColor = Color.FromArgb(origColor.A, origColor.R, newG, origColor.B);
+                                bmp.SetPixel(x, y, newColor);
+                            }
+                        }
+                    }
+                }
+
                 if (wroteBack)
                 {
                     WriteImageAsTGA(bmp, file);
@@ -482,8 +515,8 @@ public class Processor
             }
             catch (Exception ex)
             {
-                  MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
-                 // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
+                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}");
+                // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
             }
         }
     }

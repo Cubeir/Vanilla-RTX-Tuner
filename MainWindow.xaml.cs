@@ -119,7 +119,7 @@ public static class TunerVariables
     public static int MaterialNoiseOffset = 0;
     public static int RoughenUpIntensity = 0;
     public static int ButcheredHeightmapAlpha = 0;
-    public static bool EmissivityAmbientLight = false;
+    public static bool AddEmissivityAmbientLight = false;
 
     // Settings we want saved and loaded upon startup, use in conjunction with UpdateUI method.
     public static void SaveSettings()
@@ -133,7 +133,7 @@ public static class TunerVariables
         localSettings.Values["RoughenUpIntensity"] = RoughenUpIntensity;
         localSettings.Values["ButcheredHeightmapAlpha"] = ButcheredHeightmapAlpha;
 
-        localSettings.Values["EmissivityAmbientLight"] = EmissivityAmbientLight;
+        localSettings.Values["AddEmissivityAmbientLight"] = AddEmissivityAmbientLight;
 
         localSettings.Values["TargetingPreview"] = IsTargetingPreview;
     }
@@ -149,7 +149,7 @@ public static class TunerVariables
         RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
         ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
 
-        EmissivityAmbientLight = (bool)(localSettings.Values["EmissivityAmbientLight"] ?? EmissivityAmbientLight);
+        AddEmissivityAmbientLight = (bool)(localSettings.Values["EmissivityAmbientLight"] ?? AddEmissivityAmbientLight);
 
         IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
     }
@@ -656,7 +656,7 @@ public sealed partial class MainWindow : Window
 
         var boolConfigs = new[]
         {
-             (EmissivityAmbientLightToggle, EmissivityAmbientLight)
+             (EmissivityAmbientLightToggle, AddEmissivityAmbientLight)
         };
 
         foreach (var (toggle, targetValue) in boolConfigs)
@@ -1094,7 +1094,7 @@ public sealed partial class MainWindow : Window
     private void EmissivityAmbientLightToggle_Toggled(object sender, RoutedEventArgs e)
     {
         var toggle = sender as ToggleSwitch;
-        EmissivityAmbientLight = toggle.IsOn;
+        AddEmissivityAmbientLight = toggle.IsOn;
 
         // Show/hide the warning icon
         EmissivityWarningIcon.Visibility = toggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
@@ -1109,7 +1109,7 @@ public sealed partial class MainWindow : Window
         RoughenUpIntensity = 0;
         ButcheredHeightmapAlpha = 0;
 
-        EmissivityAmbientLight = false;
+        AddEmissivityAmbientLight = false;
 
         UpdateUI();
     }
