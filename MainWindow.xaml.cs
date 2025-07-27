@@ -219,8 +219,8 @@ public sealed partial class MainWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 950;
-            presenter.PreferredMinimumHeight = 510;
+            presenter.PreferredMinimumWidth = 1000;
+            presenter.PreferredMinimumHeight = 600;
         }
 
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
