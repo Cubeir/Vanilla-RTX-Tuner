@@ -15,7 +15,6 @@
     </Window.SystemBackdrop>
 
 
-
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
@@ -335,10 +334,10 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="13" />
-                    <!-- Spacer row -->
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="13" />
-                    <!-- Spacer row -->
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="13" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -407,9 +406,39 @@
                     </Grid>
                 </StackPanel>
 
-                <!-- Normal Intensity -->
+                <!-- Emissivity Ambient Light Toggle -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="4"
+                            Spacing="0">
+                    <TextBlock Text="Increase Ambient Light"
+                               FontWeight="Bold"
+                               ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted (Affects: All Packs)" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"
+                                              MinWidth="80" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ToggleSwitch x:Name="EmissivityAmbientLightToggle"
+                                      Grid.Column="0"
+                                      AutomationProperties.Name="Emissivity Ambient Light Toggle"
+                                      Toggled="EmissivityAmbientLightToggle_Toggled" />
+                        <TextBlock x:Name="EmissivityWarningIcon"
+                                   Grid.Column="1"
+                                   Text="&#xE814;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="28"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,0,20,0"
+                                   Visibility="Collapsed"
+                                   ToolTipService.ToolTip="Enabling this option after tuning the pack more than once can break the pack! Disable this option if you've previously tuned the pack with this option enabled." />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Normal Intensity -->
+                <StackPanel Grid.Column="0"
+                            Grid.Row="6"
                             Spacing="0">
                     <TextBlock Text="Normal Intensity (0-600%)"
                                FontWeight="Bold"

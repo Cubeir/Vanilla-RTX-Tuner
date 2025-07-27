@@ -12,6 +12,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -27,6 +28,12 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### TODO ###
+
+- There can be two individual images of before/after of extremes of sliders
+and as you move them towards each end the image could fade between them, giving a pretty good idea of what where you're going with the slider.
+
+^ Do this for 1.3 -- maybe focus an update on it depending on the difficulty
+
 
 - Fix the funny behavior of textboxes when typing numbers
 
@@ -112,6 +119,7 @@ public static class TunerVariables
     public static int MaterialNoiseOffset = 0;
     public static int RoughenUpIntensity = 0;
     public static int ButcheredHeightmapAlpha = 0;
+    public static bool EmissivityAmbientLight = false;
 
     // Settings we want saved and loaded upon startup, use in conjunction with UpdateUI method.
     public static void SaveSettings()
@@ -124,6 +132,8 @@ public static class TunerVariables
         localSettings.Values["MaterialNoiseOffset"] = MaterialNoiseOffset;
         localSettings.Values["RoughenUpIntensity"] = RoughenUpIntensity;
         localSettings.Values["ButcheredHeightmapAlpha"] = ButcheredHeightmapAlpha;
+
+        localSettings.Values["EmissivityAmbientLight"] = EmissivityAmbientLight;
 
         localSettings.Values["TargetingPreview"] = IsTargetingPreview;
     }
@@ -138,6 +148,8 @@ public static class TunerVariables
         MaterialNoiseOffset = (int)(localSettings.Values["MaterialNoiseOffset"] ?? MaterialNoiseOffset);
         RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
         ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
+
+        EmissivityAmbientLight = (bool)(localSettings.Values["EmissivityAmbientLight"] ?? EmissivityAmbientLight);
 
         IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
     }
@@ -642,6 +654,17 @@ public sealed partial class MainWindow : Window
             (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)ButcheredHeightmapAlpha, true)
         };
 
+        var boolConfigs = new[]
+        {
+             (EmissivityAmbientLightToggle, EmissivityAmbientLight)
+        };
+
+        foreach (var (toggle, targetValue) in boolConfigs)
+        {
+            toggle.IsOn = targetValue;
+        }
+
+
         double Lerp(double start, double end, double t)
         {
             return start + (end - start) * t;
@@ -683,6 +706,7 @@ public sealed partial class MainWindow : Window
             var config = sliderConfigs[i];
             UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
         }
+
 
 
         TargetPreviewToggle.IsChecked = IsTargetingPreview;
@@ -1066,6 +1090,16 @@ public sealed partial class MainWindow : Window
         }
     }
 
+
+    private void EmissivityAmbientLightToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        var toggle = sender as ToggleSwitch;
+        EmissivityAmbientLight = toggle.IsOn;
+
+        // Show/hide the warning icon
+        EmissivityWarningIcon.Visibility = toggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
         FogMultiplier = 1.0;
@@ -1074,6 +1108,8 @@ public sealed partial class MainWindow : Window
         MaterialNoiseOffset = 0;
         RoughenUpIntensity = 0;
         ButcheredHeightmapAlpha = 0;
+
+        EmissivityAmbientLight = false;
 
         UpdateUI();
     }
