@@ -478,20 +478,14 @@ public class Processor
                 if (AddEmissivityAmbientLight)
                 {
                     // Determine & aply ambient light amount
-                    int ambientAmount;
-                    if (userMult < 3.0)
-                        ambientAmount = 2;
-                    else if (userMult <= 6.0)
-                        ambientAmount = 4;
-                    else
-                        ambientAmount = 6;
+                    var ambientAmount = (int)Math.Ceiling(userMult);
 
                     for (var y = 0; y < height; y++)
                     {
                         for (var x = 0; x < width; x++)
                         {
                             var origColor = bmp.GetPixel(x, y);
-                            int newG = Math.Clamp(origColor.G + ambientAmount, 0, 255);
+                            var newG = Math.Clamp(origColor.G + ambientAmount, 0, 255);
 
                             if (newG != origColor.G)
                             {

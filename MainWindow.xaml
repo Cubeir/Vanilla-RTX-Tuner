@@ -430,7 +430,7 @@
                                    FontSize="28"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Right"
-                                   Margin="0,0,20,0"
+                                   Margin="0,0,16,0"
                                    Visibility="Collapsed"
                                    ToolTipService.ToolTip="Enabling this option after tuning the pack more than once can break the pack! Disable this option if you've previously tuned the pack with this option enabled." />
                     </Grid>

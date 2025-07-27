@@ -29,15 +29,12 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
-- There can be two individual images of before/after of extremes of sliders
+- There can be two individual images of before/after of extremes of sliders, and possibly a midpoint/default one
 and as you move them towards each end the image could fade between them, giving a pretty good idea of what where you're going with the slider.
 
 ^ Do this for 1.3 -- maybe focus an update on it depending on the difficulty
 
-
 - Fix the funny behavior of textboxes when typing numbers
-
-- On very high scalings and low min sizes, the scrollview doesn't kick in and controls get mashed into each other
 
 - A cool "Gradual logger" -- log texts gradually but very quickly!
 It helps make it less overwhelming when dumping huge logs
@@ -219,7 +216,7 @@ public sealed partial class MainWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 1000;
+            presenter.PreferredMinimumWidth = 960;
             presenter.PreferredMinimumHeight = 600;
         }
 
