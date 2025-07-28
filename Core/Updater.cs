@@ -19,7 +19,10 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 
 /// =====================================================================================================================
-/// App updater class
+/// Checks for updates by querying the GitHub API for the latest release of "Vanilla.RTX.Tuner.WinUI_"
+/// comparing it to the current app version, and caching the update package locally to avoid redundant downloads in case user says no to the installation UAC admin prompt
+/// If the cache becomes outdated or invalid, old cache is claered, downloads the latest update, and extracts it for installation. 
+/// The InstallAppUpdate method uses the cached or freshly downloaded package to launch an installer (preferring Installer.bat or falling back to an .msix file)
 /// =====================================================================================================================
 
 public class AppUpdater
