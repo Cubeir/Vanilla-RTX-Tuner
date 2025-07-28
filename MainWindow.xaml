@@ -11,7 +11,6 @@
 
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
-        <!-- <MicaBackdrop Kind="BaseAlt" /> -->
     </Window.SystemBackdrop>
 
 
@@ -34,7 +33,7 @@
                    CacheMode="BitmapCache">
             <Rectangle.Fill>
                 <ImageBrush x:Name="TitleBarImageBrush"
-                            ImageSource="/Assets/titlebar.background.png"
+                            ImageSource="ms-appx:///Assets/titlebar.background.png"
                             Opacity="0.0"
                             Stretch="Fill"
                             AlignmentX="Left"
@@ -53,7 +52,7 @@
                    Canvas.ZIndex="-1">
             <Rectangle.Fill>
                 <ImageBrush x:Name="LightThemeImageBrush"
-                            ImageSource="/Assets/lighttheme.background.png"
+                            ImageSource="ms-appx:///Assets/lighttheme.background.png"
                             Opacity="0.25"
                             Stretch="Fill"
                             AlignmentX="Left"
@@ -74,7 +73,7 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Margin="15, 0, 138, 15"
-                FontSize="16"
+                FontSize="14"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="HelpButton_Click"
@@ -91,7 +90,7 @@
                 VerticalAlignment="Top"
                 Margin="15, 0, 179, 15"
                 CornerRadius="0"
-                FontSize="16"
+                FontSize="14"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="DonateButton_Click"
@@ -110,7 +109,7 @@
                 VerticalAlignment="Top"
                 Margin="15, 0, 220, 15"
                 CornerRadius="0"
-                FontSize="16"
+                FontSize="14"
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
@@ -118,9 +117,7 @@
                 IsTextScaleFactorEnabled="False"/>
 
 
-
-
-        <!-- Titlebar Logo + Text -->
+        <!-- Titlebar Center Content -->
         <Grid Grid.ColumnSpan="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Top"
@@ -141,7 +138,7 @@
 
                 <!-- Halo (Bottom layer) -->
                 <Image x:Name="iconHaloImageBox"
-                       Source="/Assets/tuner.lamp.halo.png"
+                       Source="ms-appx:///Assets/tuner.lamp.halo.png"
                        Height="128"
                        Width="128"
                        Canvas.Left="-54"
@@ -151,7 +148,7 @@
 
                 <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
-                       Source="/Assets/tuner.lamp.on.small.png"
+                       Source="ms-appx:///Assets/tuner.lamp.on.small.png"
                        Height="20"
                        Width="20"
                        Canvas.Top="1"
@@ -160,7 +157,7 @@
 
                 <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
-                       Source="/Assets/tuner.lamp.off.small.png"
+                       Source="ms-appx:///Assets/tuner.lamp.off.small.png"
                        Height="20"
                        Width="20"
                        Canvas.Top="1"
@@ -181,7 +178,8 @@
 
 
         <!-- LEFT COLUMN CONTENT AREA -->
-        <Grid Grid.Column="0">
+        <Grid Grid.Column="0"
+              MaxWidth="1800">
             
             <!-- Buttons above sidebar log -->
             <Grid Margin="16,47,8,0"
@@ -248,6 +246,30 @@
                          IsIndeterminate="False"
                          ShowPaused="False"
                          ShowError="False" />
+
+            <!-- Preview Image Vessels -->
+            <Image x:Name="PreviewVesselTop"
+                   Width="300"
+                   Height="150"
+                   Margin="8,0,0,16"
+                   Stretch="Fill"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
+                   IsHitTestVisible="False"
+                   Canvas.ZIndex="9999"
+                   Visibility="Collapsed"
+                   Source="/Assets/empty.png" />
+            <Image x:Name="PreviewVesselBottom"
+                   Width="300"
+                   Height="150"
+                   Margin="8,0,0,16"
+                   Stretch="Fill"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
+                   IsHitTestVisible="False"
+                   Canvas.ZIndex="9998"
+                   Visibility="Collapsed"
+                   Source="/Assets/empty.png" />
         </Grid>
 
         
@@ -410,7 +432,7 @@
                 <StackPanel Grid.Column="0"
                             Grid.Row="4"
                             Spacing="0">
-                    <TextBlock Text="Increase Ambient Light"
+                    <TextBlock Text="Increase Ambient Lighting"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted (Affects: All Packs)" />
                     <Grid>
@@ -432,7 +454,7 @@
                                    HorizontalAlignment="Right"
                                    Margin="0,0,16,0"
                                    Visibility="Collapsed"
-                                   ToolTipService.ToolTip="Enabling this option after tuning the pack more than once can break the pack! Disable this option if you've previously tuned the pack with this option enabled." />
+                                   ToolTipService.ToolTip="Enabling this option after tuning more than once can break the pack: Keep Emissive Multiplier at default (1.0) if you've previously tuned the pack with this option enabled." />
                     </Grid>
                 </StackPanel>
 
@@ -607,7 +629,7 @@
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are deployed from cache unless an update is available.">
+                        ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are always redeployed from cache unless a new Vanilla RTX update is available.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xEBD3;"
