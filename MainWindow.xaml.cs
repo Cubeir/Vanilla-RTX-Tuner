@@ -29,6 +29,17 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
+- Make reinstall latest packages button glyph show something else (something related to redploying, not cloud)
+as long as a valid cache is avaialble
+
+All you need is: an offline cache validator method, as long as cache is available
+Button's visuals are set on startup mainwindow properties
+if button is clicked, cache validator is called again if updating it changes to cloud
+
+A nice touch.
+
+
+
 - There can be two individual images of before/after of extremes of sliders, and possibly a midpoint/default one
 and as you move them towards each end the image could fade between them, giving a pretty good idea of what where you're going with the slider.
 
@@ -86,6 +97,9 @@ But it benefits Opus a lot. -- it is more managable as-is so... let the thought 
   modification to work
   hook extensions, and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
   this way you can change which pack belongs to what upstream, and even introduce new packs without having to update tuner
+
+  Checkboxes also good space for this, a fourth item will do.. if at least one extension is found or one addon, add-on/extensions checkboxes become selectable
+  Put them in front of, in a new column to the right side of current checkboxes, perfect place for it
 */
 
 public static class TunerVariables
@@ -167,6 +181,8 @@ public sealed partial class MainWindow : Window
     {
         SetMainWindowProperties();
         InitializeComponent();
+        InitializePreviews();
+
 
         // Initialize WindowStateManager    —   (Enable/disable debug logging here)
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
@@ -199,7 +215,6 @@ public sealed partial class MainWindow : Window
             App.CleanupMutex();
         };
     }
-
 
     #region Main Window properties and essential components used throughout the app
     private void SetMainWindowProperties()
@@ -284,6 +299,24 @@ public sealed partial class MainWindow : Window
         };
     }
 
+
+    // Set the fucking art here
+    private void InitializePreviews()
+    {
+        
+        var previews = new Previews(PreviewVesselTop, PreviewVesselBottom);        // Initialize a slider with art
+        previews.InitializeSlider(
+            FogMultiplierSlider,
+            "ms-appx:///Assets/Previews/fog.default.png",
+            "ms-appx:///Assets/Previews/fog.min.png",
+            "ms-appx:///Assets/Previews/fog.max.png",
+            FogMultiplier // default value
+        );
+
+        previews.InitializeTogglable(TargetPreviewToggle,
+            "ms-appx:///Assets/Previews/fog.min.png",
+            "ms-appx:///Assets/Previews/fog.max.png");
+    }
 
 
     public enum LogLevel
