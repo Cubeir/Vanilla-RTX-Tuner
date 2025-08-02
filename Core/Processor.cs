@@ -477,8 +477,8 @@ public class Processor
                 // Second pass: Add ambient light to all pixels
                 if (AddEmissivityAmbientLight)
                 {
-                    // Determine & aply ambient light amount
-                    var ambientAmount = (int)Math.Ceiling(userMult);
+                    // Determine & apply ambient light amount (Multiplier rounded up, plus one)
+                    var ambientAmount = (int)Math.Ceiling(userMult) + 1;
 
                     for (var y = 0; y < height; y++)
                     {

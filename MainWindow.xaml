@@ -179,14 +179,14 @@
 
         <!-- LEFT COLUMN CONTENT AREA -->
         <Grid Grid.Column="0"
-              MaxWidth="1800">
-            
+              x:Name="LeftContentGrid">
+
             <!-- Buttons above sidebar log -->
             <Grid Margin="16,47,8,0"
                   VerticalAlignment="Top"
                   Height="40">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.1*" />
+                    <ColumnDefinition Width="3.1*" />
                     <!-- Locate Packs button size proportions -->
                     <ColumnDefinition Width="12" />
                     <!-- Spacing -->
@@ -216,7 +216,7 @@
                 <!-- Target Preview Button -->
                 <ToggleButton x:Name="TargetPreviewToggle"
                               Grid.Column="2"
-                              Content="Preview"
+                              Content="Beta"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
                               FontWeight="SemiBold"
@@ -231,7 +231,7 @@
                      VerticalAlignment="Stretch"
                      HorizontalAlignment="Stretch"
                      TextWrapping="Wrap"
-                     IsTabStop="True"
+                     IsTabStop="False"
                      AcceptsReturn="True"
                      IsReadOnly="True"
                      AllowFocusOnInteraction="True"
@@ -249,27 +249,31 @@
 
             <!-- Preview Image Vessels -->
             <Image x:Name="PreviewVesselTop"
-                   Width="300"
+                   Width="Auto"
                    Height="150"
-                   Margin="8,0,0,16"
-                   Stretch="Fill"
+                   MaxWidth="{Binding ActualWidth, ElementName=SidebarLog}" 
+                   Margin="8,0,0,17"
+                   Stretch="Uniform"
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9999"
                    Visibility="Collapsed"
-                   Source="/Assets/empty.png" />
+                   Source="/Assets/empty.png"
+                   CacheMode="BitmapCache" />
             <Image x:Name="PreviewVesselBottom"
-                   Width="300"
+                   Width="Auto"
                    Height="150"
-                   Margin="8,0,0,16"
-                   Stretch="Fill"
+                   MaxWidth="{Binding ActualWidth, ElementName=SidebarLog}"
+                   Margin="8,0,0,17"
+                   Stretch="Uniform"
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9998"
                    Visibility="Collapsed"
-                   Source="/Assets/empty.png" />
+                   Source="/Assets/empty.png"
+                   CacheMode="BitmapCache" />
         </Grid>
 
         
@@ -434,7 +438,7 @@
                             Spacing="0">
                     <TextBlock Text="Increase Ambient Lighting"
                                FontWeight="Bold"
-                               ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted (Affects: All Packs)" />
+                               ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted, higher emissive multipliers strengthen the effect (Affects: All Packs)" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"

@@ -29,6 +29,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### TODO ###
 
+- Test and fix the pack reinstaller, apparently 1.1.9 fucked it up, what did you do?!?!
+
 - Make reinstall latest packages button glyph show something else (something related to redploying, not cloud)
 as long as a valid cache is avaialble
 
@@ -182,14 +184,12 @@ public sealed partial class MainWindow : Window
         SetMainWindowProperties();
         InitializeComponent();
         InitializePreviews();
-
-
-        // Initialize WindowStateManager    —   (Enable/disable debug logging here)
-        _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
-        _progressManager = new ProgressBarManager(ProgressBar);
-
         LoadSettings();
         UpdateUI();
+
+
+        _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
+        _progressManager = new ProgressBarManager(ProgressBar);
         Instance = this;
 
         // Version and initial logs
@@ -300,22 +300,35 @@ public sealed partial class MainWindow : Window
     }
 
 
-    // Set the fucking art here
+    // Art
     private void InitializePreviews()
     {
-        
-        var previews = new Previews(PreviewVesselTop, PreviewVesselBottom);        // Initialize a slider with art
-        previews.InitializeSlider(
-            FogMultiplierSlider,
+        Previews _previews = new Previews(PreviewVesselTop, PreviewVesselBottom);
+
+        _previews.InitializeSlider(FogMultiplierSlider,
             "ms-appx:///Assets/Previews/fog.default.png",
             "ms-appx:///Assets/Previews/fog.min.png",
             "ms-appx:///Assets/Previews/fog.max.png",
             FogMultiplier // default value
         );
 
-        previews.InitializeTogglable(TargetPreviewToggle,
-            "ms-appx:///Assets/Previews/fog.min.png",
-            "ms-appx:///Assets/Previews/fog.max.png");
+        _previews.InitializeSlider(EmissivityMultiplierSlider,
+            "ms-appx:///Assets/Previews/emissivity.default.png",
+            "ms-appx:///Assets/Previews/emissivity.min.png",
+            "ms-appx:///Assets/Previews/emissivity.max.png",
+            EmissivityMultiplier
+        );
+
+
+        _previews.InitializeToggleSwitch(EmissivityAmbientLightToggle,
+                 "ms-appx:///Assets/Previews/emissivity.ambient.on.png",
+                 "ms-appx:///Assets/Previews/emissivity.ambient.off.png");
+
+
+
+        _previews.InitializeToggleButton(TargetPreviewToggle,
+            "ms-appx:///Assets/Previews/preview.png",
+            "ms-appx:///Assets/Previews/preview.not.png");
     }
 
 
