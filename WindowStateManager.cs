@@ -19,7 +19,7 @@ public class WindowStateManager : IDisposable
     private const int MIN_WINDOW_WIDTH = 400;
     private const int MIN_WINDOW_HEIGHT = 300;
     private const int DEFAULT_WINDOW_WIDTH = 980;
-    private const int DEFAULT_WINDOW_HEIGHT = 690;
+    private const int DEFAULT_WINDOW_HEIGHT = 720;
 
     // DPI awareness
     private double? _cachedDpiScale;

@@ -204,7 +204,7 @@ public sealed partial class MainWindow : Window
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
 
         // Apply window state after everything is initialized
-        var defaultSize = new SizeInt32(980, 690);
+        var defaultSize = new SizeInt32(980, 720);
         _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
 
         // Silent background credits retriever
@@ -339,8 +339,17 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/Previews/beta.not.png");
 
         _previews.InitializeButton(LocatePacksButton, 
-            "ms-appx:///Assets/Previews/locate.png", 
+            "ms-appx:///Assets/Previews/locate.png",
             "ms-appx:///Assets/Previews/locate.png");
+
+        _previews.InitializeButton(ExportButton,
+    "ms-appx:///Assets/Previews/chest.export.png",
+  "ms-appx:///Assets/Previews/chest.export.png");
+
+
+        _previews.InitializeButton(UpdateVanillaRTXButton,
+    "ms-appx:///Assets/Previews/repository.reinstall.png",
+  "ms-appx:///Assets/Previews/repository.reinstall.png");
     }
 
 
@@ -695,7 +704,6 @@ public sealed partial class MainWindow : Window
     }
 
 
-
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
         // store slider variable, slider and box configs, add new ones here 🍝
@@ -803,13 +811,14 @@ public sealed partial class MainWindow : Window
     private void HelpButton_Click(object sender, RoutedEventArgs e)
     {
         Log("Find helpful resources in the README file, launching in your browser shortly.", LogLevel.Informational);
+        OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
     }
 
     private void DonateButton_Click(object sender, RoutedEventArgs e)
     {
         DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits))
+        if (!string.IsNullOrEmpty(credits) & RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -820,7 +829,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits))
+        if (!string.IsNullOrEmpty(credits) & RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -829,7 +838,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB51";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits))
+        if (!string.IsNullOrEmpty(credits) & RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -1155,6 +1164,7 @@ public sealed partial class MainWindow : Window
         EmissivityWarningIcon.Visibility = toggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
     }
 
+
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
         FogMultiplier = 1.0;
@@ -1167,6 +1177,12 @@ public sealed partial class MainWindow : Window
         AddEmissivityAmbientLight = false;
 
         UpdateUI();
+
+        if (RanOnceFlag.Set("Said_Reset_Warning"))
+        {
+            Log("Tuning variables reset.\nThis does not reset the pack back to its default state!\n\n" +
+                "To reset the pack back to original state, use 'Reinstall Latest Packs' button.", LogLevel.Informational);
+        }
     }
 
 

@@ -413,3 +413,23 @@ public static class Helpers
         }
     }
 }
+
+
+/// <summary>
+/// Additional helper to do a thing only once per runtime, use RanOnceFlag.Set("key") to set a flag with a unique key.
+/// </summary>
+public static class RanOnceFlag
+{
+    private static readonly HashSet<string> _flags = new();
+
+    public static bool Has(string key) => _flags.Contains(key);
+
+    public static bool Set(string key)
+    {
+        if (_flags.Contains(key))
+            return false;
+
+        _flags.Add(key);
+        return true;
+    }
+}

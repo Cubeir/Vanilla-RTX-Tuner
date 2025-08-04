@@ -1008,7 +1008,7 @@ public class CreditsUpdater
     private const string CREDITS_LAST_SHOWN_KEY = "CreditsLastShown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
     private const int CACHE_UPDATE_COOLDOWN_DAYS = 3;
-    private const int DISPLAY_COOLDOWN_DAYS = 1;
+    private const int DISPLAY_COOLDOWN_DAYS = 0;
 
     public static string Credits { get; private set; } = string.Empty;
     private static readonly object _updateLock = new();
