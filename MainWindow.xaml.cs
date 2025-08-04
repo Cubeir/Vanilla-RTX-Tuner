@@ -308,49 +308,73 @@ public sealed partial class MainWindow : Window
         Previews _previews = new Previews(PreviewVesselTop, PreviewVesselBottom);
 
         _previews.InitializeSlider(FogMultiplierSlider,
-            "ms-appx:///Assets/Previews/fog.default.png",
-            "ms-appx:///Assets/Previews/fog.min.png",
-            "ms-appx:///Assets/Previews/fog.max.png",
+            "ms-appx:///Assets/previews/fog.default.png",
+            "ms-appx:///Assets/previews/fog.min.png",
+            "ms-appx:///Assets/previews/fog.max.png",
             FogMultiplier // default value
         );
 
         _previews.InitializeSlider(EmissivityMultiplierSlider,
-            "ms-appx:///Assets/Previews/emissivity.default.png",
-            "ms-appx:///Assets/Previews/emissivity.min.png",
-            "ms-appx:///Assets/Previews/emissivity.max.png",
+            "ms-appx:///Assets/previews/emissivity.default.png",
+            "ms-appx:///Assets/previews/emissivity.min.png",
+            "ms-appx:///Assets/previews/emissivity.max.png",
             EmissivityMultiplier
         );
 
         _previews.InitializeSlider(NormalIntensitySlider,
-            "ms-appx:///Assets/Previews/normals.default.png",
-            "ms-appx:///Assets/Previews/normals.flat.png",
-            "ms-appx:///Assets/Previews/normals.intense.png",
+            "ms-appx:///Assets/previews/normals.default.png",
+            "ms-appx:///Assets/previews/normals.flat.png",
+            "ms-appx:///Assets/previews/normals.intense.png",
             NormalIntensity
         );
 
 
         _previews.InitializeToggleSwitch(EmissivityAmbientLightToggle,
-                 "ms-appx:///Assets/Previews/emissivity.ambient.on.png",
-                 "ms-appx:///Assets/Previews/emissivity.ambient.off.png");
+                 "ms-appx:///Assets/previews/emissivity.ambient.on.png",
+                 "ms-appx:///Assets/previews/emissivity.ambient.off.png");
 
 
         _previews.InitializeToggleButton(TargetPreviewToggle,
-            "ms-appx:///Assets/Previews/beta.png",
-            "ms-appx:///Assets/Previews/beta.not.png");
+            "ms-appx:///Assets/previews/beta.png",
+            "ms-appx:///Assets/previews/beta.not.png");
 
         _previews.InitializeButton(LocatePacksButton, 
-            "ms-appx:///Assets/Previews/locate.png",
-            "ms-appx:///Assets/Previews/locate.png");
+            "ms-appx:///Assets/previews/locate.png",
+            "ms-appx:///Assets/previews/locate.png");
 
         _previews.InitializeButton(ExportButton,
-    "ms-appx:///Assets/Previews/chest.export.png",
-  "ms-appx:///Assets/Previews/chest.export.png");
+    "ms-appx:///Assets/previews/chest.export.png",
+  "ms-appx:///Assets/previews/chest.export.png");
 
 
         _previews.InitializeButton(UpdateVanillaRTXButton,
-    "ms-appx:///Assets/Previews/repository.reinstall.png",
-  "ms-appx:///Assets/Previews/repository.reinstall.png");
+    "ms-appx:///Assets/previews/repository.reinstall.png",
+  "ms-appx:///Assets/previews/repository.reinstall.png");
+
+        _previews.InitializeButton(TuneSelectionButton,
+"ms-appx:///Assets/previews/table.tune.png",
+"ms-appx:///Assets/previews/table.tune.png");
+
+        _previews.InitializeButton(LaunchButton,
+"ms-appx:///Assets/previews/minecart.launch.png",
+"ms-appx:///Assets/previews/minecart.launch.png");
+
+        _previews.InitializeButton(AppUpdaterButton,
+"ms-appx:///Assets/previews/repository.appupdate.png",
+"ms-appx:///Assets/previews/repository.appupdate.png");
+
+
+        _previews.InitializeButton(DonateButton,
+"ms-appx:///Assets/previews/campfire.support.png",
+"ms-appx:///Assets/previews/campfire.support.png");
+
+        _previews.InitializeButton(HelpButton,
+"ms-appx:///Assets/previews/campfire.help.png",
+"ms-appx:///Assets/previews/campfire.help.png");
+
     }
+
+
 
 
     public enum LogLevel
@@ -774,6 +798,8 @@ public sealed partial class MainWindow : Window
 
         TargetPreviewToggle.IsChecked = IsTargetingPreview;
     }
+
+
     public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
     {
         if (FlushLocations)
@@ -807,12 +833,20 @@ public sealed partial class MainWindow : Window
         }
         // lasang🍝 
     }
+
+
     #endregion -------------------------------
+
+
+
     private void HelpButton_Click(object sender, RoutedEventArgs e)
     {
         Log("Find helpful resources in the README file, launching in your browser shortly.", LogLevel.Informational);
         OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
     }
+
+
+
 
     private void DonateButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1167,6 +1201,7 @@ public sealed partial class MainWindow : Window
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
+
         FogMultiplier = 1.0;
         EmissivityMultiplier = 1.0;
         NormalIntensity = 100;
