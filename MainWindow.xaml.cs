@@ -27,32 +27,34 @@ using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
-### TODO ###
+### GENERAL TODO & IDEAS ###
 
-- Test and fix the pack reinstaller, apparently 1.1.9 fucked it up, what did you do?!?!
+- Test and fix the pack reinstaller, apparently 1.1.9 causes issues in rare cases
+But what's different?!?!
 
 - Make reinstall latest packages button glyph show something else (something related to redploying, not cloud)
 as long as a valid cache is avaialble
-
 All you need is: an offline cache validator method, as long as cache is available
 Button's visuals are set on startup mainwindow properties
 if button is clicked, cache validator is called again if updating it changes to cloud
 
-A nice touch.
+It'll be a nice touch
 
-
-
-- There can be two individual images of before/after of extremes of sliders, and possibly a midpoint/default one
-and as you move them towards each end the image could fade between them, giving a pretty good idea of what where you're going with the slider.
-
-^ Do this for 1.3 -- maybe focus an update on it depending on the difficulty
+- Continuing control previews/image vessel development:
+At startup, have several, maybe 10 or so, art pre-made, and have the app randomly select one and display it
+A pixel art to commemorate Vanilla RTX's main image would be an idea example
+All pixel art, when revised or newly made, must match the vibe of emissive one, which captures it perfectly.
 
 - Fix the funny behavior of textboxes when typing numbers
 
-- A cool "Gradual logger" -- log texts gradually but very quickly!
-It helps make it less overwhelming when dumping huge logs
-Besides that you're gonna need something to unify your logging
-A public variable that gets text dumped to perhaps, and gradually writes out its contents to sidebarlog, async
+- A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
+Besides that you're gonna need something to unify the logging
+A public variable that gets all text dumped to perhaps, and gradually writes out its contents to sidebarlog whenever it is changed, async
+This way direct interaction with non-UI threads will be zero
+Long running tasks dump their text, UI thread gradually writes it out on its own.
+only concern is performance with large logs
+
+
 
 - Two interesting ideas to explore further:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
@@ -319,16 +321,26 @@ public sealed partial class MainWindow : Window
             EmissivityMultiplier
         );
 
+        _previews.InitializeSlider(NormalIntensitySlider,
+            "ms-appx:///Assets/Previews/normals.default.png",
+            "ms-appx:///Assets/Previews/normals.flat.png",
+            "ms-appx:///Assets/Previews/normals.intense.png",
+            NormalIntensity
+        );
+
 
         _previews.InitializeToggleSwitch(EmissivityAmbientLightToggle,
                  "ms-appx:///Assets/Previews/emissivity.ambient.on.png",
                  "ms-appx:///Assets/Previews/emissivity.ambient.off.png");
 
 
-
         _previews.InitializeToggleButton(TargetPreviewToggle,
-            "ms-appx:///Assets/Previews/preview.png",
-            "ms-appx:///Assets/Previews/preview.not.png");
+            "ms-appx:///Assets/Previews/beta.png",
+            "ms-appx:///Assets/Previews/beta.not.png");
+
+        _previews.InitializeButton(LocatePacksButton, 
+            "ms-appx:///Assets/Previews/locate.png", 
+            "ms-appx:///Assets/Previews/locate.png");
     }
 
 
