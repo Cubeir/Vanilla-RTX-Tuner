@@ -38,13 +38,6 @@ All you need is: an offline cache validator method, as long as cache is availabl
 Button's visuals are set on startup mainwindow properties
 if button is clicked, cache validator is called again if updating it changes to cloud
 
-It'll be a nice touch
-
-- Continuing control previews/image vessel development:
-At startup, have several, maybe 10 or so, art pre-made, and have the app randomly select one and display it
-A pixel art to commemorate Vanilla RTX's main image would be an idea example
-All pixel art, when revised or newly made, must match the vibe of emissive one, which captures it perfectly.
-
 - Fix the funny behavior of textboxes when typing numbers
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
@@ -53,8 +46,6 @@ A public variable that gets all text dumped to perhaps, and gradually writes out
 This way direct interaction with non-UI threads will be zero
 Long running tasks dump their text, UI thread gradually writes it out on its own.
 only concern is performance with large logs
-
-
 
 - Two interesting ideas to explore further:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
@@ -328,51 +319,57 @@ public sealed partial class MainWindow : Window
             NormalIntensity
         );
 
-
         _previews.InitializeToggleSwitch(EmissivityAmbientLightToggle,
-                 "ms-appx:///Assets/previews/emissivity.ambient.on.png",
-                 "ms-appx:///Assets/previews/emissivity.ambient.off.png");
-
+            "ms-appx:///Assets/previews/emissivity.ambient.on.png",
+            "ms-appx:///Assets/previews/emissivity.ambient.off.png"
+        );
 
         _previews.InitializeToggleButton(TargetPreviewToggle,
             "ms-appx:///Assets/previews/beta.png",
-            "ms-appx:///Assets/previews/beta.not.png");
+            "ms-appx:///Assets/previews/beta.not.png"
+        );
 
-        _previews.InitializeButton(LocatePacksButton, 
+        _previews.InitializeButton(LocatePacksButton,
             "ms-appx:///Assets/previews/locate.png",
-            "ms-appx:///Assets/previews/locate.png");
+            "ms-appx:///Assets/previews/locate.png"
+        );
 
         _previews.InitializeButton(ExportButton,
-    "ms-appx:///Assets/previews/chest.export.png",
-  "ms-appx:///Assets/previews/chest.export.png");
-
+            "ms-appx:///Assets/previews/chest.export.png",
+            "ms-appx:///Assets/previews/chest.export.png"
+        );
 
         _previews.InitializeButton(UpdateVanillaRTXButton,
-    "ms-appx:///Assets/previews/repository.reinstall.png",
-  "ms-appx:///Assets/previews/repository.reinstall.png");
+            "ms-appx:///Assets/previews/repository.reinstall.png",
+            "ms-appx:///Assets/previews/repository.reinstall.png"
+        );
 
         _previews.InitializeButton(TuneSelectionButton,
-"ms-appx:///Assets/previews/table.tune.png",
-"ms-appx:///Assets/previews/table.tune.png");
+            "ms-appx:///Assets/previews/table.tune.png",
+            "ms-appx:///Assets/previews/table.tune.png"
+        );
 
         _previews.InitializeButton(LaunchButton,
-"ms-appx:///Assets/previews/minecart.launch.png",
-"ms-appx:///Assets/previews/minecart.launch.png");
+            "ms-appx:///Assets/previews/minecart.launch.png",
+            "ms-appx:///Assets/previews/minecart.launch.png"
+        );
 
         _previews.InitializeButton(AppUpdaterButton,
-"ms-appx:///Assets/previews/repository.appupdate.png",
-"ms-appx:///Assets/previews/repository.appupdate.png");
-
+            "ms-appx:///Assets/previews/repository.appupdate.png",
+            "ms-appx:///Assets/previews/repository.appupdate.png"
+        );
 
         _previews.InitializeButton(DonateButton,
-"ms-appx:///Assets/previews/campfire.support.png",
-"ms-appx:///Assets/previews/campfire.support.png");
+            "ms-appx:///Assets/previews/cubeir.thankyou.png",
+            "ms-appx:///Assets/previews/cubeir.thankyou.png"
+        );
 
         _previews.InitializeButton(HelpButton,
-"ms-appx:///Assets/previews/campfire.help.png",
-"ms-appx:///Assets/previews/campfire.help.png");
-
+            "ms-appx:///Assets/previews/cubeir.help.png",
+            "ms-appx:///Assets/previews/cubeir.help.png"
+        );
     }
+
 
 
 
@@ -852,7 +849,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits) & RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
+        if (!string.IsNullOrEmpty(credits) && RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -863,7 +860,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits) & RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
+        if (!string.IsNullOrEmpty(credits) && RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -872,7 +869,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB51";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits) & RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
+        if (!string.IsNullOrEmpty(credits) && RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -1106,7 +1103,7 @@ public sealed partial class MainWindow : Window
     {
         if (double.TryParse(FogMultiplierBox.Text, out double val))
         {
-            val = Math.Clamp(val, 0.0, 10.0);
+            val = Math.Clamp(val, 0.0, 7.5);
             FogMultiplier = val;
             FogMultiplierSlider.Value = val;
             FogMultiplierBox.Text = val.ToString("0.00");
@@ -1137,7 +1134,7 @@ public sealed partial class MainWindow : Window
     {
         if (int.TryParse(NormalIntensityBox.Text, out int val))
         {
-            val = Math.Clamp(val, 0, 600);
+            val = Math.Clamp(val, 0, 700);
             NormalIntensity = val;
             NormalIntensitySlider.Value = val;
         }

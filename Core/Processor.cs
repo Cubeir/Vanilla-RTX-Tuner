@@ -518,6 +518,7 @@ public class Processor
 
     // TODO: Force absolute perservation of contrast in Vanilla RTX heightmaps
     // Introduce a curve function that'd make it impossible for values super close to each other to blend in or become the same color
+    // A kind of special heightmap processor
     private static void ProcessNormalIntensity(PackInfo pack)
     {
         if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))

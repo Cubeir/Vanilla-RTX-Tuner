@@ -371,7 +371,7 @@
                 <StackPanel Grid.Column="0"
                             Grid.Row="0"
                             Spacing="0">
-                    <TextBlock Text="Fog Multiplier (0.0-10.0)"
+                    <TextBlock Text="Fog Multiplier (0.0-7.5)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.1–0.8 for light fog, 1–3 for thick fog. 0 to disable air fog (Affects: All Packs)" />
                     <Grid>
@@ -387,8 +387,8 @@
 
                         <Slider x:Name="FogMultiplierSlider"
                                 Grid.Column="0"
-                                Minimum="0"
-                                Maximum="10"
+                                Minimum="0.0"
+                                Maximum="7.5"
                                 StepFrequency="0.001"
                                 SmallChange="0.001"
                                 Value="1"
@@ -466,7 +466,7 @@
                 <StackPanel Grid.Column="0"
                             Grid.Row="6"
                             Spacing="0">
-                    <TextBlock Text="Normal Intensity (0-600%)"
+                    <TextBlock Text="Normal Intensity (0-700%)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks (Affects: All Packs)" />
                     <Grid>
@@ -480,7 +480,7 @@
                         <Slider x:Name="NormalIntensitySlider"
                                 Grid.Column="0"
                                 Minimum="0"
-                                Maximum="600"
+                                Maximum="700"
                                 StepFrequency="1"
                                 SmallChange="1"
                                 Value="100"
