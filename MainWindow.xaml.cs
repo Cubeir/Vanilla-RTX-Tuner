@@ -330,42 +330,34 @@ public sealed partial class MainWindow : Window
         );
 
         _previews.InitializeButton(LocatePacksButton,
-            "ms-appx:///Assets/previews/locate.png",
             "ms-appx:///Assets/previews/locate.png"
         );
 
         _previews.InitializeButton(ExportButton,
-            "ms-appx:///Assets/previews/chest.export.png",
             "ms-appx:///Assets/previews/chest.export.png"
         );
 
         _previews.InitializeButton(UpdateVanillaRTXButton,
-            "ms-appx:///Assets/previews/repository.reinstall.png",
             "ms-appx:///Assets/previews/repository.reinstall.png"
         );
 
         _previews.InitializeButton(TuneSelectionButton,
-            "ms-appx:///Assets/previews/table.tune.png",
             "ms-appx:///Assets/previews/table.tune.png"
         );
 
         _previews.InitializeButton(LaunchButton,
-            "ms-appx:///Assets/previews/minecart.launch.png",
             "ms-appx:///Assets/previews/minecart.launch.png"
         );
 
         _previews.InitializeButton(AppUpdaterButton,
-            "ms-appx:///Assets/previews/repository.appupdate.png",
             "ms-appx:///Assets/previews/repository.appupdate.png"
         );
 
         _previews.InitializeButton(DonateButton,
-            "ms-appx:///Assets/previews/cubeir.thankyou.png",
             "ms-appx:///Assets/previews/cubeir.thankyou.png"
         );
 
         _previews.InitializeButton(HelpButton,
-            "ms-appx:///Assets/previews/cubeir.help.png",
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
     }

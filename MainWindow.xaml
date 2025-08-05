@@ -258,8 +258,9 @@
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9999"
-                   Visibility="Collapsed"
-                   Source="/Assets/empty.png"
+                   Visibility="Visible"
+                   Opacity="100"
+                   Source="ms-appx:///Assets/empty.png"
                    CacheMode="BitmapCache" />
             <Image x:Name="PreviewVesselBottom"
                    Width="Auto"
@@ -271,8 +272,9 @@
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9998"
-                   Visibility="Collapsed"
-                   Source="/Assets/empty.png"
+                   Visibility="Visible"
+                   Opacity="100"
+                   Source="ms-appx:///Assets/empty.png"
                    CacheMode="BitmapCache" />
         </Grid>
 
