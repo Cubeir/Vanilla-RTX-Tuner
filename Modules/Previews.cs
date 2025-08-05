@@ -11,7 +11,6 @@ public class Previews
 {
     private Image _topVessel;
     private Image _bottomVessel;
-    private bool _vesselsInitialized = false;
     private bool _mouseDown = false;
     private FrameworkElement _activeControl = null;
 
@@ -47,9 +46,7 @@ public class Previews
         _topVessel = topVessel;
         _bottomVessel = bottomVessel;
 
-        // Make vessels visible from the start but transparent
-        _topVessel.Visibility = Visibility.Visible;
-        _bottomVessel.Visibility = Visibility.Visible;
+        // Initialize with transparent state
         _topVessel.Opacity = 0.0;
         _bottomVessel.Opacity = 0.0;
     }
@@ -101,7 +98,7 @@ public class Previews
         };
     }
 
-    public void InitializeButton(Button button, string imageOnPath, string imageOffPath = null)
+    public void InitializeButton(Button button, string imageOffPath = null, string imageOnPath = null)
     {
         button.SetValue(FrameworkElement.TagProperty, new ButtonPreviewData
         {
@@ -288,9 +285,7 @@ public class Previews
     private void HandleControlChange(FrameworkElement newControl)
     {
         bool isControlChange = (_activeControl != newControl && _activeControl != null);
-
         _activeControl = newControl;
-        InitializeVesselsIfNeeded();
 
         if (isControlChange)
         {
@@ -309,15 +304,27 @@ public class Previews
         double maxValue = slider.Maximum;
         double defaultValue = data.DefaultValue;
 
-        // Bottom vessel: Always the default image, always at full opacity
-        if (_currentBottomImage != data.DefaultImagePath)
+        // Bottom vessel: Always the default image if provided, otherwise opacity 0
+        double bottomOpacity = !string.IsNullOrEmpty(data.DefaultImagePath) ? 1.0 : 0.0;
+        if (!string.IsNullOrEmpty(data.DefaultImagePath) && _currentBottomImage != data.DefaultImagePath)
         {
             SetBottomVesselImage(data.DefaultImagePath);
             _currentBottomImage = data.DefaultImagePath;
         }
-        if (_bottomVessel.Opacity != 1.0)
+        if (_bottomVessel.Opacity != bottomOpacity)
         {
-            _bottomVessel.Opacity = 1.0;
+            _bottomVessel.Opacity = bottomOpacity;
+        }
+
+        // Check if both min and max images are null - if so, set top vessel opacity to 0
+        bool bothMinMaxNull = string.IsNullOrEmpty(data.MinImagePath) && string.IsNullOrEmpty(data.MaxImagePath);
+        if (bothMinMaxNull)
+        {
+            if (_topVessel.Opacity != 0.0)
+            {
+                _topVessel.Opacity = 0.0;
+            }
+            return;
         }
 
         // Top vessel: Dynamic image and opacity based on slider position
@@ -327,7 +334,11 @@ public class Previews
         if (currentValue >= defaultValue)
         {
             targetTopImage = data.MaxImagePath;
-            if (maxValue == defaultValue)
+            if (string.IsNullOrEmpty(targetTopImage))
+            {
+                targetTopOpacity = 0.0;
+            }
+            else if (maxValue == defaultValue)
             {
                 targetTopOpacity = 0.0;
             }
@@ -340,7 +351,11 @@ public class Previews
         else
         {
             targetTopImage = data.MinImagePath;
-            if (minValue == defaultValue)
+            if (string.IsNullOrEmpty(targetTopImage))
+            {
+                targetTopOpacity = 0.0;
+            }
+            else if (minValue == defaultValue)
             {
                 targetTopOpacity = 0.0;
             }
@@ -352,7 +367,7 @@ public class Previews
         }
 
         // Handle top vessel image change with smooth transition
-        if (_currentTopImage != targetTopImage)
+        if (!string.IsNullOrEmpty(targetTopImage) && _currentTopImage != targetTopImage)
         {
             SetTopVesselImageWithSmoothing(targetTopImage, targetTopOpacity);
         }
@@ -370,10 +385,10 @@ public class Previews
 
         string imagePath = isPressed ? data.ImageOnPath : data.ImageOffPath;
 
-        if (!string.IsNullOrEmpty(imagePath))
-        {
-            SetVesselState(imagePath, "", 1.0, 0.0, true);
-        }
+        // For buttons: bottom vessel shows the image, top vessel is always transparent
+        // If no image path provided, set bottom vessel opacity to 0 as well
+        double bottomOpacity = !string.IsNullOrEmpty(imagePath) ? 1.0 : 0.0;
+        SetVesselState(imagePath ?? "", "", bottomOpacity, 0.0, true);
     }
 
     private void SetTogglePreview(FrameworkElement element, bool isOn)
@@ -381,7 +396,11 @@ public class Previews
         var data = element.GetValue(FrameworkElement.TagProperty) as TogglePreviewData;
         if (data == null) return;
 
-        SetVesselState(data.ImageOffPath, data.ImageOnPath, 1.0, isOn ? 1.0 : 0.0, true);
+        // Handle cases where image paths might be null
+        double bottomOpacity = !string.IsNullOrEmpty(data.ImageOffPath) ? 1.0 : 0.0;
+        double topOpacity = isOn && !string.IsNullOrEmpty(data.ImageOnPath) ? 1.0 : 0.0;
+
+        SetVesselState(data.ImageOffPath ?? "", data.ImageOnPath ?? "", bottomOpacity, topOpacity, true);
     }
 
     private void SetVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity, bool allowTransition)
@@ -484,10 +503,7 @@ public class Previews
             _currentBottomImage = bottomImagePath;
         }
 
-        if (_bottomVessel.Opacity != bottomOpacity)
-        {
-            _bottomVessel.Opacity = bottomOpacity;
-        }
+        _bottomVessel.Opacity = bottomOpacity;
 
         // Apply top vessel
         if (!string.IsNullOrEmpty(topImagePath) && _currentTopImage != topImagePath)
@@ -496,19 +512,7 @@ public class Previews
             _currentTopImage = topImagePath;
         }
 
-        if (_topVessel.Opacity != topOpacity)
-        {
-            _topVessel.Opacity = topOpacity;
-        }
-    }
-
-    private void InitializeVesselsIfNeeded()
-    {
-        if (_vesselsInitialized) return;
-
-        _bottomVessel.Visibility = Visibility.Visible;
-        _topVessel.Visibility = Visibility.Visible;
-        _vesselsInitialized = true;
+        _topVessel.Opacity = topOpacity;
     }
 
     private void SetBottomVesselImage(string imagePath)
