@@ -319,7 +319,7 @@ public static class Helpers
                     }
                 }
 
-                Log("Download finished successfully.");
+                Log("Download finished successfully.", LogLevel.Success);
                 return (true, savingLocation);
             }
             catch (OperationCanceledException ex) when (!(ex is TaskCanceledException) || ex.InnerException is not TimeoutException)
