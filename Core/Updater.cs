@@ -705,225 +705,242 @@ public class PackUpdater
 
     // ---------- Deployment methods
 
+
     private async Task<bool> DeployPackage(string packagePath)
     {
+        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        {
+            LogMessage("⚠️ Minecraft is running. Please close the game while using Tuner.");
+        }
+
         bool success_status = false;
+        string tempExtractionDir = null;
 
         try
         {
-            var saveDir = Path.GetDirectoryName(packagePath);
-            var stagingDir = Path.Combine(saveDir, "_staging", Guid.NewGuid().ToString());
-            var extractDir = Path.Combine(stagingDir, "extracted");
+            // Find the resource pack path, where we wanna deploy
+            var packagesRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
+            string mcFolderPattern = TunerVariables.IsTargetingPreview
+                ? "Microsoft.MinecraftWindowsBeta_"
+                : "Microsoft.MinecraftUWP_";
 
-            Directory.CreateDirectory(extractDir);
-
-            try
+            var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
+            if (mcRoot == null)
             {
-                ZipFile.ExtractToDirectory(packagePath, extractDir, overwriteFiles: true);
-
-                // Find our target folders by comparing manifest UUIDs against what we got here
-                var manifestFiles = Directory.GetFiles(extractDir, "manifest.json", SearchOption.AllDirectories);
-
-                string vanillaRTXSrc = null;
-                string vanillaRTXNormalsSrc = null;
-
-                foreach (var manifestPath in manifestFiles)
-                {
-                    try
-                    {
-                        var json = await File.ReadAllTextAsync(manifestPath);
-                        var data = JObject.Parse(json);
-
-                        string headerUUID = data["header"]?["uuid"]?.ToString();
-                        string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
-
-                        var parentDir = Path.GetDirectoryName(manifestPath);
-
-                        if (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID)
-                            vanillaRTXSrc = parentDir;
-                        else if (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID)
-                            vanillaRTXNormalsSrc = parentDir;
-                    }
-                    catch { }
-                }
-
-                if (vanillaRTXSrc == null && vanillaRTXNormalsSrc == null)
-                {
-                    LogMessage("Vanilla-RTX or Vanilla-RTX-Normals were found in the extracted package ❗");
-                    success_status = false;
-                    return success_status;
-                }
-                if (vanillaRTXSrc == null || vanillaRTXNormalsSrc == null)
-                {
-                    LogMessage("Extracted zipball was missing one of the packs ℹ️");
-                }
-
-                // Find the resource pack path, where we wanna deploy
-                var packagesRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
-                string mcFolderPattern = TunerVariables.IsTargetingPreview
-                    ? "Microsoft.MinecraftWindowsBeta_"
-                    : "Microsoft.MinecraftUWP_";
-
-                var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
-                if (mcRoot == null)
-                {
-                    LogMessage("Minecraft data root not found. Please make sure the game is installed or has been launched at least once ❗");
-                    success_status = false;
-                    return success_status;
-                }
-
-                var resourcePackPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
-                if (!Directory.Exists(resourcePackPath))
-                {
-                    Directory.CreateDirectory(resourcePackPath);
-                    LogMessage("Resource pack directory was missing and has been created ℹ️");
-                }
-
-                // Remove all existing packs with matching UUIDs
-                ForceWritable(resourcePackPath);
-                var existingManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories);
-                foreach (var file in existingManifests)
-                {
-                    try
-                    {
-                        var json = await File.ReadAllTextAsync(file);
-                        var data = JObject.Parse(json);
-
-                        string headerUUID = data["header"]?["uuid"]?.ToString();
-                        string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
-
-                        bool isOurPack = (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID) ||
-                                         (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID);
-
-                        if (isOurPack)
-                        {
-                            var topLevelFolder = GetTopLevelFolderForManifest(file, resourcePackPath);
-                            if (topLevelFolder != null && Directory.Exists(topLevelFolder))
-                            {
-                                ForceWritable(topLevelFolder);
-                                Directory.Delete(topLevelFolder, true);
-                            }
-                        }
-                    }
-                    catch { }
-                }
-                if (vanillaRTXSrc != null)
-                {
-                    CopyPackFolder(Path.GetDirectoryName(vanillaRTXSrc), resourcePackPath, Path.GetFileName(vanillaRTXSrc), "VanillaRTX");
-                }
-                if (vanillaRTXNormalsSrc != null)
-                {
-                    CopyPackFolder(Path.GetDirectoryName(vanillaRTXNormalsSrc), resourcePackPath, Path.GetFileName(vanillaRTXNormalsSrc), "VanillaRTXNormals");
-                }
-
-                success_status = true;
-                return success_status;
+                LogMessage("Minecraft data root not found. Please make sure the game is installed or has been launched at least once ❗");
+                return false;
             }
-            finally
+
+            var resourcePackPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
+            if (!Directory.Exists(resourcePackPath))
             {
-                CleanupStaging(stagingDir);
-                LogMessage(success_status ? "✅ Deployment completed." : "❌ Deployment failed.");
+                Directory.CreateDirectory(resourcePackPath);
+                LogMessage("Resource pack directory was missing and has been created ℹ️");
             }
+
+            // Step 1: Extract zipball directly into resource pack directory with UUID suffix
+            tempExtractionDir = Path.Combine(resourcePackPath, $"_tunertemp_{Guid.NewGuid()}");
+            Directory.CreateDirectory(tempExtractionDir);
+
+            ZipFile.ExtractToDirectory(packagePath, tempExtractionDir, overwriteFiles: true);
+            // LogMessage("📦 Extracted package to temporary directory");
+
+            // Step 2: Find which packs exist in the zipball extraction
+            var extractedManifests = Directory.GetFiles(tempExtractionDir, "manifest.json", SearchOption.AllDirectories);
+
+            string vanillaRTXSrc = null;
+            string vanillaRTXNormalsSrc = null;
+            bool foundVanillaRTX = false;
+            bool foundVanillaRTXNormals = false;
+
+            foreach (var manifestPath in extractedManifests)
+            {
+                var uuids = await ReadManifestUUIDs(manifestPath);
+                if (uuids == null) continue;
+
+                var (headerUUID, moduleUUID) = uuids.Value;
+
+                if (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID)
+                {
+                    vanillaRTXSrc = Path.GetDirectoryName(manifestPath);
+                    foundVanillaRTX = true;
+                }
+                else if (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID)
+                {
+                    vanillaRTXNormalsSrc = Path.GetDirectoryName(manifestPath);
+                    foundVanillaRTXNormals = true;
+                }
+            }
+
+            if (!foundVanillaRTX && !foundVanillaRTXNormals)
+            {
+                LogMessage("❌ Neither Vanilla-RTX nor Vanilla-RTX-Normals were found in the downloaded package.");
+                return false;
+            }
+
+            if (!foundVanillaRTX || !foundVanillaRTXNormals)
+            {
+                LogMessage("⚠️ Extracted zipball was missing one of the packs.");
+            }
+
+            // Step 3: For each pack found in zipball, delete existing versions from resource pack root
+            ForceWritable(resourcePackPath);
+
+            // Get all manifests in resource pack root, excluding CURRENT temp extraction directory
+            var existingManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories)
+                .Where(manifestPath => !manifestPath.StartsWith(tempExtractionDir, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // Delete existing Vanilla RTX if we found it in zipball
+            if (foundVanillaRTX)
+            {
+                await DeleteExistingPackByUUID(existingManifests, resourcePackPath,
+                    VANILLA_RTX_HEADER_UUID, VANILLA_RTX_MODULE_UUID, "Vanilla RTX");
+            }
+
+            // Delete existing Vanilla RTX Normals if we found it in zipball
+            if (foundVanillaRTXNormals)
+            {
+                await DeleteExistingPackByUUID(existingManifests, resourcePackPath,
+                    VANILLA_RTX_NORMALS_HEADER_UUID, VANILLA_RTX_NORMALS_MODULE_UUID, "Vanilla RTX Normals");
+            }
+
+            // Step 4: Atomically move and rename pack directories
+            if (foundVanillaRTX && vanillaRTXSrc != null)
+            {
+                var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXSrc));
+                Directory.Move(vanillaRTXSrc, tempDestination);
+
+                var finalDestination = GetSafeDirectoryName(resourcePackPath, "VanillaRTX");
+                Directory.Move(tempDestination, finalDestination);
+                LogMessage("✅ Deployed Vanilla RTX.");
+            }
+
+            if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
+            {
+                var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXNormalsSrc));
+                Directory.Move(vanillaRTXNormalsSrc, tempDestination);
+
+                var finalDestination = GetSafeDirectoryName(resourcePackPath, "VanillaRTXNormals");
+                Directory.Move(tempDestination, finalDestination);
+                LogMessage("✅ Deployed Vanilla RTX Normals.");
+            }
+
+            success_status = true;
+            return true;
         }
         catch (Exception ex)
         {
             LogMessage($"❌ Deployment error: {ex.Message}");
             return false;
         }
-    }
-
-    private void CopyPackFolder(string vanillaRoot, string resourcePackPath, string sourceFolderName, string destFolderName)
-    {
-        var src = Path.Combine(vanillaRoot, sourceFolderName);
-        if (!Directory.Exists(src)) return;
-
-        var dst = Path.Combine(resourcePackPath, destFolderName);
-
-        // Phase 2 cleanup: If destination exists, check if it's safe to nuke
-        if (Directory.Exists(dst))
+        finally
         {
-            // Check if this folder contains one of our packs (safety check)
-            var manifestPath = Path.Combine(dst, "manifest.json");
-            bool canSafelyDelete = false;
-
-            if (File.Exists(manifestPath))
+            // Step 5: Clean up temp extraction directory
+            if (tempExtractionDir != null && Directory.Exists(tempExtractionDir))
             {
                 try
                 {
-                    var json = File.ReadAllText(manifestPath);
-                    var data = JObject.Parse(json);
-
-                    string headerUUID = data["header"]?["uuid"]?.ToString();
-                    string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
-
-                    // Only delete if it's actually our pack
-                    canSafelyDelete = (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID) ||
-                                     (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID);
+                    ForceWritable(tempExtractionDir);
+                    Directory.Delete(tempExtractionDir, true);
+                    LogMessage(success_status ? "✅ Deployment completed and cleaned up." : "🧹 Cleaned up after failed deployment.");
                 }
-                catch { }
-            }
-            else
-            {
-                // No manifest = probably safe to delete (corrupted/incomplete pack)
-                canSafelyDelete = true;
-            }
-
-            if (canSafelyDelete)
-            {
-                ForceWritable(dst);
-                Directory.Delete(dst, true);
-            }
-            else
-            {
-                // Find alternative name for our pack
-                var suffix = 1;
-                var originalDst = dst;
-                do
+                catch (Exception ex)
                 {
-                    dst = Path.Combine(resourcePackPath, $"{destFolderName}_{suffix++}");
-                } while (Directory.Exists(dst));
-
-                LogMessage($"Destination {destFolderName} occupied by an unrecognized pack, importing to {Path.GetFileName(dst)} instead");
+                    LogMessage($"⚠️ Failed to clean up temp directory: {ex.Message}");
+                }
             }
         }
-
-        DirectoryMove(src, dst, true);
     }
 
+    private string GetSafeDirectoryName(string parentPath, string desiredName)
+    {
+        var fullPath = Path.Combine(parentPath, desiredName);
+
+        // If directory doesn't exist, we can use it
+        if (!Directory.Exists(fullPath))
+            return fullPath;
+
+        // If directory exists but is empty, we can safely overwrite
+        if (Directory.GetFileSystemEntries(fullPath).Length == 0)
+        {
+            Directory.Delete(fullPath);
+            return fullPath;
+        }
+
+        // Directory exists and has files, find a numbered suffix
+        int suffix = 1;
+        string safeName;
+        do
+        {
+            safeName = Path.Combine(parentPath, $"{desiredName}{suffix}");
+            suffix++;
+        } while (Directory.Exists(safeName) && Directory.GetFileSystemEntries(safeName).Length > 0);
+
+        // If we found an existing empty directory with this numbered name, delete it
+        if (Directory.Exists(safeName))
+            Directory.Delete(safeName);
+
+        return safeName;
+    }
+    private async Task DeleteExistingPackByUUID(List<string> existingManifests, string resourcePackPath,
+        string targetHeaderUUID, string targetModuleUUID, string packName)
+    {
+        foreach (var manifestPath in existingManifests)
+        {
+            var uuids = await ReadManifestUUIDs(manifestPath);
+            if (uuids == null) continue;
+
+            var (headerUUID, moduleUUID) = uuids.Value;
+
+            if (headerUUID == targetHeaderUUID && moduleUUID == targetModuleUUID)
+            {
+                var topLevelFolder = GetTopLevelFolderForManifest(manifestPath, resourcePackPath);
+                if (topLevelFolder != null && Directory.Exists(topLevelFolder))
+                {
+                    ForceWritable(topLevelFolder);
+                    Directory.Delete(topLevelFolder, true);
+                    LogMessage($"🗑️ Found & removed previous {packName} pack.");
+                }
+            }
+        }
+    }
     private void ForceWritable(string path)
     {
         var di = new DirectoryInfo(path);
         if (!di.Exists) return;
 
-        di.Attributes &= ~System.IO.FileAttributes.ReadOnly;
+        // Only modify if actually read-only
+        if ((di.Attributes & System.IO.FileAttributes.ReadOnly) != 0)
+            di.Attributes &= ~System.IO.FileAttributes.ReadOnly;
+
         foreach (var file in di.GetFiles("*", SearchOption.AllDirectories))
-            file.Attributes &= ~System.IO.FileAttributes.ReadOnly;
-        foreach (var dir in di.GetDirectories("*", SearchOption.AllDirectories))
-            dir.Attributes &= ~System.IO.FileAttributes.ReadOnly;
-    }
-
-    public void DirectoryMove(string sourceDir, string destDir, bool moveSubDirs)
-    {
-        var dir = new DirectoryInfo(sourceDir);
-        if (!dir.Exists)
-            throw new DirectoryNotFoundException($"Source not found: {sourceDir}");
-
-        Directory.CreateDirectory(destDir);
-
-        foreach (var file in dir.GetFiles())
         {
-            var destPath = Path.Combine(destDir, file.Name);
-            File.Move(file.FullName, destPath, overwrite: true);
+            if ((file.Attributes & System.IO.FileAttributes.ReadOnly) != 0)
+                file.Attributes &= ~System.IO.FileAttributes.ReadOnly;
         }
 
-        if (moveSubDirs)
+        foreach (var dir in di.GetDirectories("*", SearchOption.AllDirectories))
         {
-            foreach (var subdir in dir.GetDirectories())
-            {
-                var dst = Path.Combine(destDir, subdir.Name);
-                DirectoryMove(subdir.FullName, dst, true);
-                Directory.Delete(subdir.FullName, recursive: false);
-            }
+            if ((dir.Attributes & System.IO.FileAttributes.ReadOnly) != 0)
+                dir.Attributes &= ~System.IO.FileAttributes.ReadOnly;
+        }
+    }
+    private async Task<(string headerUUID, string moduleUUID)?> ReadManifestUUIDs(string manifestPath)
+    {
+        try
+        {
+            var json = await File.ReadAllTextAsync(manifestPath);
+            var data = JObject.Parse(json);
+
+            string headerUUID = data["header"]?["uuid"]?.ToString();
+            string moduleUUID = data["modules"]?[0]?["uuid"]?.ToString();
+
+            return (headerUUID, moduleUUID);
+        }
+        catch
+        {
+            return null;
         }
     }
 
@@ -976,23 +993,17 @@ public class PackUpdater
         return null;
     }
 
-    private void CleanupStaging(string stagingDir)
-    {
-        try
-        {
-            if (Directory.Exists(stagingDir))
-            {
-                ForceWritable(stagingDir);
-                Directory.Delete(stagingDir, true);
-            }
-        }
-        catch (Exception ex) { LogMessage(ex.ToString()); }
-    }
-
     private void LogMessage(string message)
     {
         _logMessages.Add($"{message}");
         ProgressUpdate?.Invoke(message);
+    }
+
+    public static bool IsMinecraftRunning()
+    {
+        var mcProcesses = Process.GetProcessesByName("Minecraft.Windows");
+
+        return mcProcesses.Length > 0;
     }
 }
 
@@ -1007,7 +1018,7 @@ public class CreditsUpdater
     private const string CREDITS_TIMESTAMP_KEY = "CreditsTimestamp";
     private const string CREDITS_LAST_SHOWN_KEY = "CreditsLastShown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
-    private const int CACHE_UPDATE_COOLDOWN_DAYS = 3;
+    private const int CACHE_UPDATE_COOLDOWN_DAYS = 1;
     private const int DISPLAY_COOLDOWN_DAYS = 0;
 
     public static string Credits { get; private set; } = string.Empty;
