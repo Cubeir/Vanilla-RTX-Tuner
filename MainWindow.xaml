@@ -399,7 +399,8 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="1.0"
-                                 TextChanged="FogMultiplierBox_TextChanged" />
+                                 LostFocus="FogMultiplierBox_LostFocus"
+                                 BeforeTextChanging="DoubleTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
 
@@ -430,7 +431,8 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="1.0"
-                                 TextChanged="EmissivityMultiplierBox_TextChanged" />
+                                 LostFocus="EmissivityMultiplierBox_LostFocus"
+                                 BeforeTextChanging="DoubleTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
 
@@ -491,7 +493,8 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="100"
-                                 TextChanged="NormalIntensity_TextChanged" />
+                                 LostFocus="NormalIntensity_LostFocus"
+                                 BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
 
@@ -522,7 +525,8 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="0"
-                                 TextChanged="MaterialNoise_TextChanged" />
+                                 LostFocus="MaterialNoise_LostFocus"
+                                 BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
 
@@ -553,7 +557,8 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="0"
-                                 TextChanged="RoughenUp_TextChanged" />
+                                 LostFocus="RoughenUp_LostFocus"
+                                 BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
 
@@ -584,7 +589,8 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="0"
-                                 TextChanged="ButcherHeightmaps_TextChanged" />
+                                 LostFocus="ButcherHeightmaps_LostFocus"
+                                 BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
             </Grid>

@@ -35,6 +35,9 @@ All you need is: an offline cache validator method, as long as cache is availabl
 Button's visuals are set on startup mainwindow properties
 if button is clicked, cache validator is called again if updating it changes to cloud
 
+- Animate the Update button on Tuner?
+when updating, let it spin
+
 - Fix the funny behavior of textboxes when typing numbers
 
 
@@ -1136,13 +1139,15 @@ public sealed partial class MainWindow : Window
 
 
 
+    // Improved event handlers that don't interfere with typing
     private void FogMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         FogMultiplier = Math.Round(e.NewValue, 2);
-        if (FogMultiplierBox != null)
+        if (FogMultiplierBox != null && FogMultiplierBox.FocusState == FocusState.Unfocused)
             FogMultiplierBox.Text = FogMultiplier.ToString("0.00");
     }
-    private void FogMultiplierBox_TextChanged(object sender, TextChangedEventArgs e)
+
+    private void FogMultiplierBox_LostFocus(object sender, RoutedEventArgs e)
     {
         if (double.TryParse(FogMultiplierBox.Text, out double val))
         {
@@ -1151,81 +1156,134 @@ public sealed partial class MainWindow : Window
             FogMultiplierSlider.Value = val;
             FogMultiplierBox.Text = val.ToString("0.00");
         }
+        else
+        {
+            // Reset to current value if invalid input
+            FogMultiplierBox.Text = FogMultiplier.ToString("0.00");
+        }
     }
+
     private void EmissivityMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         EmissivityMultiplier = Math.Round(e.NewValue, 1);
-        if (EmissivityMultiplierBox != null)
+        if (EmissivityMultiplierBox != null && EmissivityMultiplierBox.FocusState == FocusState.Unfocused)
             EmissivityMultiplierBox.Text = EmissivityMultiplier.ToString("F1");
     }
-    private void EmissivityMultiplierBox_TextChanged(object sender, TextChangedEventArgs e)
+
+    private void EmissivityMultiplierBox_LostFocus(object sender, RoutedEventArgs e)
     {
         if (double.TryParse(EmissivityMultiplierBox.Text, out double val))
         {
             val = Math.Clamp(val, 0.5, 10.0);
             EmissivityMultiplier = val;
             EmissivityMultiplierSlider.Value = val;
+            EmissivityMultiplierBox.Text = val.ToString("F1");
+        }
+        else
+        {
+            EmissivityMultiplierBox.Text = EmissivityMultiplier.ToString("F1");
         }
     }
+
     private void NormalIntensity_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         NormalIntensity = (int)Math.Round(e.NewValue);
-        if (NormalIntensityBox != null)
+        if (NormalIntensityBox != null && NormalIntensityBox.FocusState == FocusState.Unfocused)
             NormalIntensityBox.Text = NormalIntensity.ToString();
     }
-    private void NormalIntensity_TextChanged(object sender, TextChangedEventArgs e)
+
+    private void NormalIntensity_LostFocus(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(NormalIntensityBox.Text, out int val))
         {
             val = Math.Clamp(val, 0, 700);
             NormalIntensity = val;
             NormalIntensitySlider.Value = val;
+            NormalIntensityBox.Text = val.ToString();
+        }
+        else
+        {
+            NormalIntensityBox.Text = NormalIntensity.ToString();
         }
     }
+
     private void MaterialNoise_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         MaterialNoiseOffset = (int)Math.Round(e.NewValue);
-        if (MaterialNoiseBox != null)
+        if (MaterialNoiseBox != null && MaterialNoiseBox.FocusState == FocusState.Unfocused)
             MaterialNoiseBox.Text = MaterialNoiseOffset.ToString();
     }
-    private void MaterialNoise_TextChanged(object sender, TextChangedEventArgs e)
+
+    private void MaterialNoise_LostFocus(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(MaterialNoiseBox.Text, out int val))
         {
             val = Math.Clamp(val, 0, 25);
             MaterialNoiseOffset = val;
             MaterialNoiseSlider.Value = val;
+            MaterialNoiseBox.Text = val.ToString();
+        }
+        else
+        {
+            MaterialNoiseBox.Text = MaterialNoiseOffset.ToString();
         }
     }
+
     private void RoughenUp_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         RoughenUpIntensity = (int)Math.Round(e.NewValue);
-        if (RoughenUpBox != null)
+        if (RoughenUpBox != null && RoughenUpBox.FocusState == FocusState.Unfocused)
             RoughenUpBox.Text = RoughenUpIntensity.ToString();
     }
-    private void RoughenUp_TextChanged(object sender, TextChangedEventArgs e)
+
+    private void RoughenUp_LostFocus(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(RoughenUpBox.Text, out int val))
         {
             val = Math.Clamp(val, 0, 20);
             RoughenUpIntensity = val;
             RoughenUpSlider.Value = val;
+            RoughenUpBox.Text = val.ToString();
+        }
+        else
+        {
+            RoughenUpBox.Text = RoughenUpIntensity.ToString();
         }
     }
+
     private void ButcherHeightmaps_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         ButcheredHeightmapAlpha = (int)Math.Round(e.NewValue);
-        if (ButcherHeightmapsBox != null)
+        if (ButcherHeightmapsBox != null && ButcherHeightmapsBox.FocusState == FocusState.Unfocused)
             ButcherHeightmapsBox.Text = ButcheredHeightmapAlpha.ToString();
     }
-    private void ButcherHeightmaps_TextChanged(object sender, TextChangedEventArgs e)
+
+    private void ButcherHeightmaps_LostFocus(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(ButcherHeightmapsBox.Text, out int val))
         {
             val = Math.Clamp(val, 0, 255);
             ButcheredHeightmapAlpha = val;
             ButcherHeightmapsSlider.Value = val;
+            ButcherHeightmapsBox.Text = val.ToString();
         }
+        else
+        {
+            ButcherHeightmapsBox.Text = ButcheredHeightmapAlpha.ToString();
+        }
+    }
+
+    // Input validation helpers - add these to prevent invalid characters
+    private void IntegerTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    {
+        // Allow only digits
+        args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, @"^[0-9]*$");
+    }
+
+    private void DoubleTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    {
+        // Allow digits, one decimal point, and leading negative sign
+        args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, @"^-?[0-9]*\.?[0-9]*$");
     }
 
 
