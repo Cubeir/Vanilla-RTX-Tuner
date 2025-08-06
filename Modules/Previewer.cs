@@ -97,6 +97,15 @@ public class Previewer
         SetVesselState(imageOffPath ?? "", imageOnPath ?? "", bottomOpacity, topOpacity, useSmoothTransition);
     }
 
+    public void ClearPreviews()
+    {
+        _currentBottomImage = "";
+        _currentTopImage = "";
+        FadeVesselsOpacity(0.0, true);
+        _bottomVessel.Source = null;
+        _topVessel.Source = null;
+    }
+
     public void FadeVesselsOpacity(double targetOpacity, bool useSmoothTransition = true)
     {
         // Clamp opacity to valid range [0.0, 1.0]

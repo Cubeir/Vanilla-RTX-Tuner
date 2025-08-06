@@ -817,8 +817,7 @@ public sealed partial class MainWindow : Window
             // WHAT'S WORSE: IT HAPPENS ONCE, RESTARTING THE APP AGAIN WON'T TRIGGER IT?!!??!?! WHY?!
         }
 
-        // Set empty images before making vessels visible again
-        Previewer.Instance.SetImages("ms-appx:///Assets/empty.png", "ms-appx:///Assets/empty.png", false);
+        Previewer.Instance.ClearPreviews();
         PreviewVesselTop.Visibility = Visibility.Visible;
         PreviewVesselBottom.Visibility = Visibility.Visible;
     }
@@ -827,6 +826,7 @@ public sealed partial class MainWindow : Window
 
     public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
     {
+        // TODO: Review this method, most of the time everything is flushed, so the overloads are not necessery, except where it isn't, and why?
         if (FlushLocations)
         {
             VanillaRTXLocation = string.Empty;
@@ -1233,6 +1233,8 @@ public sealed partial class MainWindow : Window
         ButcheredHeightmapAlpha = Defaults.ButcheredHeightmapAlpha;
         AddEmissivityAmbientLight = Defaults.AddEmissivityAmbientLight;
 
+        // FlushTheseVariables(true, true, true);
+
         // Manually updates UI based on new values
         UpdateUI();
 
@@ -1246,8 +1248,8 @@ public sealed partial class MainWindow : Window
         if (true || RanOnceFlag.Set("Said_Reset_Warning"))
         {
             RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
-            Log("Tuner variables reset.\nNote: This does not restore the pack back to its default state!\n\n" +
-                $"ℹ️ To reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
+            Log("Tuner variables reset.", LogLevel.Success);
+            Log($"Note: This does not restore the packs back to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
         }
     }
 
