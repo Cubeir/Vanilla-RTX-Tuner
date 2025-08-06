@@ -29,9 +29,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Test and fix the pack reinstaller, apparently 1.1.9 causes issues in rare cases
-But what's different?!?!
-
 - Make reinstall latest packages button glyph show something else (something related to redploying, not cloud)
 as long as a valid cache is available
 All you need is: an offline cache validator method, as long as cache is available
@@ -39,6 +36,13 @@ Button's visuals are set on startup mainwindow properties
 if button is clicked, cache validator is called again if updating it changes to cloud
 
 - Fix the funny behavior of textboxes when typing numbers
+
+
+
+- Make art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
+- Make random startup art many, or a few, randomly set an image after initializing Previews
+That way you'll have art displayed on startup as intended
+- Make 3 art pieces for Vanilla RTX, Vanilla RTX Normals, and Opus, based on their cover images, for checkbox selection
 
 - Two interesting ideas to explore further:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
@@ -209,6 +213,11 @@ public sealed partial class MainWindow : Window
 
         // Silent background credits retriever
         CreditsUpdater.GetCredits(false);
+
+        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        {
+            Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+        }
 
         // Release Mutex and save some of the variables upon closure
         this.Closed += (s, e) =>
@@ -818,6 +827,14 @@ public sealed partial class MainWindow : Window
         }
 
         Previewer.Instance.ClearPreviews();
+        // Here is why this prevents the final Previewer update image from appearing
+        // If you set an empty image here using Previewer.SetImage, it can be sometimes dodgy/unreliable
+        // Previewer.Instance.SetImages("ms-appx:///Assets/empty.png", "ms-appx:///Assets/empty.png", true);
+        // Likely because of WinUI timing issues
+        // ClearPreviews specifically FADES the vessels awa using a smooth transition 
+        // This smooth transition drags on longer than the final attempt of a control at updating the image vessel
+        // This makes it work correctly all the time reliably, because the fading drags on after updating UI controls is finished, for 75ms as of writing this
+
         PreviewVesselTop.Visibility = Visibility.Visible;
         PreviewVesselBottom.Visibility = Visibility.Visible;
     }
@@ -1303,6 +1320,11 @@ public sealed partial class MainWindow : Window
 
     private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
+        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        {
+            Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+        }
+
         try
         {
             if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
@@ -1333,6 +1355,10 @@ public sealed partial class MainWindow : Window
 
     private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
+        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        {
+            Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+        }
         try
         {
             ToggleControls(this, false);
@@ -1390,6 +1416,10 @@ public sealed partial class MainWindow : Window
         finally
         {
             _ = BlinkingLamp(false);
+            if (PackUpdater.IsMinecraftRunning())
+            {
+                Log("The game was already open, please restart the game for options.txt changes to take effect.", LogLevel.Warning);
+            }
         }
     }
 }
