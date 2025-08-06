@@ -985,7 +985,7 @@ public class PackUpdater
             }
             catch
             {
-                LogMessage("Cached package is corrupted, treating as no cache.");
+                LogMessage("Cached package is corrupted, treating as no cache available.");
                 exists = false;
                 cachedPath = null;
             }
@@ -998,6 +998,13 @@ public class PackUpdater
         var localSettings = ApplicationData.Current.LocalSettings;
         localSettings.Values["CachedZipballPath"] = path;
     }
+
+    public bool HasDeployableCache()
+    {
+        var (exists, _) = GetCacheInfo();
+        return exists;
+    }
+
 
     // ---------- Other Helpers
     private string GetTopLevelFolderForManifest(string manifestPath, string resourcePackPath)
