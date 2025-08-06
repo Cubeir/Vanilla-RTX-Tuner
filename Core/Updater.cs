@@ -715,6 +715,7 @@ public class PackUpdater
 
         bool success_status = false;
         string tempExtractionDir = null;
+        string resourcePackPath = null;
 
         try
         {
@@ -731,7 +732,7 @@ public class PackUpdater
                 return false;
             }
 
-            var resourcePackPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
+            resourcePackPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
             if (!Directory.Exists(resourcePackPath))
             {
                 Directory.CreateDirectory(resourcePackPath);
@@ -808,22 +809,22 @@ public class PackUpdater
             // Step 4: Atomically move and rename pack directories
             if (foundVanillaRTX && vanillaRTXSrc != null)
             {
+                LogMessage("✅ Deploying Vanilla RTX.");
                 var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXSrc));
                 Directory.Move(vanillaRTXSrc, tempDestination);
 
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "VanillaRTX");
                 Directory.Move(tempDestination, finalDestination);
-                LogMessage("✅ Deployed Vanilla RTX.");
             }
 
             if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
             {
+                LogMessage("✅ Deploying Vanilla RTX Normals.");
                 var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXNormalsSrc));
                 Directory.Move(vanillaRTXNormalsSrc, tempDestination);
 
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "VanillaRTXNormals");
                 Directory.Move(tempDestination, finalDestination);
-                LogMessage("✅ Deployed Vanilla RTX Normals.");
             }
 
             success_status = true;
@@ -836,7 +837,7 @@ public class PackUpdater
         }
         finally
         {
-            // Step 5: Clean up temp extraction directory
+            // Step 5: Clean up current temp extraction directory
             if (tempExtractionDir != null && Directory.Exists(tempExtractionDir))
             {
                 try
@@ -850,9 +851,34 @@ public class PackUpdater
                     LogMessage($"⚠️ Failed to clean up temp directory: {ex.Message}");
                 }
             }
+
+            // Step 6: Clean up any orphaned temp directories from previous runs
+            if (resourcePackPath != null)
+            {
+                try
+                {
+                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "_tunertemp_*", SearchOption.TopDirectoryOnly);
+                    foreach (var orphanedDir in orphanedDirs)
+                    {
+                        try
+                        {
+                            ForceWritable(orphanedDir);
+                            Directory.Delete(orphanedDir, true);
+                            LogMessage($"🧹 Removed orphaned temp directories.");
+                        }
+                        catch
+                        {
+                            // Silently ignore - might be in use or permission issue
+                        }
+                    }
+                }
+                catch
+                {
+                    // Silently ignore orphaned cleanup failures - not critical
+                }
+            }
         }
     }
-
     private string GetSafeDirectoryName(string parentPath, string desiredName)
     {
         var fullPath = Path.Combine(parentPath, desiredName);
@@ -900,7 +926,7 @@ public class PackUpdater
                 {
                     ForceWritable(topLevelFolder);
                     Directory.Delete(topLevelFolder, true);
-                    LogMessage($"🗑️ Found & removed previous {packName} pack.");
+                    LogMessage($"🗑️ Removed previous {packName} pack.");
                 }
             }
         }
