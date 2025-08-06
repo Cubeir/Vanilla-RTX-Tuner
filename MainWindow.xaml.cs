@@ -33,19 +33,12 @@ namespace Vanilla_RTX_Tuner_WinUI;
 But what's different?!?!
 
 - Make reinstall latest packages button glyph show something else (something related to redploying, not cloud)
-as long as a valid cache is avaialble
+as long as a valid cache is available
 All you need is: an offline cache validator method, as long as cache is available
 Button's visuals are set on startup mainwindow properties
 if button is clicked, cache validator is called again if updating it changes to cloud
 
 - Fix the funny behavior of textboxes when typing numbers
-
-- A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
-Besides that you're gonna need something to unify the logging
-A public variable that gets all text dumped to perhaps, and gradually writes out its contents to sidebarlog whenever it is changed, async
-This way direct interaction with non-UI threads will be zero
-Long running tasks dump their text, UI thread gradually writes it out on its own.
-only concern is performance with large logs
 
 - Two interesting ideas to explore further:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
@@ -55,12 +48,16 @@ its scattering triplets will be multipled by a toned-down number, e.g. a 10x res
 2. For Emissivity adjustment, Desaturate pixels towards white with the excess -- dampened
 these aren't really standard adjustments, but they allow absurd values to leave an impact.
 
-- A modern settings pane to host non-functionality related controls in the future
-Such as selecting light/dark theme or auto from there (Almost every winui 3.0 app does this)
-Move disclaimers, credits, etc.. in there too instead of logging them at the start
-Once startup log is less busy, log KoFi member names once in a while (same 1 day CD?)
 
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
+
+- A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
+Besides that you're gonna need something to unify the logging
+A public variable that gets all text dumped to perhaps, and gradually writes out its contents to sidebarlog whenever it is changed, async
+This way direct interaction with non-UI threads will be zero
+Long running tasks dump their text, UI thread gradually writes it out on its own.
+only concern is performance with large logs
+
 
 - Refactor and use data Binding as much as possible
 Counter argument: if you do this, no more cool slider animations, besides, there won't be many more options and
@@ -127,6 +124,18 @@ public static class TunerVariables
     public static int ButcheredHeightmapAlpha = 0;
     public static bool AddEmissivityAmbientLight = false;
 
+    // Defaults backup (used as a compass for slider previews to know their defaults)
+    public static class Defaults
+    {
+        public const double FogMultiplier = 1.0;
+        public const double EmissivityMultiplier = 1.0;
+        public const int NormalIntensity = 100;
+        public const int MaterialNoiseOffset = 0;
+        public const int RoughenUpIntensity = 0;
+        public const int ButcheredHeightmapAlpha = 0;
+        public const bool AddEmissivityAmbientLight = false;
+    }
+
     // Settings we want saved and loaded upon startup, use in conjunction with UpdateUI method.
     public static void SaveSettings()
     {
@@ -155,7 +164,7 @@ public static class TunerVariables
         RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
         ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
 
-        AddEmissivityAmbientLight = (bool)(localSettings.Values["EmissivityAmbientLight"] ?? AddEmissivityAmbientLight);
+        AddEmissivityAmbientLight = (bool)(localSettings.Values["AddEmissivityAmbientLight"] ?? AddEmissivityAmbientLight);
 
         IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
     }
@@ -176,10 +185,10 @@ public sealed partial class MainWindow : Window
     {
         SetMainWindowProperties();
         InitializeComponent();
-        InitializePreviews();
+
+        Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom);
         LoadSettings();
         UpdateUI();
-
 
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
@@ -268,7 +277,6 @@ public sealed partial class MainWindow : Window
                 : Color.FromArgb(60, 255, 255, 255);
         });
     }
-
     public static void ThemeWatcher(Window window, Action<ElementTheme> onThemeChanged)
     {
         void HookThemeChangeListener()
@@ -292,79 +300,76 @@ public sealed partial class MainWindow : Window
         };
     }
 
-
-    // Art
-    private void InitializePreviews()
+    private void SetPreviews()
     {
-        Previews _previews = new Previews(PreviewVesselTop, PreviewVesselBottom);
-
-        _previews.InitializeSlider(FogMultiplierSlider,
+        Previewer.Instance.InitializeSlider(FogMultiplierSlider,
             "ms-appx:///Assets/previews/fog.default.png",
             "ms-appx:///Assets/previews/fog.min.png",
             "ms-appx:///Assets/previews/fog.max.png",
-            FogMultiplier // default value
+            Defaults.FogMultiplier // default value
         );
 
-        _previews.InitializeSlider(EmissivityMultiplierSlider,
+        Previewer.Instance.InitializeSlider(EmissivityMultiplierSlider,
             "ms-appx:///Assets/previews/emissivity.default.png",
             "ms-appx:///Assets/previews/emissivity.min.png",
             "ms-appx:///Assets/previews/emissivity.max.png",
-            EmissivityMultiplier
+            Defaults.EmissivityMultiplier
         );
 
-        _previews.InitializeSlider(NormalIntensitySlider,
+        Previewer.Instance.InitializeSlider(NormalIntensitySlider,
             "ms-appx:///Assets/previews/normals.default.png",
             "ms-appx:///Assets/previews/normals.flat.png",
             "ms-appx:///Assets/previews/normals.intense.png",
-            NormalIntensity
+            Defaults.NormalIntensity
         );
 
-        _previews.InitializeToggleSwitch(EmissivityAmbientLightToggle,
+        Previewer.Instance.InitializeToggleSwitch(EmissivityAmbientLightToggle,
             "ms-appx:///Assets/previews/emissivity.ambient.on.png",
             "ms-appx:///Assets/previews/emissivity.ambient.off.png"
         );
 
-        _previews.InitializeToggleButton(TargetPreviewToggle,
-            "ms-appx:///Assets/previews/beta.png",
-            "ms-appx:///Assets/previews/beta.not.png"
+        Previewer.Instance.InitializeToggleButton(TargetPreviewToggle,
+            "ms-appx:///Assets/previews/beta.not.png",
+            "ms-appx:///Assets/previews/beta.png"
+
         );
 
-        _previews.InitializeButton(LocatePacksButton,
+        Previewer.Instance.InitializeButton(LocatePacksButton,
             "ms-appx:///Assets/previews/locate.png"
         );
 
-        _previews.InitializeButton(ExportButton,
+        Previewer.Instance.InitializeButton(ExportButton,
             "ms-appx:///Assets/previews/chest.export.png"
         );
 
-        _previews.InitializeButton(UpdateVanillaRTXButton,
+        Previewer.Instance.InitializeButton(UpdateVanillaRTXButton,
             "ms-appx:///Assets/previews/repository.reinstall.png"
         );
 
-        _previews.InitializeButton(TuneSelectionButton,
+        Previewer.Instance.InitializeButton(TuneSelectionButton,
             "ms-appx:///Assets/previews/table.tune.png"
         );
 
-        _previews.InitializeButton(LaunchButton,
+        Previewer.Instance.InitializeButton(LaunchButton,
             "ms-appx:///Assets/previews/minecart.launch.png"
         );
 
-        _previews.InitializeButton(AppUpdaterButton,
+        Previewer.Instance.InitializeButton(AppUpdaterButton,
             "ms-appx:///Assets/previews/repository.appupdate.png"
         );
 
-        _previews.InitializeButton(DonateButton,
+        Previewer.Instance.InitializeButton(DonateButton,
             "ms-appx:///Assets/previews/cubeir.thankyou.png"
         );
 
-        _previews.InitializeButton(HelpButton,
+        Previewer.Instance.InitializeButton(HelpButton,
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
+
+        Previewer.Instance.InitializeButton(ResetButton,
+            "ms-appx:///Assets/previews/table.reset.png"
+        );
     }
-
-
-
-
 
     public enum LogLevel
     {
@@ -719,6 +724,9 @@ public sealed partial class MainWindow : Window
 
     public async void UpdateUI(double animationDurationSeconds = 0.33)
     {
+        PreviewVesselTop.Visibility = Visibility.Collapsed;
+        PreviewVesselBottom.Visibility = Visibility.Collapsed;
+
         // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
         {
@@ -730,22 +738,20 @@ public sealed partial class MainWindow : Window
             (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)ButcheredHeightmapAlpha, true)
         };
 
+        // store toggle-like variables
         var boolConfigs = new[]
         {
              (EmissivityAmbientLightToggle, AddEmissivityAmbientLight)
         };
 
+
+        // Handles toggle-like variables
         foreach (var (toggle, targetValue) in boolConfigs)
         {
             toggle.IsOn = targetValue;
         }
 
-
-        double Lerp(double start, double end, double t)
-        {
-            return start + (end - start) * t;
-        }
-        // handles a single slider/textbox pair
+        // Handles a single slider/textbox pair
         void UpdateControl(Microsoft.UI.Xaml.Controls.Slider slider, Microsoft.UI.Xaml.Controls.TextBox textBox,
                           double startValue, double targetValue, double progress, bool isInteger = false)
         {
@@ -753,7 +759,10 @@ public sealed partial class MainWindow : Window
             slider.Value = currentValue;
             textBox.Text = isInteger ? Math.Round(currentValue).ToString() : currentValue.ToString("0.0");
         }
-
+        double Lerp(double start, double end, double t)
+        {
+            return start + (end - start) * t;
+        }
 
         // Store starting values
         var startValues = sliderConfigs.Select(config => config.Item1.Value).ToArray();
@@ -773,20 +782,47 @@ public sealed partial class MainWindow : Window
                 UpdateControl(config.Item1, config.Item2, startValues[i], config.Item3, easeProgress, config.Item4);
             }
 
-            await Task.Delay(8); // 16 = roughly 60 FPS, but 120hz is the norm these days and it runs for less than a sec so its ok
+            await Task.Delay(8); // 16 = roughly 60 FPS
         }
 
-        // making sure final values are exact
+        // Make sure final values are exact
         for (int i = 0; i < sliderConfigs.Length; i++)
         {
             var config = sliderConfigs[i];
             UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
         }
 
-
-
+        // Special
         TargetPreviewToggle.IsChecked = IsTargetingPreview;
+
+
+        if (RanOnceFlag.Set("Initialize_UI_Previews_Only_With_The_First_Call"))
+        {
+            // Initialize Previes only once, Update UI is called once at the begenning, we want previews initilized only ONCE
+            // Why here? and not after UpdateUI in the MainWindow initializer?
+            // Because UpdateUI runs for a few miliseconds longer, the previewer ends up setting an image based on the final value update
+            // We'd want to initialize it only after the first UpdateUI method is called
+            SetPreviews();
+            // Log("We got art!");
+            // As for other times, we manually make vessels invisible and then visible again after updating UI is done, with an empty image as defined below.
+            // That way when reset button calls UpdateUI the final state will be visible and empty
+            
+            // Really the code below should be taking care of the the first initialization as well
+            // But I just wanted to make sure I use my cool flagging class which is super useful elsewhere.
+
+            // But no seriously, it feels slightly different, I can't put my finger on it, but initializing after updating UI in MainWindow()
+            // Will end up being slightly worse
+            // Here's the actual problem, upon first restart, for some god knows why reason the image vessel gets set the last thing changed by updateUI
+            // EVEN THOUGH AT THE END OF UPDATE UI WE CLEARLY SET IT TO EMPTY BEFORE MAKING IT VISIBLE
+            // WHAT'S WORSE: IT HAPPENS ONCE, RESTARTING THE APP AGAIN WON'T TRIGGER IT?!!??!?! WHY?!
+        }
+
+        // Set empty images before making vessels visible again
+        Previewer.Instance.SetImages("ms-appx:///Assets/empty.png", "ms-appx:///Assets/empty.png", false);
+        PreviewVesselTop.Visibility = Visibility.Visible;
+        PreviewVesselBottom.Visibility = Visibility.Visible;
     }
+
 
 
     public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
@@ -822,7 +858,6 @@ public sealed partial class MainWindow : Window
         }
         // lasang🍝 
     }
-
 
     #endregion -------------------------------
 
@@ -1083,8 +1118,7 @@ public sealed partial class MainWindow : Window
     }
 
 
-    // TODO: Bind values and rid yourself of this mess and the UpdateUI method.
-    // TODO: The textbox writing behavior is annoying, figure something.
+
     private void FogMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         FogMultiplier = Math.Round(e.NewValue, 2);
@@ -1190,22 +1224,30 @@ public sealed partial class MainWindow : Window
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
+        // Defaults
+        FogMultiplier = Defaults.FogMultiplier;
+        EmissivityMultiplier = Defaults.EmissivityMultiplier;
+        NormalIntensity = Defaults.NormalIntensity;
+        MaterialNoiseOffset = Defaults.MaterialNoiseOffset;
+        RoughenUpIntensity = Defaults.RoughenUpIntensity;
+        ButcheredHeightmapAlpha = Defaults.ButcheredHeightmapAlpha;
+        AddEmissivityAmbientLight = Defaults.AddEmissivityAmbientLight;
 
-        FogMultiplier = 1.0;
-        EmissivityMultiplier = 1.0;
-        NormalIntensity = 100;
-        MaterialNoiseOffset = 0;
-        RoughenUpIntensity = 0;
-        ButcheredHeightmapAlpha = 0;
-
-        AddEmissivityAmbientLight = false;
-
+        // Manually updates UI based on new values
         UpdateUI();
 
-        if (RanOnceFlag.Set("Said_Reset_Warning"))
+        // Empty the sidebarlog
+        SidebarLog.Text = "";
+
+        // Update button text
+        var text = UpdateVanillaRTXButtonText.Text;
+
+        // Ignore the run-once flag for now, let the warning be said every time since we empty the log
+        if (true || RanOnceFlag.Set("Said_Reset_Warning"))
         {
-            Log("Tuning variables reset.\nThis does not reset the pack back to its default state!\n\n" +
-                "To reset the pack back to original state, use 'Reinstall Latest Packs' button.", LogLevel.Informational);
+            RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
+            Log("Tuner variables reset.\nNote: This does not restore the pack back to its default state!\n\n" +
+                $"ℹ️ To reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
         }
     }
 
@@ -1348,7 +1390,4 @@ public sealed partial class MainWindow : Window
             _ = BlinkingLamp(false);
         }
     }
-
-
-
 }

@@ -432,4 +432,7 @@ public static class RanOnceFlag
         _flags.Add(key);
         return true;
     }
+
+    public static bool Unset(string key) => _flags.Remove(key); // ✅ new
 }
+
