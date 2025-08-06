@@ -7,8 +7,11 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
 
-public class Previews
+public class Previewer
 {
+    private static Previewer _instance;
+    private static readonly object _lock = new object();
+
     private Image _topVessel;
     private Image _bottomVessel;
     private bool _mouseDown = false;
@@ -22,6 +25,7 @@ public class Previews
     private Storyboard _currentTransition = null;
     private int _transitionId = 0;
     private bool _isTransitioning = false;
+    private bool _forceTransitionForControlChange = false;
 
     // Pending state for immediate application after transition
     private class PendingVesselState
@@ -39,17 +43,109 @@ public class Previews
         public bool HasPendingState { get; set; } = false;
     }
 
-    private PendingVesselState _pendingState = new PendingVesselState();
+    private readonly PendingVesselState _pendingState = new();
 
-    public Previews(Image topVessel, Image bottomVessel)
+    // Singleton instance access
+    public static Previewer Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    if (_instance == null)
+                    {
+                        throw new InvalidOperationException("Previews must be initialized first by calling Initialize()");
+                    }
+                }
+            }
+            return _instance;
+        }
+    }
+
+    // Private constructor
+    private Previewer(Image topVessel, Image bottomVessel)
     {
         _topVessel = topVessel;
         _bottomVessel = bottomVessel;
 
-        // Initialize with transparent state
         _topVessel.Opacity = 0.0;
         _bottomVessel.Opacity = 0.0;
     }
+
+    // Initialize the singleton instance (call this once in your MainWindow constructor)
+    public static void Initialize(Image topVessel, Image bottomVessel)
+    {
+        if (_instance == null)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new Previewer(topVessel, bottomVessel);
+                }
+            }
+        }
+    }
+
+    // Utility --
+    public void SetImages(string imageOnPath, string imageOffPath, bool useSmoothTransition = false)
+    {
+        double bottomOpacity = !string.IsNullOrEmpty(imageOffPath) ? 1.0 : 0.0;
+        double topOpacity = !string.IsNullOrEmpty(imageOnPath) ? 1.0 : 0.0;
+        SetVesselState(imageOffPath ?? "", imageOnPath ?? "", bottomOpacity, topOpacity, useSmoothTransition);
+    }
+
+    public void FadeVesselsOpacity(double targetOpacity, bool useSmoothTransition = true)
+    {
+        // Clamp opacity to valid range [0.0, 1.0]
+        targetOpacity = Math.Clamp(targetOpacity, 0.0, 1.0);
+
+        if (useSmoothTransition)
+        {
+            var fadeTop = new DoubleAnimation
+            {
+                From = _topVessel.Opacity,
+                To = targetOpacity,
+                Duration = TimeSpan.FromMilliseconds(75)
+            };
+
+            var fadeBottom = new DoubleAnimation
+            {
+                From = _bottomVessel.Opacity,
+                To = targetOpacity,
+                Duration = TimeSpan.FromMilliseconds(75)
+            };
+
+            var storyboard = new Storyboard();
+            Storyboard.SetTarget(fadeTop, _topVessel);
+            Storyboard.SetTargetProperty(fadeTop, "Opacity");
+            Storyboard.SetTarget(fadeBottom, _bottomVessel);
+            Storyboard.SetTargetProperty(fadeBottom, "Opacity");
+
+            storyboard.Children.Add(fadeTop);
+            storyboard.Children.Add(fadeBottom);
+
+            _currentTransition?.Stop();
+            _currentTransition = storyboard;
+            _isTransitioning = true;
+
+            storyboard.Completed += (s, e) =>
+            {
+                _isTransitioning = false;
+                _currentTransition = null;
+            };
+
+            storyboard.Begin();
+        }
+        else
+        {
+            _topVessel.Opacity = targetOpacity;
+            _bottomVessel.Opacity = targetOpacity;
+        }
+    }
+    // Utility --
 
     public void InitializeSlider(Slider slider, string defaultImagePath, string minImagePath, string maxImagePath, double defaultValue)
     {
@@ -150,8 +246,24 @@ public class Previews
             ImageOffPath = imageOffPath
         });
 
-        toggleButton.Checked += (s, e) => SetTogglePreview(toggleButton, true);
-        toggleButton.Unchecked += (s, e) => SetTogglePreview(toggleButton, false);
+        // Don't initialize preview state immediately - let it show on first hover
+        // This prevents images from showing up on app startup
+
+        toggleButton.Checked += (s, e) => {
+            // Only update if this control is currently active (being hovered/interacted with)
+            if (_activeControl == toggleButton)
+            {
+                SetTogglePreview(toggleButton, true);
+            }
+        };
+
+        toggleButton.Unchecked += (s, e) => {
+            // Only update if this control is currently active (being hovered/interacted with)
+            if (_activeControl == toggleButton)
+            {
+                SetTogglePreview(toggleButton, false);
+            }
+        };
 
         toggleButton.PointerEntered += (s, e) =>
         {
@@ -197,7 +309,15 @@ public class Previews
             ImageOffPath = imageOffPath
         });
 
-        toggleSwitch.Toggled += (s, e) => SetTogglePreview(toggleSwitch, toggleSwitch.IsOn);
+        // Don't initialize preview state immediately - let it show on first hover
+
+        toggleSwitch.Toggled += (s, e) => {
+            // Only update if this control is currently active (being hovered/interacted with)
+            if (_activeControl == toggleSwitch)
+            {
+                SetTogglePreview(toggleSwitch, toggleSwitch.IsOn);
+            }
+        };
 
         toggleSwitch.PointerEntered += (s, e) =>
         {
@@ -243,8 +363,23 @@ public class Previews
             ImageOffPath = imageOffPath
         });
 
-        checkBox.Checked += (s, e) => SetTogglePreview(checkBox, true);
-        checkBox.Unchecked += (s, e) => SetTogglePreview(checkBox, false);
+        // Don't initialize preview state immediately - let it show on first hover
+
+        checkBox.Checked += (s, e) => {
+            // Only update if this control is currently active (being hovered/interacted with)
+            if (_activeControl == checkBox)
+            {
+                SetTogglePreview(checkBox, true);
+            }
+        };
+
+        checkBox.Unchecked += (s, e) => {
+            // Only update if this control is currently active (being hovered/interacted with)
+            if (_activeControl == checkBox)
+            {
+                SetTogglePreview(checkBox, false);
+            }
+        };
 
         checkBox.PointerEntered += (s, e) =>
         {
@@ -291,6 +426,7 @@ public class Previews
         {
             // Mark that we need a transition for control change
             _pendingState.HasPendingState = false; // Will be set by the calling method
+            _forceTransitionForControlChange = true; // New flag to force smooth transitions
         }
     }
 
@@ -304,78 +440,57 @@ public class Previews
         double maxValue = slider.Maximum;
         double defaultValue = data.DefaultValue;
 
-        // Bottom vessel: Always the default image if provided, otherwise opacity 0
-        double bottomOpacity = !string.IsNullOrEmpty(data.DefaultImagePath) ? 1.0 : 0.0;
-        if (!string.IsNullOrEmpty(data.DefaultImagePath) && _currentBottomImage != data.DefaultImagePath)
-        {
-            SetBottomVesselImage(data.DefaultImagePath);
-            _currentBottomImage = data.DefaultImagePath;
-        }
-        if (_bottomVessel.Opacity != bottomOpacity)
-        {
-            _bottomVessel.Opacity = bottomOpacity;
-        }
+        // Determine target images and opacities
+        string targetBottomImage = data.DefaultImagePath ?? "";
+        double targetBottomOpacity = !string.IsNullOrEmpty(data.DefaultImagePath) ? 1.0 : 0.0;
 
         // Check if both min and max images are null - if so, set top vessel opacity to 0
         bool bothMinMaxNull = string.IsNullOrEmpty(data.MinImagePath) && string.IsNullOrEmpty(data.MaxImagePath);
-        if (bothMinMaxNull)
-        {
-            if (_topVessel.Opacity != 0.0)
-            {
-                _topVessel.Opacity = 0.0;
-            }
-            return;
-        }
+        string targetTopImage = "";
+        double targetTopOpacity = 0.0;
 
-        // Top vessel: Dynamic image and opacity based on slider position
-        string targetTopImage;
-        double targetTopOpacity;
-
-        if (currentValue >= defaultValue)
+        if (!bothMinMaxNull)
         {
-            targetTopImage = data.MaxImagePath;
-            if (string.IsNullOrEmpty(targetTopImage))
+            // Top vessel: Dynamic image and opacity based on slider position
+            if (currentValue >= defaultValue)
             {
-                targetTopOpacity = 0.0;
-            }
-            else if (maxValue == defaultValue)
-            {
-                targetTopOpacity = 0.0;
+                targetTopImage = data.MaxImagePath ?? "";
+                if (!string.IsNullOrEmpty(targetTopImage))
+                {
+                    if (maxValue == defaultValue)
+                    {
+                        targetTopOpacity = 0.0;
+                    }
+                    else
+                    {
+                        double progress = (currentValue - defaultValue) / (maxValue - defaultValue);
+                        targetTopOpacity = Math.Min(1.0, Math.Max(0.0, progress));
+                    }
+                }
             }
             else
             {
-                double progress = (currentValue - defaultValue) / (maxValue - defaultValue);
-                targetTopOpacity = Math.Min(1.0, Math.Max(0.0, progress));
-            }
-        }
-        else
-        {
-            targetTopImage = data.MinImagePath;
-            if (string.IsNullOrEmpty(targetTopImage))
-            {
-                targetTopOpacity = 0.0;
-            }
-            else if (minValue == defaultValue)
-            {
-                targetTopOpacity = 0.0;
-            }
-            else
-            {
-                double progress = (defaultValue - currentValue) / (defaultValue - minValue);
-                targetTopOpacity = Math.Min(1.0, Math.Max(0.0, progress));
+                targetTopImage = data.MinImagePath ?? "";
+                if (!string.IsNullOrEmpty(targetTopImage))
+                {
+                    if (minValue == defaultValue)
+                    {
+                        targetTopOpacity = 0.0;
+                    }
+                    else
+                    {
+                        double progress = (defaultValue - currentValue) / (defaultValue - minValue);
+                        targetTopOpacity = Math.Min(1.0, Math.Max(0.0, progress));
+                    }
+                }
             }
         }
 
-        // Handle top vessel image change with smooth transition
-        if (!string.IsNullOrEmpty(targetTopImage) && _currentTopImage != targetTopImage)
-        {
-            SetTopVesselImageWithSmoothing(targetTopImage, targetTopOpacity);
-        }
-        else
-        {
-            // Just opacity change - use smooth animation
-            SetTopVesselOpacitySmooth(targetTopOpacity);
-        }
+        // Use main transition system for inter-control changes, direct updates for intra-control
+        bool useTransition = _forceTransitionForControlChange;
+        _forceTransitionForControlChange = false; // Reset the flag
+
+        SetVesselState(targetBottomImage, targetTopImage, targetBottomOpacity, targetTopOpacity, useTransition);
     }
 
     private void SetButtonPreview(Button button, bool isPressed)
@@ -407,7 +522,13 @@ public class Previews
     {
         bool bottomImageChanged = !string.IsNullOrEmpty(bottomImagePath) && _currentBottomImage != bottomImagePath;
         bool topImageChanged = !string.IsNullOrEmpty(topImagePath) && _currentTopImage != topImagePath;
-        bool needsTransition = allowTransition && (bottomImageChanged || topImageChanged);
+        bool bottomOpacityChanged = Math.Abs(_bottomVessel.Opacity - bottomOpacity) > 0.01;
+        bool topOpacityChanged = Math.Abs(_topVessel.Opacity - topOpacity) > 0.01;
+
+        // Need transition if images changed OR if we're going from/to zero opacity with smooth transitions enabled
+        bool needsTransition = allowTransition && (bottomImageChanged || topImageChanged ||
+            (bottomOpacityChanged && (_bottomVessel.Opacity == 0.0 || bottomOpacity == 0.0)) ||
+            (topOpacityChanged && (_topVessel.Opacity == 0.0 || topOpacity == 0.0)));
 
         if (!needsTransition)
         {
@@ -443,50 +564,143 @@ public class Previews
         _isTransitioning = true;
         int currentTransitionId = ++_transitionId;
 
-        // Quick fade out both vessels
-        var fadeOutTop = new DoubleAnimation
+        // Determine if we need to fade out first (for image changes) or can directly fade to target
+        bool bottomImageChanging = !string.IsNullOrEmpty(_pendingState.BottomImagePath) && _currentBottomImage != _pendingState.BottomImagePath;
+        bool topImageChanging = !string.IsNullOrEmpty(_pendingState.TopImagePath) && _currentTopImage != _pendingState.TopImagePath;
+
+        if (bottomImageChanging || topImageChanging)
         {
-            From = _topVessel.Opacity,
-            To = 0.0,
-            Duration = TimeSpan.FromMilliseconds(75)
+            // Image is changing - fade out first, then apply new image and fade in
+            var fadeOutTop = new DoubleAnimation
+            {
+                From = _topVessel.Opacity,
+                To = 0.0,
+                Duration = TimeSpan.FromMilliseconds(75)
+            };
+
+            var fadeOutBottom = new DoubleAnimation
+            {
+                From = _bottomVessel.Opacity,
+                To = 0.0,
+                Duration = TimeSpan.FromMilliseconds(75)
+            };
+
+            var storyboard = new Storyboard();
+            Storyboard.SetTarget(fadeOutTop, _topVessel);
+            Storyboard.SetTargetProperty(fadeOutTop, "Opacity");
+            Storyboard.SetTarget(fadeOutBottom, _bottomVessel);
+            Storyboard.SetTargetProperty(fadeOutBottom, "Opacity");
+
+            storyboard.Children.Add(fadeOutTop);
+            storyboard.Children.Add(fadeOutBottom);
+
+            storyboard.Completed += (s, e) =>
+            {
+                // Check if this transition is still valid
+                if (currentTransitionId != _transitionId || !_pendingState.HasPendingState)
+                {
+                    _isTransitioning = false;
+                    return;
+                }
+
+                // Apply the images while vessels are faded out
+                ApplyVesselState(_pendingState.BottomImagePath, _pendingState.TopImagePath, 0.0, 0.0);
+
+                // Now fade in to target opacities
+                FadeInToTargetOpacities(currentTransitionId);
+            };
+
+            _currentTransition = storyboard;
+            storyboard.Begin();
+        }
+        else
+        {
+            // No image change - just animate opacity directly to target
+            FadeToTargetOpacities(currentTransitionId);
+        }
+    }
+
+    private void FadeInToTargetOpacities(int transitionId)
+    {
+        var fadeInTop = new DoubleAnimation
+        {
+            From = 0.0,
+            To = _pendingState.TopOpacity,
+            Duration = TimeSpan.FromMilliseconds(100)
         };
 
-        var fadeOutBottom = new DoubleAnimation
+        var fadeInBottom = new DoubleAnimation
         {
-            From = _bottomVessel.Opacity,
-            To = 0.0,
-            Duration = TimeSpan.FromMilliseconds(75)
+            From = 0.0,
+            To = _pendingState.BottomOpacity,
+            Duration = TimeSpan.FromMilliseconds(100)
         };
 
         var storyboard = new Storyboard();
-        Storyboard.SetTarget(fadeOutTop, _topVessel);
-        Storyboard.SetTargetProperty(fadeOutTop, "Opacity");
-        Storyboard.SetTarget(fadeOutBottom, _bottomVessel);
-        Storyboard.SetTargetProperty(fadeOutBottom, "Opacity");
+        Storyboard.SetTarget(fadeInTop, _topVessel);
+        Storyboard.SetTargetProperty(fadeInTop, "Opacity");
+        Storyboard.SetTarget(fadeInBottom, _bottomVessel);
+        Storyboard.SetTargetProperty(fadeInBottom, "Opacity");
 
-        storyboard.Children.Add(fadeOutTop);
-        storyboard.Children.Add(fadeOutBottom);
+        storyboard.Children.Add(fadeInTop);
+        storyboard.Children.Add(fadeInBottom);
 
         storyboard.Completed += (s, e) =>
         {
-            // Check if this transition is still valid
-            if (currentTransitionId != _transitionId || !_pendingState.HasPendingState)
+            if (transitionId == _transitionId)
             {
+                _pendingState.HasPendingState = false;
                 _isTransitioning = false;
-                return;
+
+                // Check if there's another pending state that came in during transition
+                if (_pendingState.HasPendingState)
+                {
+                    StartCrossFadeTransition();
+                }
             }
+        };
 
-            // Apply the images while vessels are faded out
-            ApplyVesselState(_pendingState.BottomImagePath, _pendingState.TopImagePath,
-                           _pendingState.BottomOpacity, _pendingState.TopOpacity);
+        _currentTransition = storyboard;
+        storyboard.Begin();
+    }
 
-            _pendingState.HasPendingState = false;
-            _isTransitioning = false;
+    private void FadeToTargetOpacities(int transitionId)
+    {
+        var fadeTop = new DoubleAnimation
+        {
+            From = _topVessel.Opacity,
+            To = _pendingState.TopOpacity,
+            Duration = TimeSpan.FromMilliseconds(100)
+        };
 
-            // Check if there's another pending state that came in during transition
-            if (_pendingState.HasPendingState)
+        var fadeBottom = new DoubleAnimation
+        {
+            From = _bottomVessel.Opacity,
+            To = _pendingState.BottomOpacity,
+            Duration = TimeSpan.FromMilliseconds(100)
+        };
+
+        var storyboard = new Storyboard();
+        Storyboard.SetTarget(fadeTop, _topVessel);
+        Storyboard.SetTargetProperty(fadeTop, "Opacity");
+        Storyboard.SetTarget(fadeBottom, _bottomVessel);
+        Storyboard.SetTargetProperty(fadeBottom, "Opacity");
+
+        storyboard.Children.Add(fadeTop);
+        storyboard.Children.Add(fadeBottom);
+
+        storyboard.Completed += (s, e) =>
+        {
+            if (transitionId == _transitionId)
             {
-                StartCrossFadeTransition();
+                _pendingState.HasPendingState = false;
+                _isTransitioning = false;
+
+                // Check if there's another pending state that came in during transition
+                if (_pendingState.HasPendingState)
+                {
+                    StartCrossFadeTransition();
+                }
             }
         };
 
@@ -503,8 +717,6 @@ public class Previews
             _currentBottomImage = bottomImagePath;
         }
 
-        _bottomVessel.Opacity = bottomOpacity;
-
         // Apply top vessel
         if (!string.IsNullOrEmpty(topImagePath) && _currentTopImage != topImagePath)
         {
@@ -512,6 +724,8 @@ public class Previews
             _currentTopImage = topImagePath;
         }
 
+        // Set opacities (will be animated by the calling transition if needed)
+        _bottomVessel.Opacity = bottomOpacity;
         _topVessel.Opacity = topOpacity;
     }
 
@@ -530,56 +744,6 @@ public class Previews
             _topVessel.Source = new BitmapImage(new Uri(imagePath));
         }
     }
-
-    // Smooth image changing for sliders only - top vessel only
-    private void SetTopVesselImageWithSmoothing(string imagePath, double targetOpacity)
-    {
-        if (string.IsNullOrEmpty(imagePath) || _currentTopImage == imagePath) return;
-
-        // Quick fade out, change image, then set correct opacity
-        var fadeOut = new DoubleAnimation
-        {
-            From = _topVessel.Opacity,
-            To = 0.0,
-            Duration = TimeSpan.FromMilliseconds(50)
-        };
-
-        var storyboard = new Storyboard();
-        Storyboard.SetTarget(fadeOut, _topVessel);
-        Storyboard.SetTargetProperty(fadeOut, "Opacity");
-        storyboard.Children.Add(fadeOut);
-
-        storyboard.Completed += (s, e) =>
-        {
-            SetTopVesselImage(imagePath);
-            _currentTopImage = imagePath;
-
-            // Set the correct opacity directly - no animation needed
-            _topVessel.Opacity = targetOpacity;
-        };
-
-        storyboard.Begin();
-    }
-
-    // Smooth opacity changes for sliders only (when no image change is needed)
-    private void SetTopVesselOpacitySmooth(double targetOpacity)
-    {
-        if (Math.Abs(_topVessel.Opacity - targetOpacity) < 0.01) return;
-
-        var fadeAnimation = new DoubleAnimation
-        {
-            From = _topVessel.Opacity,
-            To = targetOpacity,
-            Duration = TimeSpan.FromMilliseconds(100)
-        };
-
-        var storyboard = new Storyboard();
-        Storyboard.SetTarget(fadeAnimation, _topVessel);
-        Storyboard.SetTargetProperty(fadeAnimation, "Opacity");
-        storyboard.Children.Add(fadeAnimation);
-        storyboard.Begin();
-    }
-
     private class SliderPreviewData
     {
         public string DefaultImagePath
