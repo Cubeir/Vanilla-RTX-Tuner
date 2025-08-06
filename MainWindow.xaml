@@ -647,7 +647,8 @@
                         <FontIcon Glyph="&#xEBD3;"
                                   FontSize="18"
                                   Margin="0,0,8,0"
-                                  VerticalAlignment="Center" />
+                                  VerticalAlignment="Center"
+                                  x:Name="UpdateVanillaRTXGlyph"/>
                         <TextBlock Text="Reinstall Latest Packs"
                                    VerticalAlignment="Center"
                                    x:Name="UpdateVanillaRTXButtonText"/>

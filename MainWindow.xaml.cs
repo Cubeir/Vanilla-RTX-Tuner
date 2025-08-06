@@ -38,9 +38,6 @@ if button is clicked, cache validator is called again if updating it changes to 
 - Animate the Update button on Tuner?
 when updating, let it spin
 
-- Fix the funny behavior of textboxes when typing numbers
-
-
 
 - Make art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
 - Make random startup art many, or a few, randomly set an image after initializing Previews
@@ -184,6 +181,7 @@ public sealed partial class MainWindow : Window
     public static MainWindow? Instance { get; private set; }
     private readonly WindowStateManager _windowStateManager;
     private readonly ProgressBarManager _progressManager;
+    private readonly PackUpdater _updater = new();
 
     private static CancellationTokenSource? _lampBlinkCts;
     private static readonly Dictionary<string, BitmapImage> _imageCache = new();
@@ -193,6 +191,7 @@ public sealed partial class MainWindow : Window
         SetMainWindowProperties();
         InitializeComponent();
 
+        // Load settings, then update UI, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom);
         LoadSettings();
         UpdateUI();
@@ -217,9 +216,22 @@ public sealed partial class MainWindow : Window
         // Silent background credits retriever
         CreditsUpdater.GetCredits(false);
 
+        // Warning if MC is running
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
         {
             Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+        }
+
+        // Set reinstall latest packs button visuals based on cache status
+        if (_updater.HasDeployableCache())
+        {
+            UpdateVanillaRTXGlyph.Glyph = "\uE7B8";
+            UpdateVanillaRTXGlyph.FontSize = 16;
+        }
+        else
+        {
+            UpdateVanillaRTXGlyph.Glyph = "\uEBD3";
+            UpdateVanillaRTXGlyph.FontSize = 18;
         }
 
         // Release Mutex and save some of the variables upon closure
@@ -288,6 +300,7 @@ public sealed partial class MainWindow : Window
                 ? Color.FromArgb(40, 0, 0, 0)
                 : Color.FromArgb(60, 255, 255, 255);
         });
+
     }
     public static void ThemeWatcher(Window window, Action<ElementTheme> onThemeChanged)
     {
@@ -1454,10 +1467,22 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
-            BlinkingLamp(false);
+            _ = BlinkingLamp(false);
             ToggleControls(this, true);
                 _progressManager.HideProgress();
             FlushTheseVariables(true, true);
+
+            // Set reinstall latest packs button visuals based on cache status
+            if (_updater.HasDeployableCache())
+            {
+                UpdateVanillaRTXGlyph.Glyph = "\uE7B8";
+                UpdateVanillaRTXGlyph.FontSize = 16;
+            }
+            else
+            {
+                UpdateVanillaRTXGlyph.Glyph = "\uEBD3";
+                UpdateVanillaRTXGlyph.FontSize = 18;
+            }
         }
     }
 
