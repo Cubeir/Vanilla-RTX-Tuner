@@ -181,7 +181,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
         // Load settings, then update UI, image vessels are handled in UpdateUI as well
-        Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom);
+        Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
         UpdateUI();
 
@@ -367,8 +367,8 @@ public sealed partial class MainWindow : Window
         );
 
         Previewer.Instance.InitializeToggleButton(TargetPreviewToggle,
-            "ms-appx:///Assets/previews/beta.not.png",
-            "ms-appx:///Assets/previews/beta.png"
+            "ms-appx:///Assets/previews/preview.overlay.png",
+            "ms-appx:///Assets/previews/preview.png"
         );
 
         Previewer.Instance.InitializeButton(LocatePacksButton,
@@ -771,6 +771,9 @@ public sealed partial class MainWindow : Window
         PreviewVesselTop.Visibility = Visibility.Collapsed;
         PreviewVesselBottom.Visibility = Visibility.Collapsed;
 
+        // Hide vessel background, gets visible again with control updates
+        PreviewVesselBackground.Visibility = Visibility.Collapsed;
+
         // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
         {
@@ -861,7 +864,6 @@ public sealed partial class MainWindow : Window
             // WHAT'S WORSE: IT HAPPENS ONCE, RESTARTING THE APP AGAIN WON'T TRIGGER IT?!!??!?! WHY?!
         }
 
-        
         Previewer.Instance.ClearPreviews();
         // TODO: This is the place to randomly set an splash art in the future, fade it in using setimages
         // Previewer.Instance.SetImages("ms-appx:///Assets/previews/fog.default.png", "ms-appx:///Assets/previews/fog.default.png", true);

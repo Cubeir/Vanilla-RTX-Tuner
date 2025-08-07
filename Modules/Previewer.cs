@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
+using static Vanilla_RTX_Tuner_WinUI.MainWindow;
 
 namespace Vanilla_RTX_Tuner_WinUI.Modules;
 public class Previewer
@@ -13,6 +14,7 @@ public class Previewer
 
     private Image _topVessel;
     private Image _bottomVessel;
+    private Image _bg;
     private bool _mouseDown = false;
     private FrameworkElement? _activeControl = null;
 
@@ -64,17 +66,19 @@ public class Previewer
     }
 
     // Private constructor
-    private Previewer(Image topVessel, Image bottomVessel)
+    private Previewer(Image topVessel, Image bottomVessel, Image backgroundVessel)
     {
         _topVessel = topVessel;
         _bottomVessel = bottomVessel;
+        _bg = backgroundVessel;
 
         _topVessel.Opacity = 0.0;
         _bottomVessel.Opacity = 0.0;
+        // _bg vessel retains its opacity as defined in the xaml
     }
 
     // Initialize the singleton instance
-    public static void Initialize(Image topVessel, Image bottomVessel)
+    public static void Initialize(Image topVessel, Image bottomVessel, Image backgroundVessel)
     {
         if (_instance == null)
         {
@@ -82,7 +86,7 @@ public class Previewer
             {
                 if (_instance == null)
                 {
-                    _instance = new Previewer(topVessel, bottomVessel);
+                    _instance = new Previewer(topVessel, bottomVessel, backgroundVessel);
                 }
             }
         }
@@ -424,6 +428,8 @@ public class Previewer
         };
     }
 
+
+    // Handles vessel states between control changes (nothing to control, control to control, etc...)
     private void HandleControlChange(FrameworkElement newControl)
     {
         bool isControlChange = (_activeControl != newControl && _activeControl != null);
@@ -435,6 +441,8 @@ public class Previewer
             _pendingState.HasPendingState = false; // Will be set by the calling method
             _forceTransitionForControlChange = true; // New flag to force smooth transitions
         }
+
+        _bg.Visibility = Visibility.Visible;
     }
 
     private void UpdateSliderPreview(Slider slider)

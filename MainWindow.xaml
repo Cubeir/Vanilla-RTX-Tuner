@@ -289,7 +289,7 @@
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9997"
                    Visibility="Collapsed"
-                   Opacity="50"
+                   Opacity="100"
                    Source="ms-appx:///Assets/previews/background.png"
                    CacheMode="BitmapCache" />
         </Grid>
