@@ -29,7 +29,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 public partial class App : Application
 {
     private Window? _window;
-    private static Mutex _mutex = null;
+    private static Mutex? _mutex = null;
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -10,20 +8,20 @@ using Microsoft.UI.Xaml.Media.Animation;
 namespace Vanilla_RTX_Tuner_WinUI.Modules;
 public class Previewer
 {
-    private static Previewer _instance;
-    private static readonly object _lock = new object();
+    private static Previewer? _instance;
+    private static readonly object _lock = new();
 
     private Image _topVessel;
     private Image _bottomVessel;
     private bool _mouseDown = false;
-    private FrameworkElement _activeControl = null;
+    private FrameworkElement? _activeControl = null;
 
     // Image caching to prevent flicker
     private string _currentBottomImage = "";
     private string _currentTopImage = "";
 
     // Cross-fade animation system
-    private Storyboard _currentTransition = null;
+    private Storyboard? _currentTransition = null;
     private int _transitionId = 0;
     private bool _isTransitioning = false;
     private bool _forceTransitionForControlChange = false;

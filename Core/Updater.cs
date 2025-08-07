@@ -9,10 +9,9 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Storage;
 using Vanilla_RTX_Tuner_WinUI.Modules;
-using static Vanilla_RTX_Tuner_WinUI.Core.PackLocator;
+using static Vanilla_RTX_Tuner_WinUI.Core.PackLocator; // For static UUIDs, they are stored there
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
@@ -1219,7 +1218,7 @@ public class CreditsUpdater
                     return null;
 
                 return afterCredits.Substring(0, delimiterIndex).Trim() +
-                       "\n\nConsider supporting development of Vanilla RTX, maybe you'll find your name here next time?! ❤️";
+                       "\n\nConsider supporting development of Vanilla RTX, maybe you'll find your name here next time!? ❤️";
             }
         }
         catch

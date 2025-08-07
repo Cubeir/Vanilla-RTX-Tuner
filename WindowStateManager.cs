@@ -2,9 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.Foundation.Diagnostics;
 using Windows.Graphics;
-using WinRT.Interop;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
