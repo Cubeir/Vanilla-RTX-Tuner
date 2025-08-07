@@ -475,7 +475,7 @@ public class PackUpdater
 
     // Event for progress updates to avoid UI thread blocking
     public event Action<string>? ProgressUpdate;
-    private readonly List<string> _logMessages = new List<string>();
+    private readonly List<string> _logMessages = new();
 
     // For cooldown of checking for update to avoid spamming github
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
@@ -728,7 +728,7 @@ public class PackUpdater
             var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
             if (mcRoot == null)
             {
-                LogMessage("Minecraft data root not found. Please make sure the game is installed or has been launched at least once ❗");
+                LogMessage("❌ Minecraft data root not found. Please make sure the game is installed or has been launched at least once.");
                 return false;
             }
 
@@ -736,7 +736,7 @@ public class PackUpdater
             if (!Directory.Exists(resourcePackPath))
             {
                 Directory.CreateDirectory(resourcePackPath);
-                LogMessage("Resource pack directory was missing and has been created ℹ️");
+                LogMessage("❌ Resource pack directory was missing and has been created.");
             }
 
             // Step 1: Extract zipball directly into resource pack directory with UUID suffix
