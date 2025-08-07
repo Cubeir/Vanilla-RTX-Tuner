@@ -29,7 +29,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Make art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
+- Art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
 - Make 3 art pieces for Vanilla RTX, Vanilla RTX Normals, and Opus, based on their cover images, for checkbox selection
@@ -51,6 +51,9 @@ A public variable that gets all text dumped to perhaps, and gradually writes out
 This way direct interaction with non-UI threads will be zero
 Long running tasks dump their text, UI thread gradually writes it out on its own.
 only concern is performance with large logs
+
+This idea can be a public static method and it won't ever ever block Ui thread
+A variable is getting constantly updated with new logs, a worker in main UI thread's only job is to write out its content as it comes along
 
 - Figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
@@ -828,7 +831,12 @@ public sealed partial class MainWindow : Window
             // WHAT'S WORSE: IT HAPPENS ONCE, RESTARTING THE APP AGAIN WON'T TRIGGER IT?!!??!?! WHY?!
         }
 
+        
         Previewer.Instance.ClearPreviews();
+        // TODO: This is the place to randomly set an splash art in the future, fade it in using setimages
+        // Previewer.Instance.SetImages("ms-appx:///Assets/previews/fog.default.png", "ms-appx:///Assets/previews/fog.default.png", true);
+        // Set a default image or whatever you think is a good "default" for startup/after-reset
+
         // Here is why this prevents the final Previewer update image from appearing
         // If you set an empty image here using Previewer.SetImage, it can be sometimes dodgy/unreliable
         // Previewer.Instance.SetImages("ms-appx:///Assets/empty.png", "ms-appx:///Assets/empty.png", true);
@@ -1324,7 +1332,7 @@ public sealed partial class MainWindow : Window
         {
             RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
             var text = UpdateVanillaRTXButtonText.Text;
-            Log($"Note: this does not restore the packs back to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
+            Log($"Note: this does not restore the packs to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
             Log("Tuner variables reset.", LogLevel.Success);
         }
     }
