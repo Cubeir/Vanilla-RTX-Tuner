@@ -338,6 +338,27 @@ public sealed partial class MainWindow : Window
             Defaults.NormalIntensity
         );
 
+        Previewer.Instance.InitializeSlider(MaterialNoiseSlider,
+            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/empty.png",
+            Defaults.MaterialNoiseOffset
+        );
+
+        Previewer.Instance.InitializeSlider(RoughenUpSlider,
+            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/empty.png",
+            Defaults.RoughenUpIntensity
+        );
+
+        Previewer.Instance.InitializeSlider(ButcherHeightmapsSlider,
+            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/empty.png",
+            Defaults.ButcheredHeightmapAlpha
+        );
+
         Previewer.Instance.InitializeToggleSwitch(EmissivityAmbientLightToggle,
             "ms-appx:///Assets/previews/emissivity.ambient.on.png",
             "ms-appx:///Assets/previews/emissivity.ambient.off.png"
@@ -346,7 +367,6 @@ public sealed partial class MainWindow : Window
         Previewer.Instance.InitializeToggleButton(TargetPreviewToggle,
             "ms-appx:///Assets/previews/beta.not.png",
             "ms-appx:///Assets/previews/beta.png"
-
         );
 
         Previewer.Instance.InitializeButton(LocatePacksButton,
@@ -381,9 +401,9 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
 
-        /* Previewer.Instance.InitializeButton(ResetButton,
-            "ms-appx:///Assets/previews/table.reset.png"
-        ); */
+        Previewer.Instance.InitializeButton(ResetButton,
+            "ms-appx:///Assets/empty.png"
+        );
     }
 
 
