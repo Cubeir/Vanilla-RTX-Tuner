@@ -930,6 +930,7 @@ public sealed partial class MainWindow : Window
         AppUpdaterButton.IsEnabled = false;
 
         // Downloading department: Check if we already found an update and should proceed with download/install
+        // criteria is update URL and version both having been extracted from Github by AppUpdater class, otherwise we try to get them again in the following else block.
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
             _progressManager.ShowProgress();
@@ -956,13 +957,13 @@ public sealed partial class MainWindow : Window
             AppUpdaterButton.Background = new SolidColorBrush(Colors.Transparent);
             AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
-            // Clear these for the next time
+            // Clear these so next time it checks for updates in the else block below
             AppUpdater.latestAppVersion = null;
             AppUpdater.latestAppRemote_URL = null;
 
         }
 
-        // Checking department: If version and URL aren't both present, try to get them, check for updates.
+        // Checking department: If version and URL variables aren't filled (an update isn't available) try to get them, check for updates.
         else
         {
             AppUpdaterButton.IsEnabled = false;
