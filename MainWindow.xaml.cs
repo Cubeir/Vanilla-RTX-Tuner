@@ -21,6 +21,7 @@ using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Graphics;
 using Windows.Storage;
 using Windows.UI;
+using Vanilla_RTX_Tuner_WinUI.Modules;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
 
@@ -1364,7 +1365,7 @@ public sealed partial class MainWindow : Window
                 exportQueue.Add((VanillaRTXOpusLocation, "Vanilla_RTX_Opus_" + VanillaRTXOpusVersion + suffix));
 
             foreach (var (path, name) in exportQueue)
-                await Helpers.ExportMCPACK(path, name);
+                await Exporter.ExportMCPACK(path, name);
 
         }
         catch (Exception ex)

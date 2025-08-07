@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Storage;
+using Vanilla_RTX_Tuner_WinUI.Modules;
 using static Vanilla_RTX_Tuner_WinUI.Core.PackLocator;
 
 namespace Vanilla_RTX_Tuner_WinUI;

@@ -5,7 +5,8 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using static Vanilla_RTX_Tuner_WinUI.Core.Helpers;
+using static Vanilla_RTX_Tuner_WinUI.Modules.Helpers;
+using Vanilla_RTX_Tuner_WinUI.Core;
 using static Vanilla_RTX_Tuner_WinUI.Core.ProcessorVariables;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
