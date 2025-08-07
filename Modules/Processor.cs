@@ -6,10 +6,9 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.Modules.Helpers;
-using Vanilla_RTX_Tuner_WinUI.Core;
-using static Vanilla_RTX_Tuner_WinUI.Core.ProcessorVariables;
+using static Vanilla_RTX_Tuner_WinUI.Modules.ProcessorVariables;
 
-namespace Vanilla_RTX_Tuner_WinUI.Core;
+namespace Vanilla_RTX_Tuner_WinUI.Modules;
 
 public static class ProcessorVariables
 {
@@ -238,7 +237,7 @@ public class Processor
                                 var canIncrease = new bool[3];
 
                                 // Get current RGB values
-                                for (int i = 0; i < 3; i++)
+                                for (var i = 0; i < 3; i++)
                                 {
                                     if (TryGetDensityValue(scatteringToken[i], out var value))
                                     {
@@ -251,14 +250,14 @@ public class Processor
                                 var totalOverflow = 0.0;
                                 var componentsToProcess = canIncrease.Count(x => x);
 
-                                for (int i = 0; i < 3; i++)
+                                for (var i = 0; i < 3; i++)
                                 {
                                     if (canIncrease[i])
                                     {
                                         var newValue = rgbValues[i] + scatteringIncrease;
                                         if (newValue > 1.0)
                                         {
-                                            totalOverflow += (newValue - 1.0);
+                                            totalOverflow += newValue - 1.0;
                                             rgbValues[i] = 1.0;
                                             canIncrease[i] = false;
                                             componentsToProcess--;
@@ -274,7 +273,7 @@ public class Processor
                                 if (totalOverflow > 0 && componentsToProcess > 0)
                                 {
                                     var dampenedOverflow = totalOverflow * FOG_EXCESS_SCATTERING_DAMPEN / componentsToProcess;
-                                    for (int i = 0; i < 3; i++)
+                                    for (var i = 0; i < 3; i++)
                                     {
                                         if (canIncrease[i])
                                         {
@@ -284,7 +283,7 @@ public class Processor
                                 }
 
                                 // Update the scattering values
-                                for (int i = 0; i < 3; i++)
+                                for (var i = 0; i < 3; i++)
                                 {
                                     scatteringToken[i] = Math.Round(rgbValues[i], 7);
                                 }
@@ -657,7 +656,7 @@ public class Processor
         // Secondary Pass for Heightmaps
         void ProcessHeightmapsIntensity(string[] heightmapFiles)
         {
-            double userIntensity = NormalIntensity / 100.0;
+            var userIntensity = NormalIntensity / 100.0;
 
             foreach (var file in heightmapFiles)
             {
@@ -685,10 +684,10 @@ public class Processor
                     }
 
                     // Center point for contrast
-                    double center = (minGray + maxGray) / 2.0;
+                    var center = (minGray + maxGray) / 2.0;
 
                     // Calculate the multiplier needed to reach full contrast (at least two pixels at 0 and 255)
-                    double maxPossibleMult = 255.0 / (currentContrast);
+                    var maxPossibleMult = 255.0 / currentContrast;
 
                     // If user wants to reduce contrast
                     if (userIntensity < 1.0)
@@ -728,8 +727,8 @@ public class Processor
                     }
 
                     // If userIntensity exceeds maxPossibleMult, apply excess with DAMPEN
-                    double excess = userIntensity - maxPossibleMult;
-                    bool hasFullContrast = minGray == 0 && maxGray == 255;
+                    var excess = userIntensity - maxPossibleMult;
+                    var hasFullContrast = minGray == 0 && maxGray == 255;
 
                     for (var y = 0; y < height; y++)
                         for (var x = 0; x < width; x++)
@@ -739,7 +738,7 @@ public class Processor
                             var deviation = gray - center;
 
                             // First, bring to full contrast
-                            double newDeviation = deviation * maxPossibleMult;
+                            var newDeviation = deviation * maxPossibleMult;
 
                             // If image already has full contrast, or after this pass, apply excess with DAMPEN
                             if (hasFullContrast || Math.Abs(newDeviation) >= 127.5)
@@ -1012,9 +1011,9 @@ public class Processor
                 var height = bmp.Height;
 
                 // Check if this is an animated texture (flipbook)
-                bool isAnimated = false;
-                int frameHeight = width; // First frame is always square
-                int frameCount = 1;
+                var isAnimated = false;
+                var frameHeight = width; // First frame is always square
+                var frameCount = 1;
 
                 if (width > 0 && height >= width * 2 && height % width == 0)
                 {
@@ -1040,15 +1039,15 @@ public class Processor
 
                 var wroteBack = false;
 
-                for (int frame = 0; frame < frameCount; frame++)
+                for (var frame = 0; frame < frameCount; frame++)
                 {
-                    int frameStartY = frame * frameHeight;
+                    var frameStartY = frame * frameHeight;
 
                     for (var y = 0; y < frameHeight; y++)
                     {
                         for (var x = 0; x < width; x++)
                         {
-                            int actualY = frameStartY + y;
+                            var actualY = frameStartY + y;
                             var origColor = bmp.GetPixel(x, actualY);
                             int r = origColor.R;
                             int g = origColor.G;
@@ -1168,7 +1167,7 @@ public class Processor
 
             foreach (var part in parts)
             {
-                bool isVariantSuffix = false;
+                var isVariantSuffix = false;
                 foreach (var suffix in variantSuffixes)
                 {
                     // Remove the leading underscore from suffix for comparison
@@ -1235,9 +1234,9 @@ public class Processor
                     var height = bmp.Height;
 
                     // Check if this is an animated texture (flipbook)
-                    bool isAnimated = false;
-                    int frameHeight = width; // First frame is always square
-                    int frameCount = 1;
+                    var isAnimated = false;
+                    var frameHeight = width; // First frame is always square
+                    var frameCount = 1;
 
                     if (width > 0 && height >= width * 2 && height % width == 0)
                     {
@@ -1281,9 +1280,9 @@ public class Processor
                         blueOffsets = new int[width, frameHeight];
 
                         // Pre-generate noise pattern for the first frame dimensions
-                        for (int y = 0; y < frameHeight; y++)
+                        for (var y = 0; y < frameHeight; y++)
                         {
-                            for (int x = 0; x < width; x++)
+                            for (var x = 0; x < width; x++)
                             {
                                 redOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
                                 greenOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
@@ -1296,24 +1295,24 @@ public class Processor
 
                     var wroteBack = false;
 
-                    for (int frame = 0; frame < frameCount; frame++)
+                    for (var frame = 0; frame < frameCount; frame++)
                     {
-                        int frameStartY = frame * frameHeight;
+                        var frameStartY = frame * frameHeight;
 
                         for (var y = 0; y < frameHeight; y++)
                         {
                             for (var x = 0; x < width; x++)
                             {
-                                int actualY = frameStartY + y;
+                                var actualY = frameStartY + y;
                                 var origColor = bmp.GetPixel(x, actualY);
                                 int r = origColor.R;
                                 int g = origColor.G;
                                 int b = origColor.B;
 
                                 // Use cached noise offsets (same for all frames and variants)
-                                int redOffset = redOffsets[x, y];
-                                int greenOffset = greenOffsets[x, y];
-                                int blueOffset = blueOffsets[x, y];
+                                var redOffset = redOffsets[x, y];
+                                var greenOffset = greenOffsets[x, y];
+                                var blueOffset = blueOffsets[x, y];
 
                                 // effectiveness based on current color values
                                 var redEffectiveness = CalculateEffectiveness(r);

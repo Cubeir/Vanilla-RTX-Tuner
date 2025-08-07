@@ -1408,19 +1408,23 @@ public sealed partial class MainWindow : Window
             }
             else
             {
-                    _progressManager.ShowProgress();
+                _progressManager.ShowProgress();
                 BlinkingLamp(true);
                 ToggleControls(this, false);
 
                 await Task.Run(Processor.TuneSelectedPacks);
                 Log("Completed tuning.", LogLevel.Success);
+
+                // Turn it off
+                AddEmissivityAmbientLight = false;
+                EmissivityAmbientLightToggle.IsOn = false;
             }
         }
         finally
         {
             BlinkingLamp(false);
             ToggleControls(this, true);
-                _progressManager.HideProgress();
+            _progressManager.HideProgress();
         }
     }
 
