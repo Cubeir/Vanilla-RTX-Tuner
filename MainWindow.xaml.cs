@@ -338,6 +338,7 @@ public sealed partial class MainWindow : Window
             Defaults.NormalIntensity
         );
 
+        /*
         Previewer.Instance.InitializeSlider(MaterialNoiseSlider,
             "ms-appx:///Assets/empty.png",
             "ms-appx:///Assets/empty.png",
@@ -358,6 +359,7 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/empty.png",
             Defaults.ButcheredHeightmapAlpha
         );
+        */
 
         Previewer.Instance.InitializeToggleSwitch(EmissivityAmbientLightToggle,
             "ms-appx:///Assets/previews/emissivity.ambient.on.png",
@@ -400,10 +402,11 @@ public sealed partial class MainWindow : Window
         Previewer.Instance.InitializeButton(HelpButton,
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
-
+        /*
         Previewer.Instance.InitializeButton(ResetButton,
             "ms-appx:///Assets/empty.png"
         );
+        */
     }
 
 
