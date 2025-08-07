@@ -980,7 +980,7 @@ public class PackUpdater
             }
             catch
             {
-                LogMessage("Cached package is corrupted, treating as no cache available.");
+                LogMessage("⚠️ Cached package is corrupted, proceeding as if no cache was available.");
                 exists = false;
                 cachedPath = null;
             }
