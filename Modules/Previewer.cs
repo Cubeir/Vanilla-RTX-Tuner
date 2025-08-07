@@ -120,15 +120,23 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(27)
+                Duration = TimeSpan.FromMilliseconds(35)
             };
 
             var fadeBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(27)
+                Duration = TimeSpan.FromMilliseconds(35)
             };
+
+            var fadeBackground = new DoubleAnimation
+            {
+                From = _bg.Opacity,
+                To = targetOpacity,
+                Duration = TimeSpan.FromMilliseconds(35)
+            };
+
 
             var storyboard = new Storyboard();
             Storyboard.SetTarget(fadeTop, _topVessel);
@@ -446,7 +454,7 @@ public class Previewer
         FadeInBackground();
     }
 
-    private void FadeInBackground(double durationMs = 24)
+    private void FadeInBackground(double durationMs = 33)
     {
         if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
             return;
@@ -619,14 +627,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(25)
+                Duration = TimeSpan.FromMilliseconds(33)
             };
 
             var fadeOutBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(25)
+                Duration = TimeSpan.FromMilliseconds(33)
             };
 
             var storyboard = new Storyboard();
@@ -670,14 +678,14 @@ public class Previewer
         {
             From = 0.0,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(25)
+            Duration = TimeSpan.FromMilliseconds(33)
         };
 
         var fadeInBottom = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(25)
+            Duration = TimeSpan.FromMilliseconds(33)
         };
 
         var storyboard = new Storyboard();
@@ -714,14 +722,14 @@ public class Previewer
         {
             From = _topVessel.Opacity,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(25)
+            Duration = TimeSpan.FromMilliseconds(33)
         };
 
         var fadeBottom = new DoubleAnimation
         {
             From = _bottomVessel.Opacity,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(25)
+            Duration = TimeSpan.FromMilliseconds(33)
         };
 
         var storyboard = new Storyboard();

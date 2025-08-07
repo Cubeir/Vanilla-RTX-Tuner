@@ -765,7 +765,7 @@ public sealed partial class MainWindow : Window
 
 
 
-    public async void UpdateUI(double animationDurationSeconds = 0.025)
+    public async void UpdateUI(double animationDurationSeconds = 0.05)
     {
         // Hide vessels during UI updates, because they trigger vessel updates upon value change and can conflict
         PreviewVesselTop.Visibility = Visibility.Collapsed;
@@ -829,7 +829,7 @@ public sealed partial class MainWindow : Window
                 UpdateControl(config.Item1, config.Item2, startValues[i], config.Item3, easeProgress, config.Item4);
             }
 
-            await Task.Delay(8); // 16 = roughly 60 FPS
+            await Task.Delay(4); // 16 = roughly 60 FPS
         }
 
         // Make sure final values are exact
@@ -876,6 +876,10 @@ public sealed partial class MainWindow : Window
         // ClearPreviews specifically FADES the vessels awa using a smooth transition 
         // This smooth transition drags on longer than the final attempt of a control at updating the image vessel
         // This makes it work correctly all the time reliably, because the fading drags on after updating UI controls is finished
+
+        PreviewVesselTop.Opacity = 0.0;
+        PreviewVesselBottom.Opacity = 0.0;
+        PreviewVesselBackground.Opacity = 0.0;
 
         PreviewVesselTop.Visibility = Visibility.Visible;
         PreviewVesselBottom.Visibility = Visibility.Visible;
