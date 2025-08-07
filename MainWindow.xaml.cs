@@ -742,7 +742,7 @@ public sealed partial class MainWindow : Window
 
 
 
-    public async void UpdateUI(double animationDurationSeconds = 0.33)
+    public async void UpdateUI(double animationDurationSeconds = 0.25)
     {
         PreviewVesselTop.Visibility = Visibility.Collapsed;
         PreviewVesselBottom.Visibility = Visibility.Collapsed;
