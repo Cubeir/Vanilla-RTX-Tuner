@@ -406,7 +406,7 @@ public sealed partial class MainWindow : Window
             };
 
             string prefixedMessage = $"{prefix}{message}";
-            string separator = "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯";
+            string separator = "";
 
             if (string.IsNullOrWhiteSpace(textBox.Text))
             {

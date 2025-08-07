@@ -579,7 +579,7 @@ public class PackUpdater
             if (now < cooldownEnd)
             {
                 var minutesLeft = (int)Math.Ceiling((cooldownEnd - now).TotalMinutes);
-                LogMessage($"Skipped update check ⏳\nCooldown ends in: {minutesLeft} minute{(minutesLeft == 1 ? "" : "s")}");
+                LogMessage($"⏳ Skipped update check.\nCooldown ends in: {minutesLeft} minute{(minutesLeft == 1 ? "" : "s")}");
                 return false; // Use cache, skip remote check
             }
         }
@@ -810,6 +810,9 @@ public class PackUpdater
             if (foundVanillaRTX && vanillaRTXSrc != null)
             {
                 LogMessage("✅ Deploying Vanilla RTX.");
+                var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXSrc));
+                Directory.Move(vanillaRTXSrc, tempDestination);
+
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtx");
                 Directory.Move(vanillaRTXSrc, finalDestination);
             }
@@ -817,6 +820,9 @@ public class PackUpdater
             if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
             {
                 LogMessage("✅ Deploying Vanilla RTX Normals.");
+                var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXNormalsSrc));
+                Directory.Move(vanillaRTXNormalsSrc, tempDestination);
+
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtxn");
                 Directory.Move(vanillaRTXNormalsSrc, finalDestination);
             }
