@@ -765,14 +765,14 @@ public sealed partial class MainWindow : Window
 
 
 
-    public async void UpdateUI(double animationDurationSeconds = 0.25)
+    public async void UpdateUI(double animationDurationSeconds = 0.025)
     {
         // Hide vessels during UI updates, because they trigger vessel updates upon value change and can conflict
         PreviewVesselTop.Visibility = Visibility.Collapsed;
         PreviewVesselBottom.Visibility = Visibility.Collapsed;
 
         // Hide vessel background, gets visible again with control updates
-        PreviewVesselBackground.Visibility = Visibility.Collapsed;
+        PreviewVesselBackground.Opacity = 0;
 
         // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
@@ -875,7 +875,7 @@ public sealed partial class MainWindow : Window
         // Likely because of WinUI timing issues
         // ClearPreviews specifically FADES the vessels awa using a smooth transition 
         // This smooth transition drags on longer than the final attempt of a control at updating the image vessel
-        // This makes it work correctly all the time reliably, because the fading drags on after updating UI controls is finished, for 75ms as of writing this
+        // This makes it work correctly all the time reliably, because the fading drags on after updating UI controls is finished
 
         PreviewVesselTop.Visibility = Visibility.Visible;
         PreviewVesselBottom.Visibility = Visibility.Visible;

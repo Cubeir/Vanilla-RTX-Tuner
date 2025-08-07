@@ -288,8 +288,8 @@
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9997"
-                   Visibility="Collapsed"
-                   Opacity="100"
+                   Visibility="Visible"
+                   Opacity="0"
                    Source="ms-appx:///Assets/previews/background.png"
                    CacheMode="BitmapCache" />
         </Grid>
