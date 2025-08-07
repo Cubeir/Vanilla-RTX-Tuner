@@ -23,7 +23,7 @@ using Windows.Storage;
 using Windows.UI;
 using Vanilla_RTX_Tuner_WinUI.Modules;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using static Vanilla_RTX_Tuner_WinUI.WindowControlsManager;
+using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
@@ -767,6 +767,7 @@ public sealed partial class MainWindow : Window
 
     public async void UpdateUI(double animationDurationSeconds = 0.25)
     {
+        // Hide vessels during UI updates, because they trigger vessel updates upon value change and can conflict
         PreviewVesselTop.Visibility = Visibility.Collapsed;
         PreviewVesselBottom.Visibility = Visibility.Collapsed;
 

@@ -4,7 +4,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 // Replace this mess with something battle-tested
 public class WindowStateManager : IDisposable
@@ -70,7 +70,7 @@ public class WindowStateManager : IDisposable
         var physicalDefaultSize = LogicalToPhysical(logicalDefaultSize);
 
         var savedState = LoadWindowState();
-        SizeInt32 sizeToUse = physicalDefaultSize;
+        var sizeToUse = physicalDefaultSize;
         PointInt32? positionToUse = null;
 
         if (savedState.HasValue)
@@ -209,7 +209,7 @@ public class WindowStateManager : IDisposable
     }
 
     [DllImport("user32.dll")]
-    private static extern uint GetDpiForWindow(IntPtr hWnd);
+    private static extern uint GetDpiForWindow(nint hWnd);
 
     private bool IsPositionOnValidDisplay(PointInt32 position, SizeInt32 size)
     {
@@ -231,10 +231,10 @@ public class WindowStateManager : IDisposable
                 var displayRight = bounds.X + bounds.Width;
                 var displayBottom = bounds.Y + bounds.Height;
 
-                var horizontalOverlap = (windowRight > bounds.X + minVisibleWidth) &&
-                                       (position.X < displayRight - minVisibleWidth);
-                var verticalOverlap = (windowBottom > bounds.Y + minVisibleHeight) &&
-                                     (position.Y < displayBottom - minVisibleHeight);
+                var horizontalOverlap = windowRight > bounds.X + minVisibleWidth &&
+                                       position.X < displayRight - minVisibleWidth;
+                var verticalOverlap = windowBottom > bounds.Y + minVisibleHeight &&
+                                     position.Y < displayBottom - minVisibleHeight;
 
                 if (horizontalOverlap && verticalOverlap)
                 {
