@@ -380,10 +380,12 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
 
-        Previewer.Instance.InitializeButton(ResetButton,
+        /* Previewer.Instance.InitializeButton(ResetButton,
             "ms-appx:///Assets/previews/table.reset.png"
-        );
+        ); */
     }
+
+
 
     public enum LogLevel
     {
@@ -435,6 +437,7 @@ public sealed partial class MainWindow : Window
     }
 
 
+
     public static void OpenUrl(string url)
     {
         try
@@ -450,6 +453,7 @@ public sealed partial class MainWindow : Window
             Log($"Details: {ex.Message}", LogLevel.Informational);
         }
     }
+
 
 
     public async Task BlinkingLamp(bool enable)
@@ -734,6 +738,7 @@ public sealed partial class MainWindow : Window
             await tcs.Task;
         }
     }
+
 
 
     public async void UpdateUI(double animationDurationSeconds = 0.33)

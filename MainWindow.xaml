@@ -277,6 +277,21 @@
                    Opacity="100"
                    Source="ms-appx:///Assets/empty.png"
                    CacheMode="BitmapCache" />
+
+            <Image x:Name="PreviewVesselBackground"
+                   Width="Auto"
+                   Height="150"
+                   MaxWidth="{Binding ActualWidth, ElementName=SidebarLog}"
+                   Margin="8,0,0,17"
+                   Stretch="Uniform"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
+                   IsHitTestVisible="False"
+                   Canvas.ZIndex="9997"
+                   Visibility="Collapsed"
+                   Opacity="50"
+                   Source="ms-appx:///Assets/previews/background.png"
+                   CacheMode="BitmapCache" />
         </Grid>
 
         

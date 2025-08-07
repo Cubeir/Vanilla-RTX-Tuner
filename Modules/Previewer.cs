@@ -561,7 +561,6 @@ public class Previewer
         StartCrossFadeTransition();
     }
 
-    // Starts from current
     private void StartCrossFadeTransition()
     {
         if (_isTransitioning)
@@ -629,7 +628,6 @@ public class Previewer
         }
     }
 
-    // Always from 0
     private void FadeInToTargetOpacities(int transitionId)
     {
         var fadeInTop = new DoubleAnimation
