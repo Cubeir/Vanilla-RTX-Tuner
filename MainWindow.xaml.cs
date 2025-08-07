@@ -970,6 +970,8 @@ public sealed partial class MainWindow : Window
         // criteria is update URL and version both having been extracted from Github by AppUpdater class, otherwise we try to get them again in the following else block.
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
+            ToggleControls(this, false);
+
             _progressManager.ShowProgress();
             ToggleControls(this, false);
             _ = BlinkingLamp(true);
@@ -998,6 +1000,7 @@ public sealed partial class MainWindow : Window
             AppUpdater.latestAppVersion = null;
             AppUpdater.latestAppRemote_URL = null;
 
+            ToggleControls(this, true);
         }
 
         // Checking department: If version and URL variables aren't filled (an update isn't available) try to get them, check for updates.
@@ -1432,7 +1435,7 @@ public sealed partial class MainWindow : Window
             else
             {
                 _progressManager.ShowProgress();
-                BlinkingLamp(true);
+                _ = BlinkingLamp(true);
                 ToggleControls(this, false);
 
                 await Task.Run(Processor.TuneSelectedPacks);
@@ -1445,7 +1448,7 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
-            BlinkingLamp(false);
+            _ =BlinkingLamp(false);
             ToggleControls(this, true);
             _progressManager.HideProgress();
         }
