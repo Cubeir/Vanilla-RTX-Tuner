@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
-using static Vanilla_RTX_Tuner_WinUI.MainWindow;
 
 namespace Vanilla_RTX_Tuner_WinUI.Modules;
 public class Previewer
@@ -57,7 +56,7 @@ public class Previewer
                 {
                     if (_instance == null)
                     {
-                        throw new InvalidOperationException("Previews must be initialized first by calling Initialize()");
+                        throw new InvalidOperationException("Previewer must be initialized first by calling Initialize()");
                     }
                 }
             }
@@ -75,7 +74,6 @@ public class Previewer
         _bg.Opacity = 0.0;
         _topVessel.Opacity = 0.0;
         _bottomVessel.Opacity = 0.0;
-        // _bg vessel retains its opacity as defined in the xaml
     }
 
     // Initialize the singleton instance
@@ -105,12 +103,12 @@ public class Previewer
     {
         _currentBottomImage = "";
         _currentTopImage = "";
-        FadeVesselsOpacity(0.0, true);
+        FadeAwayVessels(0.0, true);
         _bottomVessel.Source = null;
         _topVessel.Source = null;
     }
 
-    public void FadeVesselsOpacity(double targetOpacity, bool useSmoothTransition = true)
+    public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = 33)
     {
         targetOpacity = Math.Clamp(targetOpacity, 0.0, 1.0);
 
@@ -120,21 +118,21 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(35)
+                Duration = TimeSpan.FromMilliseconds(duration)
             };
 
             var fadeBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(35)
+                Duration = TimeSpan.FromMilliseconds(duration)
             };
 
             var fadeBackground = new DoubleAnimation
             {
                 From = _bg.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(35)
+                Duration = TimeSpan.FromMilliseconds(duration)
             };
 
 
@@ -143,9 +141,12 @@ public class Previewer
             Storyboard.SetTargetProperty(fadeTop, "Opacity");
             Storyboard.SetTarget(fadeBottom, _bottomVessel);
             Storyboard.SetTargetProperty(fadeBottom, "Opacity");
+            Storyboard.SetTarget(fadeBackground, _bg);
+            Storyboard.SetTargetProperty(fadeBackground, "Opacity");
 
             storyboard.Children.Add(fadeTop);
             storyboard.Children.Add(fadeBottom);
+            storyboard.Children.Add(fadeBackground);
 
             _currentTransition?.Stop();
             _currentTransition = storyboard;
@@ -163,6 +164,7 @@ public class Previewer
         {
             _topVessel.Opacity = targetOpacity;
             _bottomVessel.Opacity = targetOpacity;
+            _bg.Opacity = targetOpacity;
         }
     }
     // - - - - - Utility
@@ -214,7 +216,7 @@ public class Previewer
         };
     }
 
-    public void InitializeButton(Button button, string imageOffPath = null, string imageOnPath = null)
+    public void InitializeButton(Button button, string? imageOffPath = null, string? imageOnPath = null)
     {
         button.SetValue(FrameworkElement.TagProperty, new ButtonPreviewData
         {

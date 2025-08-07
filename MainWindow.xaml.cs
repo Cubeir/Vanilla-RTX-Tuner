@@ -767,12 +767,11 @@ public sealed partial class MainWindow : Window
 
     public async void UpdateUI(double animationDurationSeconds = 0.05)
     {
-        // Hide vessels during UI updates, because they trigger vessel updates upon value change and can conflict
+        // Hide vessels during UI updates, because previews trigger vessel updates upon value change, the conflict looks glitchy
+        // This is a band-aid solution, the real solution must be implemented in previews.cs (will you?)
         PreviewVesselTop.Visibility = Visibility.Collapsed;
         PreviewVesselBottom.Visibility = Visibility.Collapsed;
-
-        // Hide vessel background, gets visible again with control updates
-        PreviewVesselBackground.Opacity = 0;
+        PreviewVesselBackground.Visibility = Visibility.Collapsed;
 
         // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
@@ -877,12 +876,14 @@ public sealed partial class MainWindow : Window
         // This smooth transition drags on longer than the final attempt of a control at updating the image vessel
         // This makes it work correctly all the time reliably, because the fading drags on after updating UI controls is finished
 
+        // Reset opacities so fading can work again (collapsing image alone while its opacity is already at 100 from before won't do well)
         PreviewVesselTop.Opacity = 0.0;
         PreviewVesselBottom.Opacity = 0.0;
         PreviewVesselBackground.Opacity = 0.0;
 
         PreviewVesselTop.Visibility = Visibility.Visible;
         PreviewVesselBottom.Visibility = Visibility.Visible;
+        PreviewVesselTop.Visibility = Visibility.Visible;
     }
 
 
