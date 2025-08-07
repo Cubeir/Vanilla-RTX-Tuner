@@ -814,7 +814,7 @@ public class PackUpdater
                 Directory.Move(vanillaRTXSrc, tempDestination);
 
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtx");
-                Directory.Move(vanillaRTXSrc, finalDestination);
+                Directory.Move(tempDestination, finalDestination);
             }
 
             if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
@@ -824,7 +824,7 @@ public class PackUpdater
                 Directory.Move(vanillaRTXNormalsSrc, tempDestination);
 
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtxn");
-                Directory.Move(vanillaRTXNormalsSrc, finalDestination);
+                Directory.Move(tempDestination, finalDestination);
             }
 
             success_status = true;
