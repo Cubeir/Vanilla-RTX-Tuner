@@ -13,7 +13,7 @@ using Windows.Storage;
 using Vanilla_RTX_Tuner_WinUI.Modules;
 using static Vanilla_RTX_Tuner_WinUI.Core.PackLocator; // For static UUIDs, they are stored there for locating packs
 
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_Tuner_WinUI.Core;
 
 // Updating logging of classes here to allow it to properly use the actual Logging method with logLevels
 
