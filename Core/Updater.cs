@@ -810,21 +810,15 @@ public class PackUpdater
             if (foundVanillaRTX && vanillaRTXSrc != null)
             {
                 LogMessage("✅ Deploying Vanilla RTX.");
-                var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXSrc));
-                Directory.Move(vanillaRTXSrc, tempDestination);
-
-                var finalDestination = GetSafeDirectoryName(resourcePackPath, "VanillaRTX");
-                Directory.Move(tempDestination, finalDestination);
+                var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtx");
+                Directory.Move(vanillaRTXSrc, finalDestination);
             }
 
             if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
             {
                 LogMessage("✅ Deploying Vanilla RTX Normals.");
-                var tempDestination = GetSafeDirectoryName(resourcePackPath, Path.GetFileName(vanillaRTXNormalsSrc));
-                Directory.Move(vanillaRTXNormalsSrc, tempDestination);
-
-                var finalDestination = GetSafeDirectoryName(resourcePackPath, "VanillaRTXNormals");
-                Directory.Move(tempDestination, finalDestination);
+                var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtxn");
+                Directory.Move(vanillaRTXNormalsSrc, finalDestination);
             }
 
             success_status = true;
