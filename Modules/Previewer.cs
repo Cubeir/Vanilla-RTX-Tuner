@@ -72,6 +72,7 @@ public class Previewer
         _bottomVessel = bottomVessel;
         _bg = backgroundVessel;
 
+        _bg.Opacity = 0.0;
         _topVessel.Opacity = 0.0;
         _bottomVessel.Opacity = 0.0;
         // _bg vessel retains its opacity as defined in the xaml
@@ -119,14 +120,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(55)
+                Duration = TimeSpan.FromMilliseconds(27)
             };
 
             var fadeBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(55)
+                Duration = TimeSpan.FromMilliseconds(27)
             };
 
             var storyboard = new Storyboard();
@@ -442,8 +443,36 @@ public class Previewer
             _forceTransitionForControlChange = true; // New flag to force smooth transitions
         }
 
-        _bg.Visibility = Visibility.Visible;
+        FadeInBackground();
     }
+
+    private void FadeInBackground(double durationMs = 24)
+    {
+        if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
+            return;
+
+        _bg.Opacity = 0;
+        _bg.Visibility = Visibility.Visible;
+
+        // Delay animation to next layout pass (ensures visual tree is ready)
+        _bg.DispatcherQueue.TryEnqueue(() =>
+        {
+            var fadeIn = new DoubleAnimation
+            {
+                From = 0,
+                To = 1.0,
+                Duration = TimeSpan.FromMilliseconds(durationMs),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            var sb = new Storyboard();
+            Storyboard.SetTarget(fadeIn, _bg);
+            Storyboard.SetTargetProperty(fadeIn, "Opacity");
+            sb.Children.Add(fadeIn);
+            sb.Begin();
+        });
+    }
+
 
     private void UpdateSliderPreview(Slider slider)
     {
@@ -590,14 +619,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(40)
+                Duration = TimeSpan.FromMilliseconds(25)
             };
 
             var fadeOutBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(40)
+                Duration = TimeSpan.FromMilliseconds(25)
             };
 
             var storyboard = new Storyboard();
@@ -641,14 +670,14 @@ public class Previewer
         {
             From = 0.0,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(25)
         };
 
         var fadeInBottom = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(25)
         };
 
         var storyboard = new Storyboard();
@@ -685,14 +714,14 @@ public class Previewer
         {
             From = _topVessel.Opacity,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(60)
+            Duration = TimeSpan.FromMilliseconds(25)
         };
 
         var fadeBottom = new DoubleAnimation
         {
             From = _bottomVessel.Opacity,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(25)
         };
 
         var storyboard = new Storyboard();
