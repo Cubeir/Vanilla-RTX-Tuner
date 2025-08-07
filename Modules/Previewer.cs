@@ -27,7 +27,7 @@ public class Previewer
     private bool _isTransitioning = false;
     private bool _forceTransitionForControlChange = false;
 
-    // Pending state for immediate application after transition
+    // Pending state for immediate application  after transition
     private class PendingVesselState
     {
         public string BottomImagePath
@@ -74,7 +74,7 @@ public class Previewer
         _bottomVessel.Opacity = 0.0;
     }
 
-    // Initialize the singleton instance (call this once in your MainWindow constructor)
+    // Initialize the singleton instance
     public static void Initialize(Image topVessel, Image bottomVessel)
     {
         if (_instance == null)
@@ -89,7 +89,7 @@ public class Previewer
         }
     }
 
-    // Utility --
+    // - - - - - Utility
     public void SetImages(string imageOnPath, string imageOffPath, bool useSmoothTransition = false)
     {
         double bottomOpacity = !string.IsNullOrEmpty(imageOffPath) ? 1.0 : 0.0;
@@ -108,7 +108,6 @@ public class Previewer
 
     public void FadeVesselsOpacity(double targetOpacity, bool useSmoothTransition = true)
     {
-        // Clamp opacity to valid range [0.0, 1.0]
         targetOpacity = Math.Clamp(targetOpacity, 0.0, 1.0);
 
         if (useSmoothTransition)
@@ -117,14 +116,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(75)
+                Duration = TimeSpan.FromMilliseconds(55)
             };
 
             var fadeBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(75)
+                Duration = TimeSpan.FromMilliseconds(55)
             };
 
             var storyboard = new Storyboard();
@@ -154,7 +153,7 @@ public class Previewer
             _bottomVessel.Opacity = targetOpacity;
         }
     }
-    // Utility --
+    // - - - - - Utility
 
     public void InitializeSlider(Slider slider, string defaultImagePath, string minImagePath, string maxImagePath, double defaultValue)
     {
@@ -562,6 +561,7 @@ public class Previewer
         StartCrossFadeTransition();
     }
 
+    // Starts from current
     private void StartCrossFadeTransition()
     {
         if (_isTransitioning)
@@ -584,14 +584,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(75)
+                Duration = TimeSpan.FromMilliseconds(40)
             };
 
             var fadeOutBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(75)
+                Duration = TimeSpan.FromMilliseconds(40)
             };
 
             var storyboard = new Storyboard();
@@ -629,20 +629,21 @@ public class Previewer
         }
     }
 
+    // Always from 0
     private void FadeInToTargetOpacities(int transitionId)
     {
         var fadeInTop = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(100)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var fadeInBottom = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(100)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var storyboard = new Storyboard();
@@ -679,14 +680,14 @@ public class Previewer
         {
             From = _topVessel.Opacity,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(100)
+            Duration = TimeSpan.FromMilliseconds(60)
         };
 
         var fadeBottom = new DoubleAnimation
         {
             From = _bottomVessel.Opacity,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(100)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var storyboard = new Storyboard();
