@@ -101,6 +101,8 @@
 
         <Button x:Name="AppUpdaterButton"
                 Grid.ColumnSpan="2"
+                Content="&#xE895;"
+                FontFamily="Segoe MDL2 Assets"
                 Width="40"
                 Height="32"
                 HorizontalAlignment="Right"
@@ -112,18 +114,7 @@
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
                 ToolTipService.ToolTip="Check for update"
-                IsTextScaleFactorEnabled="False">
-            <ContentControl x:Name="AppUpdaterIcon"
-                            Content="&#xE895;"
-                            FontFamily="Segoe MDL2 Assets"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            RenderTransformOrigin="0.5,0.5">
-                <ContentControl.RenderTransform>
-                    <RotateTransform x:Name="AppUpdaterIconRotate" />
-                </ContentControl.RenderTransform>
-            </ContentControl>
-        </Button>
+                IsTextScaleFactorEnabled="False" />
 
 
 

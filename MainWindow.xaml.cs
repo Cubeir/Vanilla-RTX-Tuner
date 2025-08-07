@@ -29,10 +29,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Animate the Update button on Tuner?
-when updating, let it spin
-
-
 - Make art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
@@ -55,13 +51,6 @@ A public variable that gets all text dumped to perhaps, and gradually writes out
 This way direct interaction with non-UI threads will be zero
 Long running tasks dump their text, UI thread gradually writes it out on its own.
 only concern is performance with large logs
-
-
-- Refactor and use data Binding as much as possible
-Counter argument: if you do this, no more cool slider animations, besides, there won't be many more options and
-it is managable as is, if a new slider is added, it requires additional steps of:
-- It must be added in UpdateUI method
-- Save/Load settings method
 
 - Figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
@@ -94,6 +83,8 @@ But it benefits Opus a lot. -- it is more managable as-is so... let the thought 
 
 public static class TunerVariables
 {
+    // When adding new variables, define the default if needed, save/load if needed, and finally account for it in UpdateUI method
+
     public static string? appVersion = null;
 
     // Pack save locations in MC folders + versions, variables are flushed and reused for Preview
@@ -184,7 +175,6 @@ public sealed partial class MainWindow : Window
     {
         SetMainWindowProperties();
         InitializeComponent();
-        InitAppUpdaterSpinner();
 
         // Load settings, then update UI, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom);
@@ -938,7 +928,6 @@ public sealed partial class MainWindow : Window
     private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
     {
         AppUpdaterButton.IsEnabled = false;
-        _spinStoryboard.Begin();
 
         // Downloading department: Check if we already found an update and should proceed with download/install
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
@@ -973,7 +962,7 @@ public sealed partial class MainWindow : Window
 
         }
 
-        // Checking department: If versoin and URL aren't both present, try to get them, check for updates.
+        // Checking department: If version and URL aren't both present, try to get them, check for updates.
         else
         {
             AppUpdaterButton.IsEnabled = false;
@@ -1006,70 +995,12 @@ public sealed partial class MainWindow : Window
             }
             finally
             {
-                _ = BlinkingLamp(false);
                 AppUpdaterButton.IsEnabled = true;
                 _progressManager.HideProgress();
-
-                await StopSpinSmoothly();
-                _spinStoryboard.Stop();
+                _ = BlinkingLamp(false);
             }
         }
     }
-    private Storyboard _spinStoryboard;
-    private void InitAppUpdaterSpinner()
-    {
-        var keyFrames = new DoubleAnimationUsingKeyFrames
-        {
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-
-        keyFrames.KeyFrames.Add(new EasingDoubleKeyFrame
-        {
-            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)),
-            Value = 0
-        });
-
-        keyFrames.KeyFrames.Add(new EasingDoubleKeyFrame
-        {
-            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5)),
-            Value = 90,
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
-        });
-
-        keyFrames.KeyFrames.Add(new EasingDoubleKeyFrame
-        {
-            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1.5)),
-            Value = 360,
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-        });
-
-        _spinStoryboard = new Storyboard();
-        _spinStoryboard.Children.Add(keyFrames);
-        Storyboard.SetTarget(keyFrames, AppUpdaterIconRotate);
-        Storyboard.SetTargetProperty(keyFrames, "Angle");
-    }
-    private async Task StopSpinSmoothly()
-    {
-        // One last decelerated spin
-        var stopAnim = new DoubleAnimation
-        {
-            From = AppUpdaterIconRotate.Angle % 360,
-            To = AppUpdaterIconRotate.Angle % 360 + 180,
-            Duration = TimeSpan.FromSeconds(0.75),
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-        };
-
-        _spinStoryboard.Stop();
-
-        var stopStoryboard = new Storyboard();
-        stopStoryboard.Children.Add(stopAnim);
-        Storyboard.SetTarget(stopAnim, AppUpdaterIconRotate);
-        Storyboard.SetTargetProperty(stopAnim, "Angle");
-
-        stopStoryboard.Begin();
-        await Task.Delay(stopAnim.Duration.TimeSpan);
-    }
-
 
 
     private void LocatePacksButton_Click(object sender, RoutedEventArgs e)
@@ -1386,15 +1317,14 @@ public sealed partial class MainWindow : Window
         // Empty the sidebarlog
         SidebarLog.Text = "";
 
-        // Update button text
-        var text = UpdateVanillaRTXButtonText.Text;
 
         // Ignore the run-once flag for now, let the warning be said every time since we empty the log
         if (true || RanOnceFlag.Set("Said_Reset_Warning"))
         {
             RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
+            var text = UpdateVanillaRTXButtonText.Text;
+            Log($"Note: this does not restore the packs back to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
             Log("Tuner variables reset.", LogLevel.Success);
-            Log($"Note: This does not restore the packs back to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
         }
     }
 
@@ -1530,7 +1460,7 @@ public sealed partial class MainWindow : Window
         {
             _ = BlinkingLamp(false);
             ToggleControls(this, true);
-                _progressManager.HideProgress();
+            _progressManager.HideProgress();
             FlushTheseVariables(true, true);
 
             // Set reinstall latest packs button visuals based on cache status
