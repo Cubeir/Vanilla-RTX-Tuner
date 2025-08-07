@@ -29,12 +29,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Make reinstall latest packages button glyph show something else (something related to redploying, not cloud)
-as long as a valid cache is available
-All you need is: an offline cache validator method, as long as cache is available
-Button's visuals are set on startup mainwindow properties
-if button is clicked, cache validator is called again if updating it changes to cloud
-
 - Animate the Update button on Tuner?
 when updating, let it spin
 
@@ -190,6 +184,7 @@ public sealed partial class MainWindow : Window
     {
         SetMainWindowProperties();
         InitializeComponent();
+        InitAppUpdaterSpinner();
 
         // Load settings, then update UI, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom);
@@ -198,6 +193,7 @@ public sealed partial class MainWindow : Window
 
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
+
         Instance = this;
 
         // Version and initial logs
@@ -938,14 +934,18 @@ public sealed partial class MainWindow : Window
 
 
 
+
     private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
     {
+        AppUpdaterButton.IsEnabled = false;
+        _spinStoryboard.Begin();
+
         // Downloading department: Check if we already found an update and should proceed with download/install
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
-                _progressManager.ShowProgress();
+            _progressManager.ShowProgress();
             ToggleControls(this, false);
-            BlinkingLamp(true);
+            _ = BlinkingLamp(true);
 
             var installSucess = await AppUpdater.InstallAppUpdate();
             if (installSucess.Item1)
@@ -957,9 +957,9 @@ public sealed partial class MainWindow : Window
                 Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.", LogLevel.Error);
             }
 
-                _progressManager.HideProgress();
+            _progressManager.HideProgress();
             ToggleControls(this, true);
-            BlinkingLamp(false);
+            _ = BlinkingLamp(false);
 
             // Button Visuals -> default (we're done with the update)
             AppUpdaterButton.Content = "\uE895";
@@ -978,7 +978,7 @@ public sealed partial class MainWindow : Window
         {
             AppUpdaterButton.IsEnabled = false;
             _progressManager.ShowProgress();
-            BlinkingLamp(true);
+            _ = BlinkingLamp(true);
             try
             {
                 var updateAvailable = await AppUpdater.CheckGitHubForUpdates();
@@ -1006,11 +1006,68 @@ public sealed partial class MainWindow : Window
             }
             finally
             {
-                BlinkingLamp(false);
+                _ = BlinkingLamp(false);
                 AppUpdaterButton.IsEnabled = true;
-                    _progressManager.HideProgress();
+                _progressManager.HideProgress();
+
+                await StopSpinSmoothly();
+                _spinStoryboard.Stop();
             }
         }
+    }
+    private Storyboard _spinStoryboard;
+    private void InitAppUpdaterSpinner()
+    {
+        var keyFrames = new DoubleAnimationUsingKeyFrames
+        {
+            RepeatBehavior = RepeatBehavior.Forever
+        };
+
+        keyFrames.KeyFrames.Add(new EasingDoubleKeyFrame
+        {
+            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)),
+            Value = 0
+        });
+
+        keyFrames.KeyFrames.Add(new EasingDoubleKeyFrame
+        {
+            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5)),
+            Value = 90,
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+        });
+
+        keyFrames.KeyFrames.Add(new EasingDoubleKeyFrame
+        {
+            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1.5)),
+            Value = 360,
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        });
+
+        _spinStoryboard = new Storyboard();
+        _spinStoryboard.Children.Add(keyFrames);
+        Storyboard.SetTarget(keyFrames, AppUpdaterIconRotate);
+        Storyboard.SetTargetProperty(keyFrames, "Angle");
+    }
+    private async Task StopSpinSmoothly()
+    {
+        // One last decelerated spin
+        var stopAnim = new DoubleAnimation
+        {
+            From = AppUpdaterIconRotate.Angle % 360,
+            To = AppUpdaterIconRotate.Angle % 360 + 180,
+            Duration = TimeSpan.FromSeconds(0.75),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+
+        _spinStoryboard.Stop();
+
+        var stopStoryboard = new Storyboard();
+        stopStoryboard.Children.Add(stopAnim);
+        Storyboard.SetTarget(stopAnim, AppUpdaterIconRotate);
+        Storyboard.SetTargetProperty(stopAnim, "Angle");
+
+        stopStoryboard.Begin();
+        await Task.Delay(stopAnim.Duration.TimeSpan);
     }
 
 
@@ -1426,6 +1483,10 @@ public sealed partial class MainWindow : Window
 
     private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
+        // Set to original glyph while checking, in the end if a deployable cache is available it is set to something else again
+        UpdateVanillaRTXGlyph.Glyph = "\uE8F7";
+        UpdateVanillaRTXGlyph.FontSize = 18;
+
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
         {
             Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
