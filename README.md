@@ -1,6 +1,6 @@
 # Vanilla-RTX-Tuner
 
-An all-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update packages & launch Minecraft RTX with ease, and more!
+All-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update the tracing packages & launch Minecraft RTX with ease, and more!
 
 ⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)  
 
