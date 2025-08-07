@@ -187,11 +187,11 @@
                   VerticalAlignment="Top"
                   Height="40">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3.1*" />
+                    <ColumnDefinition Width="3*" />
                     <!-- Locate Packs button size proportions -->
                     <ColumnDefinition Width="12" />
                     <!-- Spacing -->
-                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1.425*" />
                     <!-- Target Preview button -->
                 </Grid.ColumnDefinitions>
 
@@ -217,7 +217,7 @@
                 <!-- Target Preview Button -->
                 <ToggleButton x:Name="TargetPreviewToggle"
                               Grid.Column="2"
-                              Content="Beta"
+                              Content="Preview"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
                               FontWeight="SemiBold"
