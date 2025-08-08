@@ -108,7 +108,7 @@ public class Previewer
         _topVessel.Source = null;
     }
 
-    public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = 33)
+    public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = 50)
     {
         targetOpacity = Math.Clamp(targetOpacity, 0.0, 1.0);
 
@@ -456,7 +456,7 @@ public class Previewer
         FadeInBackground();
     }
 
-    private void FadeInBackground(double durationMs = 33)
+    private void FadeInBackground(double durationMs = 50)
     {
         if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
             return;
@@ -629,14 +629,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(33)
+                Duration = TimeSpan.FromMilliseconds(50)
             };
 
             var fadeOutBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(33)
+                Duration = TimeSpan.FromMilliseconds(50)
             };
 
             var storyboard = new Storyboard();
@@ -680,14 +680,14 @@ public class Previewer
         {
             From = 0.0,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(33)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var fadeInBottom = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(33)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var storyboard = new Storyboard();
@@ -724,14 +724,14 @@ public class Previewer
         {
             From = _topVessel.Opacity,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(33)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var fadeBottom = new DoubleAnimation
         {
             From = _bottomVessel.Opacity,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(33)
+            Duration = TimeSpan.FromMilliseconds(50)
         };
 
         var storyboard = new Storyboard();
