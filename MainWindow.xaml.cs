@@ -30,6 +30,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- make an invisible barrier above vessels to allow more scrolling somehow? the previewer blocks view of half the logs on min window size
+
 - Art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
@@ -157,7 +159,8 @@ public static class TunerVariables
         RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
         ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
 
-        AddEmissivityAmbientLight = (bool)(localSettings.Values["AddEmissivityAmbientLight"] ?? AddEmissivityAmbientLight);
+        // Force false for increase ambient lighting on each startup
+        AddEmissivityAmbientLight = false; //(bool)(localSettings.Values["AddEmissivityAmbientLight"] ?? AddEmissivityAmbientLight)
 
         IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
     }
