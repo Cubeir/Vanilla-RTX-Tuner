@@ -47,8 +47,7 @@ Below you'll find a comprehensive list of features and functionalities included 
 - **`Increase Ambient Light`**  
 Adds a small amount of emissivity to all surfaces, effectively increasing ambient light.
 This works in conjunction with the Emissivity Multiplier — higher multipliers (e.g. 6.0) will amplify the effect.
-⚠️ Because changes stack on each tuning attempt, only use it on a freshly installed pack. Reapplying it on top of previous ambient lighting will rapidly overexpose the world.
-(Tip: Tuning with this option turned on and Emissivity Multiplier left at 1.0 default 3 consecutive times is equal to tuning once but with an emissivity multiplier of 3.0)
+Because changes stack on each tuning attempt, only use once it on freshly installed packs, and avoid setting higher emissivity multipliers on future consecutive tuning attempts, unless the ray tracing packages are reset.
 
 - **`Normal Intensity Adjustment`**  
   Updates normal map intensity using a similar formula as the Emissive Multiplier, preserving relative intensity composition even at high percentage increases.
