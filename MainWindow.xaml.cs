@@ -30,6 +30,25 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+
+- After each tuning where "Increase Ambient Emissivity" is enabled, do not force ambient lighting to turn off. Instead, allow the tuning process to proceed normally.
+The correct approach is to reset the emissivity multiplier to 1.0 and update the UI accordingly after such tunings. The problem is not with the toggle itself, but with the emissivity multiplier causing the issue.
+
+If previously increase ambient lighting was on during tuning, just reset the emissivity multiplier to 1.0 and call UpdateUI
+
+Call UpdateUI after each tuning attempt in general, for consistency. but resetting the multiplier is a special thing, just check if Ambient toggle was on or not
+
+
+- Fix the app controls remaining disabled and everything staying in limbo if app update fails...
+how did this slip!?!?!?
+
+- Check the regex patterns for app version checking, is it too error prone?
+
+- Have a worker that checks any possible local Vanilla RTX version (preview or not)
+And checks manifest against remote using already-existing pack updater class 
+And changes icon of reinstall latest packs to CloudDL or Archive and puts a log out there too
+basically telling the user hey! update available!
+
 - Art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
