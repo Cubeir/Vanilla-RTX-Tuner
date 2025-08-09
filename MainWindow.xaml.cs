@@ -30,8 +30,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- make an invisible barrier above vessels to allow more scrolling somehow? the previewer blocks view of half the logs on min window size
-
 - Art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
@@ -293,6 +291,7 @@ public sealed partial class MainWindow : Window
                 ? Color.FromArgb(40, 0, 0, 0)
                 : Color.FromArgb(60, 255, 255, 255);
         });
+
 
     }
     public static void ThemeWatcher(Window window, Action<ElementTheme> onThemeChanged)

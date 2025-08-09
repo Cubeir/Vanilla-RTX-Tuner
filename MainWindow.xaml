@@ -237,7 +237,8 @@
                      IsReadOnly="True"
                      AllowFocusOnInteraction="True"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ToolTipService.ToolTip="All relevant logs appear here." />
+                     ToolTipService.ToolTip="All relevant logs appear here."
+                     Padding="12,12,12,138" />
 
             <!-- Progress Bar -->
             <ProgressBar x:Name="ProgressBar"
@@ -281,17 +282,18 @@
             <Image x:Name="PreviewVesselBackground"
                    Width="Auto"
                    Height="150"
-                   MaxWidth="{Binding ActualWidth, ElementName=SidebarLog}"
-                   Margin="8,0,0,17"
-                   Stretch="Uniform"
+                   Margin="17,0,9,17"
+                   Stretch="UniformToFill"
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="9997"
                    Visibility="Visible"
                    Opacity="0"
-                   Source="ms-appx:///Assets/previews/background.png"
+                   Source="ms-appx:///Assets/previews/huge_background.png"
                    CacheMode="BitmapCache" />
+
+
         </Grid>
 
         
