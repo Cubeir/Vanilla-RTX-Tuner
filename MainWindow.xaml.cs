@@ -790,7 +790,7 @@ public sealed partial class MainWindow : Window
     public async void UpdateUI(double animationDurationSeconds = 0.05)
     {
         // Hide vessels during UI updates, because previews trigger vessel updates upon value change, the conflict looks glitchy
-        // This is a band-aid solution, the real solution must be implemented in previews.cs (will you?)
+        // This is a true band-aid solution, the real solution must be implemented in previews.cs (will you?)
         PreviewVesselTop.Visibility = Visibility.Collapsed;
         PreviewVesselBottom.Visibility = Visibility.Collapsed;
         PreviewVesselBackground.Visibility = Visibility.Collapsed;
@@ -811,6 +811,10 @@ public sealed partial class MainWindow : Window
         {
              (EmissivityAmbientLightToggle, AddEmissivityAmbientLight)
         };
+
+
+
+
 
 
         // Handles toggle-like variables
@@ -870,11 +874,13 @@ public sealed partial class MainWindow : Window
             // Why here? and not after UpdateUI in the MainWindow initializer?
             // Because UpdateUI runs for a few miliseconds longer, the previewer ends up setting an image based on the final value update
             // We'd want to initialize it only after the first UpdateUI method is called
+
             SetPreviews();
+
             // Log("We got art!");
             // As for other times, we manually make vessels invisible and then visible again after updating UI is done, with an empty image as defined below.
             // That way when reset button calls UpdateUI the final state will be visible and empty
-            
+
             // Really the code below should be taking care of the the first initialization as well
             // But I just wanted to make sure I use my cool flagging class which is super useful elsewhere.
 
@@ -905,7 +911,8 @@ public sealed partial class MainWindow : Window
 
         PreviewVesselTop.Visibility = Visibility.Visible;
         PreviewVesselBottom.Visibility = Visibility.Visible;
-        PreviewVesselTop.Visibility = Visibility.Visible;
+        // BG vessel becomes visible again from previewer.cs upon controls exchanging the vessel (this makes it 100% requires user interaction)
+        // instead of automatically becoming visible like other vessels upon value changes
     }
 
 
@@ -1442,7 +1449,6 @@ public sealed partial class MainWindow : Window
     }
 
 
-    // the reason updateui here isn't working: you calling it from an async method, UpdateUI method is not to be called from async methods.
     private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
@@ -1464,7 +1470,7 @@ public sealed partial class MainWindow : Window
                 await Task.Run(Processor.TuneSelectedPacks);
                 Log("Completed tuning.", LogLevel.Success);
 
-                // Reset emissive multiplier if ambient light was enabled on current tuning attempt
+                // Reset emissive multiplier if ambient light was enabled during current tuning attempt
                 if (AddEmissivityAmbientLight)
                 {
                     EmissivityMultiplier = Defaults.EmissivityMultiplier;
@@ -1476,6 +1482,8 @@ public sealed partial class MainWindow : Window
             _ = BlinkingLamp(false);
             ToggleControls(this, true);
             _progressManager.HideProgress();
+
+            // Always update the UI, mainly because of EmissivityMultiplier = Defaults.EmissivityMultiplier; line above
             UpdateUI();
         }
     }
