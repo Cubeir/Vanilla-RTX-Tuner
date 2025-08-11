@@ -93,7 +93,11 @@ public class AppUpdater
                 string fileName = targetAsset["name"].ToString();
                 string downloadUrl = targetAsset["browser_download_url"].ToString();
 
-                var versionMatch = Regex.Match(fileName, @"Vanilla\.RTX\.Tuner\.WinUI_(\d+(\.\d+){1,3})\.zip");
+                var versionMatch = Regex.Match(
+                    fileName,
+                    @"Vanilla[\._\s]?RTX[\._\s]?Tuner[\._\s]?WinUI[\._\s]?[_\-]?(\d+(?:\.\d+){1,3})(?:[^\d].*?)?\.zip$",
+                    RegexOptions.IgnoreCase
+                );
                 if (!versionMatch.Success)
                 {
                     return (false, $"⚠️ Could not extract version from filename: {fileName}");

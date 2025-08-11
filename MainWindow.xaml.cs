@@ -34,16 +34,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
     // Likely if it fails to launch the game but does all the rest of the code, *it has done 90% of its job* so use this
     // to tell the user to launch the game manually because protocl wasn't assigned, 
 
-- After each tuning where "Increase Ambient Emissivity" is enabled, do not force ambient lighting to turn off. Instead, allow the tuning process to proceed normally.
-The correct approach is to reset the emissivity multiplier to 1.0 and update the UI accordingly after such tunings. The problem is not with the toggle itself, but with the emissivity multiplier causing the issue.
-
-If previously increase ambient lighting was on during tuning, just reset the emissivity multiplier to 1.0 and call UpdateUI
-
-Call UpdateUI after each tuning attempt in general, for consistency. but resetting the multiplier is a special thing, just check if Ambient toggle was on or not
-
-- Fix the app controls remaining disabled and everything staying in limbo if app update fails...
-how did this slip!?!?!? (prolly fixed)
-
 - Check the regex patterns for app version checking, is it too error prone?
 
 - Have a worker that checks any possible local Vanilla RTX version (preview or not)
