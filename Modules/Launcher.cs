@@ -130,8 +130,8 @@ public class Launcher
 
                 await File.WriteAllLinesAsync(optionsFilePath, lines);
                 statusMessages.Add("Options file updated successfully.");
+                bool modificationsDone = true; // ✅
 
-                // Delay just in case (miliseconds)
                 await Task.Delay(500);
 
                 // Launch Minecraft depending on protocol
@@ -145,17 +145,21 @@ public class Launcher
                     };
 
                     Process.Start(processInfo);
-                    statusMessages.Add($"Ray tracing enabled and launched {versionName} successfully.");
+                    statusMessages.Add($"✅ Ray tracing enabled and launched {versionName} successfully.");
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
                     statusMessages.Add($"Failed to launch {versionName}: {ex.Message}");
-                    statusMessages.Add("Make sure the game is installed and the minecraft:// protocols are allowed to work.");
+                    if (modificationsDone)
+                        statusMessages.Add("⚠️ Options updated successfully — you can now launch the game manually.");
                 }
                 catch (Exception ex)
                 {
                     statusMessages.Add($"Unexpected error launching {versionName}: {ex.Message}");
+                    if (modificationsDone)
+                        statusMessages.Add("⚠️ Options updated successfully — you can now launch the game manually.");
                 }
+
 
                 return string.Join("\n", statusMessages);
             }

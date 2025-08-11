@@ -1561,6 +1561,12 @@ public sealed partial class MainWindow : Window
     private async void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
         _ = BlinkingLamp(true);
+
+        if (PackUpdater.IsMinecraftRunning())
+        {
+            Log("The game was already open, please restart the game for options.txt changes to take effect.", LogLevel.Warning);
+        }
+
         try
         {
             var logs = await Launcher.LaunchMinecraftRTXAsync(IsTargetingPreview);
@@ -1569,10 +1575,6 @@ public sealed partial class MainWindow : Window
         finally
         {
             _ = BlinkingLamp(false);
-            if (PackUpdater.IsMinecraftRunning())
-            {
-                Log("The game was already open, please restart the game for options.txt changes to take effect.", LogLevel.Warning);
-            }
         }
     }
 }
