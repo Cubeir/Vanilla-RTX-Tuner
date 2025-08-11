@@ -111,5 +111,4 @@ Join the Vanilla RTX community on Discord & ask away! [https://discord.gg/A4wv4w
 
 ### Want to help?
 
-The scope of this project as it stands is small, but contributions are welcome.
-You’ll find TODOs scattered in the code if you’re looking for a place to start.
+The scope of this project as it stands is medium to small, but contributions are welcome. You’ll find TODOs scattered in the code if you’re looking for a place to start.
