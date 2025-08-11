@@ -1257,3 +1257,43 @@ public class CreditsUpdater
         }
     }
 }
+
+
+/// =====================================================================================================================
+/// Show PSA from github readme, simply add a ### PSA tag followed by the announcement at the end of the readme file linked below
+/// =====================================================================================================================
+
+public class PSAUpdater
+{
+    private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-Tuner/master/README.md";
+
+    public static async Task<string?> GetPSAAsync()
+    {
+        try
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
+                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+
+                var response = await client.GetAsync(README_URL);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                int psaIndex = content.IndexOf("### PSA", StringComparison.OrdinalIgnoreCase);
+                if (psaIndex == -1)
+                    return null;
+
+                string afterPSA = content.Substring(psaIndex + "### PSA".Length).Trim();
+                return string.IsNullOrWhiteSpace(afterPSA) ? null : afterPSA;
+            }
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}

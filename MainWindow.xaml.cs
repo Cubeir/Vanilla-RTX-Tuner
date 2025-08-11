@@ -34,8 +34,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
     // Likely if it fails to launch the game but does all the rest of the code, *it has done 90% of its job* so use this
     // to tell the user to launch the game manually because protocl wasn't assigned, 
 
-- Check the regex patterns for app version checking, is it too error prone?
-
 - Have a worker that checks any possible local Vanilla RTX version (preview or not)
 And checks manifest against remote using already-existing pack updater class 
 And changes icon of reinstall latest packs to CloudDL or Archive and puts a log out there too
@@ -214,8 +212,20 @@ public sealed partial class MainWindow : Window
         var defaultSize = new SizeInt32(980, 720);
         _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
 
-        // Silent background credits retriever
+        // Silent background credits & psa retriever
         CreditsUpdater.GetCredits(false);
+
+        // Lazy PSA retrieval, show whenever retrieved
+        _ = Task.Run(async () =>
+        {
+            string? psa = await PSAUpdater.GetPSAAsync();
+            if (!string.IsNullOrWhiteSpace(psa))
+            {
+                Log(psa, LogLevel.Informational);
+            }
+        });
+
+
 
         // Warning if MC is running
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
