@@ -30,6 +30,9 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+    // TODO: make launcher return success status of launching the game
+    // Likely if it fails to launch the game but does all the rest of the code, *it has done 90% of its job* so use this
+    // to tell the user to launch the game manually because protocl wasn't assigned, 
 
 - After each tuning where "Increase Ambient Emissivity" is enabled, do not force ambient lighting to turn off. Instead, allow the tuning process to proceed normally.
 The correct approach is to reset the emissivity multiplier to 1.0 and update the UI accordingly after such tunings. The problem is not with the toggle itself, but with the emissivity multiplier causing the issue.
@@ -38,9 +41,8 @@ If previously increase ambient lighting was on during tuning, just reset the emi
 
 Call UpdateUI after each tuning attempt in general, for consistency. but resetting the multiplier is a special thing, just check if Ambient toggle was on or not
 
-
 - Fix the app controls remaining disabled and everything staying in limbo if app update fails...
-how did this slip!?!?!?
+how did this slip!?!?!? (prolly fixed)
 
 - Check the regex patterns for app version checking, is it too error prone?
 
@@ -176,8 +178,7 @@ public static class TunerVariables
         RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
         ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
 
-        // Force false for increase ambient lighting on each startup
-        AddEmissivityAmbientLight = false; //(bool)(localSettings.Values["AddEmissivityAmbientLight"] ?? AddEmissivityAmbientLight)
+        AddEmissivityAmbientLight = (bool)(localSettings.Values["AddEmissivityAmbientLight"] ?? AddEmissivityAmbientLight);
 
         IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
     }
@@ -956,7 +957,6 @@ public sealed partial class MainWindow : Window
 
 
 
-
     private void DonateButton_Click(object sender, RoutedEventArgs e)
     {
         DonateButton.Content = "\uEB52";
@@ -989,47 +989,45 @@ public sealed partial class MainWindow : Window
 
 
 
-
-
     private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
     {
-        AppUpdaterButton.IsEnabled = false;
-
         // Downloading department: Check if we already found an update and should proceed with download/install
         // criteria is update URL and version both having been extracted from Github by AppUpdater class, otherwise we try to get them again in the following else block.
         if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
         {
             ToggleControls(this, false);
-
             _progressManager.ShowProgress();
-            ToggleControls(this, false);
             _ = BlinkingLamp(true);
-
-            var installSucess = await AppUpdater.InstallAppUpdate();
-            if (installSucess.Item1)
+            try
             {
-                Log("Continue in Windows App Installer.", LogLevel.Informational);
+                var installSucess = await AppUpdater.InstallAppUpdate();
+                if (installSucess.Item1)
+                {
+                    Log("Continue in Windows App Installer.", LogLevel.Informational);
+                }
+                else
+                {
+                    Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.", LogLevel.Error);
+                }
+
+
+
+                // Button Visuals -> default (we're done with the update)
+                AppUpdaterButton.Content = "\uE895";
+                ToolTipService.SetToolTip(AppUpdaterButton, "Check for update");
+                AppUpdaterButton.Background = new SolidColorBrush(Colors.Transparent);
+                AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
+
+                // Clear these so next time it checks for updates in the else block below
+                AppUpdater.latestAppVersion = null;
+                AppUpdater.latestAppRemote_URL = null;
             }
-            else
+            finally
             {
-                Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.", LogLevel.Error);
+                ToggleControls(this, true);
+                _progressManager.HideProgress();
+                _ = BlinkingLamp(false);
             }
-
-            _progressManager.HideProgress();
-            ToggleControls(this, true);
-            _ = BlinkingLamp(false);
-
-            // Button Visuals -> default (we're done with the update)
-            AppUpdaterButton.Content = "\uE895";
-            ToolTipService.SetToolTip(AppUpdaterButton, "Check for update");
-            AppUpdaterButton.Background = new SolidColorBrush(Colors.Transparent);
-            AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
-
-            // Clear these so next time it checks for updates in the else block below
-            AppUpdater.latestAppVersion = null;
-            AppUpdater.latestAppRemote_URL = null;
-
-            ToggleControls(this, true);
         }
 
         // Checking department: If version and URL variables aren't filled (an update isn't available) try to get them, check for updates.
@@ -1071,6 +1069,7 @@ public sealed partial class MainWindow : Window
             }
         }
     }
+
 
 
     private void LocatePacksButton_Click(object sender, RoutedEventArgs e)
@@ -1210,7 +1209,6 @@ public sealed partial class MainWindow : Window
 
 
 
-    // Improved event handlers that don't interfere with typing
     private void FogMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         FogMultiplier = Math.Round(e.NewValue, 2);
@@ -1344,13 +1342,12 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    // Input validation helpers - add these to prevent invalid characters
+    // Input validation helpers to prevent invalid characters
     private void IntegerTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
     {
         // Allow only digits
         args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, @"^[0-9]*$");
     }
-
     private void DoubleTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
     {
         // Allow digits, one decimal point, and leading negative sign
@@ -1445,20 +1442,17 @@ public sealed partial class MainWindow : Window
     }
 
 
-
+    // the reason updateui here isn't working: you calling it from an async method, UpdateUI method is not to be called from async methods.
     private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
-        {
             Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
-        }
 
         try
         {
             if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
             {
                 Log("Locate and select at least one package to tune.", LogLevel.Warning);
-
                 return;
             }
             else
@@ -1470,16 +1464,19 @@ public sealed partial class MainWindow : Window
                 await Task.Run(Processor.TuneSelectedPacks);
                 Log("Completed tuning.", LogLevel.Success);
 
-                // Turn it off
-                AddEmissivityAmbientLight = false;
-                EmissivityAmbientLightToggle.IsOn = false;
+                // Reset emissive multiplier if ambient light was enabled on current tuning attempt
+                if (AddEmissivityAmbientLight)
+                {
+                    EmissivityMultiplier = Defaults.EmissivityMultiplier;
+                }
             }
         }
         finally
         {
-            _ =BlinkingLamp(false);
+            _ = BlinkingLamp(false);
             ToggleControls(this, true);
             _progressManager.HideProgress();
+            UpdateUI();
         }
     }
 
