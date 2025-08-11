@@ -151,13 +151,13 @@ public class Launcher
                 {
                     statusMessages.Add($"Failed to launch {versionName}: {ex.Message}");
                     if (modificationsDone)
-                        statusMessages.Add("⚠️ Options updated successfully — you can now launch the game manually.");
+                        statusMessages.Add("⚠️ Options updated successfully — you should now launch the game manually.");
                 }
                 catch (Exception ex)
                 {
                     statusMessages.Add($"Unexpected error launching {versionName}: {ex.Message}");
                     if (modificationsDone)
-                        statusMessages.Add("⚠️ Options updated successfully — you can now launch the game manually.");
+                        statusMessages.Add("⚠️ Options updated successfully — you should now launch the game manually.");
                 }
 
 
