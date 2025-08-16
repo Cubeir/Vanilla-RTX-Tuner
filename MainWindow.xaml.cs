@@ -18,21 +18,22 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
+using Vanilla_RTX_Tuner_WinUI.Modules;
 using Windows.Graphics;
 using Windows.Storage;
+using Windows.System;
 using Windows.UI;
-using Vanilla_RTX_Tuner_WinUI.Modules;
-using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
+using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
 /*
 ### GENERAL TODO & IDEAS ###
 
-    // TODO: make launcher return success status of launching the game
-    // Likely if it fails to launch the game but does all the rest of the code, *it has done 90% of its job* so use this
-    // to tell the user to launch the game manually because protocl wasn't assigned, 
+- Splash screen -- you decide where to take it from here with UpdateUI and whatnot
+Have another window that isn't shown, show it briefly upon startup with Tuner's large lamp
+Possibly improve the tuner lamp too, the glows must affect mortar more... more mystical like that pixel art you did
 
 - Have a worker that checks any possible local Vanilla RTX version (preview or not)
 And checks manifest against remote using already-existing pack updater class 
@@ -230,7 +231,8 @@ public sealed partial class MainWindow : Window
         // Warning if MC is running
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
         {
-            Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+            var buttonName = LaunchButtonText.Text;
+            Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
 
         // Set reinstall latest packs button visuals based on cache status
@@ -1569,7 +1571,7 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            var logs = await Launcher.LaunchMinecraftRTXAsync(IsTargetingPreview);
+            var logs = await Modules.Launcher.LaunchMinecraftRTXAsync(IsTargetingPreview);
             Log(logs, LogLevel.Informational);
         }
         finally

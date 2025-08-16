@@ -666,10 +666,12 @@
                                   FontSize="18"
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center"
-                                  x:Name="UpdateVanillaRTXGlyph"/>
+                                  x:Name="UpdateVanillaRTXGlyph"
+                                  x:FieldModifier="public" />
                         <TextBlock Text="Reinstall Latest Packs"
                                    VerticalAlignment="Center"
-                                   x:Name="UpdateVanillaRTXButtonText"/>
+                                   x:Name="UpdateVanillaRTXButtonText"
+                                   x:FieldModifier="public" />
                     </StackPanel>
                 </Button>
 
@@ -689,7 +691,8 @@
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center" />
                         <TextBlock Text="Launch Minecraft RTX"
-                                   VerticalAlignment="Center" />
+                                   VerticalAlignment="Center"
+                                   x:Name="LaunchButtonText"/>
                     </StackPanel>
                 </Button>
 
