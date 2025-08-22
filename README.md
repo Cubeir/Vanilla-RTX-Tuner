@@ -3,9 +3,11 @@
 All-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update Vanilla RTX ray tracing packages, launch Minecraft with RTX, and more...
 
 ⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)  
+⚠️ Requires Windows 10 20H1 (May 2020) or later
+
 
 [![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud)
-[![Ko-Fi](https://img.shields.io/badge/-support%20my%20work💖-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
+[![Ko-Fi](https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
 
 ![vanilla rtx tuner render 1 2](https://github.com/user-attachments/assets/fa30f80f-8863-4159-b53c-55797113974b)
 
@@ -74,8 +76,10 @@ Because changes stack on each tuning attempt, only use once it on freshly instal
 
 ## Installation Guide
 
-> **Note:** Requires [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) for Windows (64-bit).  
-> In most cases, it installs automatically with the `.msix`. If that fails, just install it manually from the link above.
+> **Prerequisites:**    
+> 1. Requires [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) for Windows (64-bit).   
+> In most cases, it installs automatically with the `.msix`. If that is failing, try installing it manually from the link above.   
+> 2. Windows [App Installer](https://learn.microsoft.com/en-us/windows/msix/app-installer/install-update-app-installer) to open `.msix` packages.  
 
 ### Option 1: Quick Install (Recommended)
 
