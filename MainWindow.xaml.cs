@@ -53,7 +53,6 @@ its scattering triplets will be multipled by a toned-down number, e.g. a 10x res
 2. For Emissivity adjustment, Desaturate pixels towards white with the excess -- dampened
 these aren't really standard adjustments, but they allow absurd values to leave an impact.
 
-
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
@@ -66,7 +65,7 @@ only concern is performance with large logs
 This idea can be a public static method and it won't ever ever block Ui thread
 A variable is getting constantly updated with new logs, a worker in main UI thread's only job is to write out its content as it comes along
 
-- Figure out a solution to keep noises the same between hardcoded pairs of blocks (e.g. redstone lamp on/off)
+- Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
 
 - Processor: load images once and process them, instead of doing so in multiple individual passes
@@ -76,23 +75,6 @@ Then with a wee bit more complex processor class, load once and processes as nee
 This is very low prio, because files are already read nad written as TGA which is simple, super fast IO.
 But it benefits Opus a lot. -- it is more managable as-is so... let the thought rest for now
 
-- Tuner must automatically try to find Extensions and Add-Ons of each respective pack that is currently selected 
-  to be tuned and queue those for tuning alongside it.
-
-  This must be done once addons are updated and properly moved to separate pages with each pack of each variant 
-  becoming standalone.
-  Addons won't be explicitly selected for tuning, try to find them and tune them automatically since they're 
-  natural extensions of base packs.
-  One "Tune Add-Ons & Extensions" button will do, if enabled, the finding and processing of addons and extensions 
-  will be automated
-  Looks for all addons, the ones tagged with "any" only need this button to be modified
-  the ones that have individual variants (opus/normals) need the button AND to have their packs selected for 
-  modification to work
-  hook extensions, and use their manifests to figure which pack they belong to (i.e _any_, _normals_, opus_ descs)
-  this way you can change which pack belongs to what upstream, and even introduce new packs without having to update tuner
-
-  Checkboxes also good space for this, a fourth item will do.. if at least one extension is found or one addon, add-on/extensions checkboxes become selectable
-  Put them in front of, in a new column to the right side of current checkboxes, perfect place for it
 */
 
 public static class TunerVariables
