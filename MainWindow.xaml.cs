@@ -1202,11 +1202,9 @@ public sealed partial class MainWindow : Window
 
     private void FogMultiplierSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
-        double roundedValue = Math.Round(e.NewValue, 2);
-        FogMultiplier = roundedValue;
-        FogMultiplierSlider.Value = roundedValue; // force slider to show rounded value
+        FogMultiplier = Math.Round(e.NewValue, 2);
         if (FogMultiplierBox != null && FogMultiplierBox.FocusState == FocusState.Unfocused)
-            FogMultiplierBox.Text = roundedValue.ToString("0.00");
+            FogMultiplierBox.Text = FogMultiplier.ToString("0.00");
     }
 
     private void FogMultiplierBox_LostFocus(object sender, RoutedEventArgs e)
@@ -1214,13 +1212,13 @@ public sealed partial class MainWindow : Window
         if (double.TryParse(FogMultiplierBox.Text, out double val))
         {
             val = Math.Clamp(val, 0.0, 7.5);
-            double roundedVal = Math.Round(val, 2);
-            FogMultiplier = roundedVal;
-            FogMultiplierSlider.Value = roundedVal;
-            FogMultiplierBox.Text = roundedVal.ToString("0.00");
+            FogMultiplier = val;
+            FogMultiplierSlider.Value = val;
+            FogMultiplierBox.Text = val.ToString("0.00");
         }
         else
         {
+            // Reset to current value if invalid input
             FogMultiplierBox.Text = FogMultiplier.ToString("0.00");
         }
     }
