@@ -409,8 +409,8 @@
                                 Grid.Column="0"
                                 Minimum="0.0"
                                 Maximum="7.5"
-                                StepFrequency="0.001"
-                                SmallChange="0.001"
+                                StepFrequency="0.01"
+                                SmallChange="0.01"
                                 Value="1"
                                 ValueChanged="FogMultiplierSlider_ValueChanged" />
                         <TextBox x:Name="FogMultiplierBox"
