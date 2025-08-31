@@ -75,6 +75,17 @@ Then with a wee bit more complex processor class, load once and processes as nee
 This is very low prio, because files are already read nad written as TGA which is simple, super fast IO.
 But it benefits Opus a lot. -- it is more managable as-is so... let the thought rest for now
 
+Here's the idea of the above more refined:
+parse all texture set jsons of a given pack
+Depending on what's gonna be modified, retreive the referenced files from ts json
+
+then perform the processings modularly by opening the file only once
+
+there is basically a first pass/validator of tuning params to decide what's gonna be needed, and a larger more coherent (but still modular) processor to process it based on
+what the validator passes onto it 
+
+The editing happens in one pass, much, much quicker with multiple tuning options
+
 */
 
 public static class TunerVariables
@@ -344,28 +355,26 @@ public sealed partial class MainWindow : Window
             Defaults.NormalIntensity
         );
 
-        /*
-        Previewer.Instance.InitializeSlider(MaterialNoiseSlider,
-            "ms-appx:///Assets/empty.png",
-            "ms-appx:///Assets/empty.png",
-            "ms-appx:///Assets/empty.png",
-            Defaults.MaterialNoiseOffset
-        );
-
         Previewer.Instance.InitializeSlider(RoughenUpSlider,
-            "ms-appx:///Assets/empty.png",
-            "ms-appx:///Assets/empty.png",
-            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/previews/roughenup.default.png",
+            "ms-appx:///Assets/previews/roughenup.default.png",
+            "ms-appx:///Assets/previews/roughenup.rough.png",
             Defaults.RoughenUpIntensity
         );
 
+        Previewer.Instance.InitializeSlider(MaterialNoiseSlider,
+                    "ms-appx:///Assets/previews/roughenup.default.png",
+                    "ms-appx:///Assets/previews/roughenup.default.png",
+                    "ms-appx:///Assets/previews/materials.grainy.png",
+                    Defaults.MaterialNoiseOffset
+                );
+
         Previewer.Instance.InitializeSlider(ButcherHeightmapsSlider,
-            "ms-appx:///Assets/empty.png",
-            "ms-appx:///Assets/empty.png",
-            "ms-appx:///Assets/empty.png",
+            "ms-appx:///Assets/previews/heightmaps.default.png",
+            "ms-appx:///Assets/previews/heightmaps.default.png",
+            "ms-appx:///Assets/previews/heightmaps.butchered.png",
             Defaults.ButcheredHeightmapAlpha
         );
-        */
 
         Previewer.Instance.InitializeToggleSwitch(EmissivityAmbientLightToggle,
             "ms-appx:///Assets/previews/emissivity.ambient.on.png",
@@ -408,11 +417,11 @@ public sealed partial class MainWindow : Window
         Previewer.Instance.InitializeButton(HelpButton,
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
-        /*
+        
         Previewer.Instance.InitializeButton(ResetButton,
-            "ms-appx:///Assets/empty.png"
+            "ms-appx:///Assets/previews/table.reset.png"
         );
-        */
+        
     }
 
 
