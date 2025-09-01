@@ -82,12 +82,12 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.7.0" />
-    <PackageReference Include="Magick.NET.Core" Version="14.7.0" />
-    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.7" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3351.48" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.8.1" />
+    <PackageReference Include="Magick.NET.Core" Version="14.8.1" />
+    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.9" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3405.78" />
     <PackageReference Include="Microsoft.Win32.SystemEvents" Version="9.0.8" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.8" />
