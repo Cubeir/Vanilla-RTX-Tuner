@@ -111,8 +111,4 @@ Because changes stack on each tuning attempt, only use once it on freshly instal
 
 ### Need help?
 
-Join the Vanilla RTX community on Discord & ask away! [https://discord.gg/A4wv4wwYud](https://discord.gg/A4wv4wwYud)
-
-### Want to help?
-
-The scope of this project as it stands is medium to small, but contributions are welcome. You’ll find TODOs scattered in the code if you’re looking for a place to start.
+Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
