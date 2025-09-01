@@ -31,7 +31,15 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Splash screen -- you decide where to take it from here with UpdateUI and whatnot
+- Make fog multiplier partially impact water scattering (& absorbtion?)
+Here's a couple of things to consider:
+official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
+Vanilla RTX doesn't use it because it doesn't work! test again, maybe there's been a bug
+If it works, update water to use density param in its fog
+Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is a little unpredictable since both are compounded for the final color
+
+
+- Splash screen -- you decide where to take it from here with UpdateUI and whatnot, since they won't be necessery anymore.
 Have another window that isn't shown, show it briefly upon startup with Tuner's large lamp
 Possibly improve the tuner lamp too, the glows must affect mortar more... more mystical like that pixel art you did
 
@@ -40,10 +48,11 @@ And checks manifest against remote using already-existing pack updater class
 And changes icon of reinstall latest packs to CloudDL or Archive and puts a log out there too
 basically telling the user hey! update available!
 
-- Art for the remaining 3 sliders (but what to draw??! it is impossible to convey)
+
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
 - Make 3 art pieces for Vanilla RTX, Vanilla RTX Normals, and Opus, based on their cover images, for checkbox selection
+base one on the Vanilla RTX Add-Ons world.
 
 - Two interesting ideas to explore further:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
