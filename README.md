@@ -18,7 +18,7 @@ Below you'll find a comprehensive list of features and functionalities included 
 - **`Launch Minecraft RTX`**  
   Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance, this is a direct workaround for the following issues:  
   [MCPE-191513](https://bugs.mojang.com/browse/MCPE/issues/MCPE-191513): Ray tracing can no longer be enabled while in the main menu.  
-  [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/MCPE-153053): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
+  [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/MCPE-152158): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
   [MCPE-121850](https://bugs.mojang.com/browse/MCPE/issues/MCPE-121850): Ray Tracing performance starvation when VSync is enabled.
 
 - **`Reinstall Latest Packages`**  
