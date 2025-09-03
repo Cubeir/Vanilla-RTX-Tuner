@@ -77,24 +77,6 @@ A variable is getting constantly updated with new logs, a worker in main UI thre
 - Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
 
-- Processor: load images once and process them, instead of doing so in multiple individual passes
-You'd have to identify which types of images are going to need modifications based on packs
-Then with a wee bit more complex processor class, load once and processes as needed and finally save.
-
-This is very low prio, because files are already read nad written as TGA which is simple, super fast IO.
-But it benefits Opus a lot. -- it is more managable as-is so... let the thought rest for now
-
-Here's the idea of the above more refined:
-parse all texture set jsons of a given pack
-Depending on what's gonna be modified, retreive the referenced files from ts json
-
-then perform the processings modularly by opening the file only once
-
-there is basically a first pass/validator of tuning params to decide what's gonna be needed, and a larger more coherent (but still modular) processor to process it based on
-what the validator passes onto it 
-
-The editing happens in one pass, much, much quicker with multiple tuning options
-
 */
 
 public static class TunerVariables
