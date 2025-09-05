@@ -62,8 +62,6 @@ Because changes stack on each tuning attempt, only use once it on freshly instal
 - **`Roughen Up`**  
   Increases roughness on materials using a decaying curve function to impact glossy surfaces more than rough surfaces, allowing alignment with Vibrant Visuals' artstyle.
   
-  ![roughenup-slider](https://github.com/user-attachments/assets/fa365641-ec26-4a51-b519-c25c6af33843)
-
 - **`Butcher Heightmaps`**  
   Uses a modified color texture to make the heightmaps less refined and more noisy. The given number determines effectiveness `(0 = no change, 255 = fully lazy heightmaps)`.
 
