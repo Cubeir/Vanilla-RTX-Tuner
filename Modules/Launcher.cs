@@ -244,7 +244,7 @@ public class Launcher
             {
                 allStatusMessages.Add($"Unexpected error launching {versionName}: {ex.Message}");
                 if (anyModificationsMade)
-                    allStatusMessages.Add("⚠️ Ray tracing settings were updated — you should now launch the game manually.");
+                    allStatusMessages.Add("⚠️ Ray tracing settings were updated successfully — you should now launch the game manually.");
             }
 
             return string.Join("\n", allStatusMessages);
