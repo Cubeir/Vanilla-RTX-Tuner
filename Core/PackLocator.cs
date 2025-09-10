@@ -34,22 +34,30 @@ public class PackLocator
 
         try
         {
-            // Find the correct Minecraft package folder (pattern-based, like Updater)
-            var packagesRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
-            string mcFolderPattern = isTargetingPreview
-                ? "Microsoft.MinecraftWindowsBeta_"
-                : "Microsoft.MinecraftUWP_";
+            string basePath, versionName;
 
-            var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
-            if (mcRoot == null)
+            if (isTargetingPreview)
             {
-                return "Resource pack directory not found ❌ is the correct version of Minecraft installed?";
+                basePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Minecraft Bedrock Preview"
+                );
+                versionName = "Minecraft Preview";
+            }
+            else
+            {
+                basePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Minecraft Bedrock"
+                );
+                versionName = "Minecraft";
             }
 
-            var resolvedPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
+            var resolvedPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs");
+
             if (!Directory.Exists(resolvedPath))
             {
-                return "Resource pack directory not found ❌ is the correct version of Minecraft installed?";
+                return $"Resource pack directory not found ❌ is the correct version of {versionName} installed?";
             }
 
             var manifestFiles = Directory.GetFiles(resolvedPath, "manifest.json", SearchOption.AllDirectories);
