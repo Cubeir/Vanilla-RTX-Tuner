@@ -31,6 +31,43 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+
+- Update the app to work well with the new user generated file locations and options.txt
+Anywhere in the app that dealt with minecraftuwp_8wekyetc... is now obsolete, must be updated
+
+If something like options.txt exists per user, per-user will be used.
+If it doesn't, like resource packs, it is 100% in the shared folder, that's the one to use.
+e.g.
+
+> PACKS ALWAYS install to Shared!
+> Options.txt ALWAYS must change per-user!
+
+PackLocator, PackUpdater, and Launcher modules are probably all that are going to need to be updated?
+
+
+- Replacing game files has never been easier, the game is no longer in protected WindowsApps folder
+One-click RTX improvements are possible now by replacing ray_tracing folder files.
+
+Maybe multiple presets, pixelated water normal, pixelated caustics, better look up tables for sky and sunlight
+If this is to be done, it must make back up of the said files.
+
+
+- Processor should deal with texture set jsons instead of assuming naming conventions
+Sure, you control the naming convention, but if the app was to expand into anything more, this must be done, and its cleaner, do it
+
+- For each processor, read through all jsons, and detect MERs, normal, etc... file names from there
+then process what's needed
+this way that wack normal finding trick won't be needed.
+
+While doing this, try to do a rewrite to load files once and process what's needed in memory
+Instead of having multiple processors each loading the same files over and over
+
+
+Basically, looking for pbr files can be done through TS jsons very reliably
+but excluding not. not reliable, stick with the old reliable double normal checking trickery, because of single files
+in subpacks that have no TS, but REPLACE a part of a TS.
+
+
 - Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
 official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
@@ -200,7 +237,7 @@ public sealed partial class MainWindow : Window
         // Silent background credits & psa retriever
         CreditsUpdater.GetCredits(false);
 
-        // Lazy PSA retrieval, show whenever retrieved
+        // Lazy PSA retrieval, show whenever or if retrieved
         _ = Task.Run(async () =>
         {
             string? psa = await PSAUpdater.GetPSAAsync();
