@@ -110,3 +110,6 @@ Because changes stack on each tuning attempt, only use once it on freshly instal
 ### Need help?
 
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
+
+### PSA
+Mojang is slowly moving Minecraft user files to a new location, currently this change is being rolled out on Windows with the release of 1.21.120.21 Preview, if you're using this version or higher, Tuner will stop working. Keep an eye out for updates!
