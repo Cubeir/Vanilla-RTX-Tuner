@@ -723,23 +723,22 @@ public class PackUpdater
         try
         {
             // Find the resource pack path, where we wanna deploy
-            var packagesRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
-            string mcFolderPattern = TunerVariables.IsTargetingPreview
-                ? "Microsoft.MinecraftWindowsBeta_"
-                : "Microsoft.MinecraftUWP_";
+            string basePath = TunerVariables.IsTargetingPreview
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock Preview")
+                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock");
 
-            var mcRoot = Directory.GetDirectories(packagesRoot, mcFolderPattern + "*").FirstOrDefault();
-            if (mcRoot == null)
+            if (!Directory.Exists(basePath))
             {
                 LogMessage("❌ Minecraft data root not found. Please make sure the game is installed or has been launched at least once.");
                 return false;
             }
 
-            resourcePackPath = Path.Combine(mcRoot, "LocalState", "games", "com.mojang", "resource_packs");
+            resourcePackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs");
+
             if (!Directory.Exists(resourcePackPath))
             {
                 Directory.CreateDirectory(resourcePackPath);
-                LogMessage("❌ Resource pack directory was missing and has been created.");
+                LogMessage("📁 Shared resources directory was missing and has been created.");
             }
 
             // Step 1: Extract zipball directly into resource pack directory with UUID suffix
