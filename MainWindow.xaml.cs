@@ -51,6 +51,7 @@ One-click RTX improvements are possible now by replacing ray_tracing folder file
 Maybe multiple presets, pixelated water normal, pixelated caustics, better look up tables for sky and sunlight
 If this is to be done, it must make back up of the said files.
 
+- Add support for Vanilla PBR for Vibrant Visuals, for tuning, possibly in auto updater too
 
 - Processor should deal with texture set jsons instead of assuming naming conventions
 Sure, you control the naming convention, but if the app was to expand into anything more, this must be done, and its cleaner, do it
