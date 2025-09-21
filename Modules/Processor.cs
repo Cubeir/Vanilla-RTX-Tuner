@@ -48,52 +48,98 @@ public class Processor
         new PackInfo("Vanilla RTX Opus", VanillaRTXOpusLocation, IsOpusEnabled)             // 2
     };
 
+
         if (FogMultiplier != 1.0)
         {
-            foreach (var p in packs) ProcessFog(p); // All
+            foreach (var p in packs) // All
+            {
+                if (p.Enabled)
+                    ProcessFog(p);
+            }
         }
 
         if (EmissivityMultiplier != 1.0 || AddEmissivityAmbientLight == true)
         {
-            foreach (var p in packs) ProcessEmissivity(p); // All
+            foreach (var p in packs)
+            {
+                if (p.Enabled)
+                    ProcessEmissivity(p); // All
+            }
         }
 
         if (NormalIntensity != 100)
         {
-            foreach (var p in packs) ProcessNormalIntensity(p); // All
+            foreach (var p in packs)
+            {
+                if (p.Enabled)
+                    ProcessNormalIntensity(p); // All
+            }
         }
 
         if (MaterialNoiseOffset != 0)
         {
-            foreach (var p in packs) ProcessMaterialNoise(p); // All
+            foreach (var p in packs)
+            {
+                if (p.Enabled)
+                    ProcessMaterialNoise(p); // All
+            }
         }
 
         if (RoughenUpIntensity != 0)
         {
-            foreach (var p in packs) ProcessRoughingUp(p); // All
+            foreach (var p in packs)
+            {
+                if (p.Enabled)
+                    ProcessRoughingUp(p); // All
+            }
         }
 
-        if (ButcheredHeightmapAlpha != 0)
+        if (ButcheredHeightmapAlpha != 0 && packs[0].Enabled) // Only Vanilla RTX if enabled
         {
-            ProcessHeightmaps(packs[0]); // Only Vanilla RTX
+            ProcessHeightmaps(packs[0]); 
         }
     }
 
 
     // TODO: make processors return reasons of their failure for easier debugging at the end without touching UI thread directly.
+    // this is got to become a part of the larger logging overhaul down the line (gradual logger thing from public string)
     // Also make them log any unexpected oddities in Vanilla RTX (whether it be size, opacity, etc...) as warnings
     #region ------------------- Processors
     private static void ProcessFog(PackInfo pack)
     {
 
 
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(pack.Path, "*_volumetric_fog_setting.json", SearchOption.AllDirectories);
+        // Find all directories named "fogs" within the pack path
+        var fogDirectories = Directory.GetDirectories(pack.Path, "fogs", SearchOption.AllDirectories);
+
+        if (!fogDirectories.Any())
+        {
+            MainWindow.Log($"{pack.Name}: no 'fogs' directories found.");
+            return;
+        }
+
+        var files = new List<string>();
+
+        // Collect all JSON files from all "fogs" directories
+        foreach (var fogDir in fogDirectories)
+        {
+            try
+            {
+                var jsonFiles = Directory.GetFiles(fogDir, "*.json", SearchOption.TopDirectoryOnly);
+                files.AddRange(jsonFiles);
+            }
+            catch
+            {
+                // Skip directories that can't be accessed
+            }
+        }
+
         if (!files.Any())
         {
-            // MainWindow.Log($"{pack.Name}: no fog setting files found.");
+            // MainWindow.Log($"{pack.Name}: no JSON files found in 'fogs' directories.");
             return;
         }
 
@@ -392,14 +438,17 @@ public class Processor
 
     private static void ProcessEmissivity(PackInfo pack)
     {
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
-        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
+
+        var files = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Mer);
+
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tgas files found.");
+            MainWindow.Log($"{pack.Name}: no MERS texture files found from texture sets.");
             return;
         }
+
         var userMult = EmissivityMultiplier;
         foreach (var file in files)
         {
@@ -516,29 +565,48 @@ public class Processor
     }
 
 
-    // TODO: Force absolute perservation of contrast in Vanilla RTX heightmaps
-    // Introduce a curve function that'd make it impossible for values super close to each other to blend in or become the same color
-    // A kind of special heightmap processor
+
     private static void ProcessNormalIntensity(PackInfo pack)
     {
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var allNormalFiles = Directory.GetFiles(pack.Path, "*_normal.tga", SearchOption.AllDirectories);
-        var files = new List<string>();
+        // Get normal and heightmap files from texture sets
+        var allNormalFiles = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Normal);
+        var allHeightmapFiles = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Heightmap);
 
-        // For Vanilla RTX
-        var allHeightmapFiles = Directory.GetFiles(pack.Path, "*_heightmap.tga", SearchOption.AllDirectories);
+        // Check if we have anything to process at all
+        if (!allNormalFiles.Any() && !allHeightmapFiles.Any())
+        {
+            MainWindow.Log($"{pack.Name}: no normal or heightmap texture files found from texture sets.", MainWindow.LogLevel.Warning);
+            return;
+        }
+
+        // Process heightmaps first
         ProcessHeightmapsIntensity(allHeightmapFiles);
+
+        var files = new List<string>();
 
         foreach (var file in allNormalFiles)
         {
             var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file);
+            var fileDir = Path.GetDirectoryName(file);
 
             // Check if a double-normal variant exists (some blocks already end with _normal suffix)
-            var doubleNormalPath = Path.Combine(Path.GetDirectoryName(file), fileNameWithoutExt + "_normal.tga");
+            var possibleExtensions = new[] { ".tga", ".png", ".jpg", ".jpeg" };
+            string? doubleNormalPath = null;
 
-            if (File.Exists(doubleNormalPath))
+            foreach (var ext in possibleExtensions)
+            {
+                var testPath = Path.Combine(fileDir, fileNameWithoutExt + "_normal" + ext);
+                if (File.Exists(testPath))
+                {
+                    doubleNormalPath = testPath;
+                    break;
+                }
+            }
+
+            if (doubleNormalPath != null)
             {
                 // Use the double-normal version (the real normal map)
                 if (!files.Contains(doubleNormalPath))
@@ -546,14 +614,15 @@ public class Processor
             }
             else
             {
-                // No double-normal exists, so this _normal.tga is the actual normal map
+                // No double-normal exists, so this normal file is the actual normal map
                 files.Add(file);
             }
         }
 
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _normal.tga files found.", MainWindow.LogLevel.Warning);
+            // No normal files to process, but that's okay if we had heightmaps
+            // MainWindow.Log($"{pack.Name}: no processable normal files found.");
             return;
         }
 
@@ -566,49 +635,83 @@ public class Processor
                 using var bmp = ReadImage(file, false);
                 var width = bmp.Width;
                 var height = bmp.Height;
+                bool wroteBack = false;
 
-                // Find maximum deviation from 128 in R and G channels
-                double maxDeviation = 0;
-                for (var y = 0; y < height; y++)
+                // For reduction (intensity < 1.0), simple linear scaling toward neutral
+                if (intensityPercent <= 1.0)
                 {
-                    for (var x = 0; x < width; x++)
+                    for (var y = 0; y < height; y++)
                     {
-                        var pixel = bmp.GetPixel(x, y);
-                        var rDev = Math.Abs(pixel.R - 128.0);
-                        var gDev = Math.Abs(pixel.G - 128.0);
-                        var totalDev = Math.Max(rDev, gDev);
-                        if (totalDev > maxDeviation)
-                            maxDeviation = totalDev;
+                        for (var x = 0; x < width; x++)
+                        {
+                            var origColor = bmp.GetPixel(x, y);
+
+                            // Simple linear interpolation toward 128 (neutral)
+                            var newR = (int)Math.Round(128 + (origColor.R - 128) * intensityPercent);
+                            var newG = (int)Math.Round(128 + (origColor.G - 128) * intensityPercent);
+
+                            newR = Math.Clamp(newR, 0, 255);
+                            newG = Math.Clamp(newG, 0, 255);
+
+                            if (newR != origColor.R || newG != origColor.G)
+                            {
+                                wroteBack = true;
+                                var newColor = Color.FromArgb(origColor.A, newR, newG, origColor.B);
+                                bmp.SetPixel(x, y, newColor);
+                            }
+                        }
                     }
                 }
-                if (maxDeviation == 0)
+                else
                 {
-                    // MainWindow.Log($"{packName}: {Path.GetFileName(file)} has no normal data; skipped.");
-                    continue;
-                }
+                    // For increase (intensity > 1.0), use proportional compression approach
 
-                // Calculate effective multiplier
-                var maxPossibleMult = 127.0 / maxDeviation; // Max we can go without clipping
-                var effectiveMult = Math.Min(intensityPercent, maxPossibleMult);
-                var excess = Math.Max(0, intensityPercent - effectiveMult);
-
-                var wroteBack = false;
-
-                for (var y = 0; y < height; y++)
-                {
-                    for (var x = 0; x < width; x++)
+                    // Find the maximum deviation that would occur after scaling
+                    double maxIdealDeviation = 0;
+                    for (var y = 0; y < height; y++)
                     {
-                        var origColor = bmp.GetPixel(x, y);
-
-                        // Process R (X component) and G (y) channels
-                        var newR = ProcessNormalChannel(origColor.R, effectiveMult, excess);
-                        var newG = ProcessNormalChannel(origColor.G, effectiveMult, excess);
-
-                        if (newR != origColor.R || newG != origColor.G)
+                        for (var x = 0; x < width; x++)
                         {
-                            wroteBack = true;
-                            var newColor = Color.FromArgb(origColor.A, newR, newG, origColor.B);
-                            bmp.SetPixel(x, y, newColor);
+                            var pixel = bmp.GetPixel(x, y);
+                            var rDev = Math.Abs((pixel.R - 128.0) * intensityPercent);
+                            var gDev = Math.Abs((pixel.G - 128.0) * intensityPercent);
+                            var maxDev = Math.Max(rDev, gDev);
+                            if (maxDev > maxIdealDeviation)
+                                maxIdealDeviation = maxDev;
+                        }
+                    }
+
+                    if (maxIdealDeviation == 0)
+                    {
+                        // Flat normal map, nothing to do
+                        continue;
+                    }
+
+                    // Calculate compression ratio to fit within valid range
+                    var compressionRatio = maxIdealDeviation > 127.0 ? 127.0 / maxIdealDeviation : 1.0;
+
+                    for (var y = 0; y < height; y++)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            var origColor = bmp.GetPixel(x, y);
+
+                            // Apply intensity then compression
+                            var idealR = 128.0 + (origColor.R - 128.0) * intensityPercent * compressionRatio;
+                            var idealG = 128.0 + (origColor.G - 128.0) * intensityPercent * compressionRatio;
+
+                            var newR = (int)Math.Round(idealR);
+                            var newG = (int)Math.Round(idealG);
+
+                            newR = Math.Clamp(newR, 0, 255);
+                            newG = Math.Clamp(newG, 0, 255);
+
+                            if (newR != origColor.R || newG != origColor.G)
+                            {
+                                wroteBack = true;
+                                var newColor = Color.FromArgb(origColor.A, newR, newG, origColor.B);
+                                bmp.SetPixel(x, y, newColor);
+                            }
                         }
                     }
                 }
@@ -629,31 +732,7 @@ public class Processor
             }
         }
 
-        int ProcessNormalChannel(int originalValue, double effectiveMult, double excess)
-        {
-            // Convert to deviation from neutral (128)
-            var deviation = originalValue - 128.0;
-
-            // Apply effective multiplier
-            var newDeviation = deviation * effectiveMult;
-
-            // Apply excess at lower % effectiveness
-            if (excess > 0 && Math.Abs(deviation) > 0.001) // Only if there was meaningful deviation
-            {
-                newDeviation += deviation * excess * NORMALMAP_EXCESS_INTENSITY_DAMPEN;
-            }
-
-            // Convert back to color value
-            var newValue = 128.0 + newDeviation;
-
-            // Standard rounding for normal map
-            var finalValue = (int)Math.Round(newValue);
-
-            return Math.Clamp(finalValue, 0, 255);
-        }
-
-
-        // Secondary Pass for Heightmaps
+        // Detail-preserving heightmap contrast adjustment
         void ProcessHeightmapsIntensity(string[] heightmapFiles)
         {
             var userIntensity = NormalIntensity / 100.0;
@@ -676,122 +755,99 @@ public class Processor
                             if (gray > maxGray) maxGray = gray;
                         }
 
-                    double currentContrast = maxGray - minGray;
-                    if (currentContrast == 0)
+                    double currentSpan = maxGray - minGray;
+                    if (currentSpan == 0)
                     {
                         // Flat image, nothing to do
                         continue;
                     }
 
-                    // Center point for contrast
-                    var center = (minGray + maxGray) / 2.0;
+                    // Calculate the ideal new span based on user intensity
+                    var idealSpan = currentSpan * userIntensity;
 
-                    // Calculate the multiplier needed to reach full contrast (at least two pixels at 0 and 255)
-                    var maxPossibleMult = 255.0 / currentContrast;
+                    // Determine the actual span we can achieve (clamped to 255)
+                    var actualSpan = Math.Min(idealSpan, 255.0);
 
-                    // If user wants to reduce contrast
-                    if (userIntensity < 1.0)
-                    {
-                        // Linear interpolation to center
-                        for (var y = 0; y < height; y++)
-                            for (var x = 0; x < width; x++)
-                            {
-                                var origColor = bmp.GetPixel(x, y);
-                                var gray = origColor.R;
-                                var newGray = center + (gray - center) * userIntensity;
-                                var finalGray = (int)Math.Round(newGray);
-                                finalGray = Math.Clamp(finalGray, 0, 255);
-                                if (finalGray != gray)
-                                    bmp.SetPixel(x, y, Color.FromArgb(origColor.A, finalGray, finalGray, finalGray));
-                            }
-                        WriteImageAsTGA(bmp, file);
-                        continue;
-                    }
+                    // Calculate the center point for the transformation
+                    var currentCenter = (minGray + maxGray) / 2.0;
+                    var newCenter = 127.5; // Target center of 0-255 range
 
-                    // If userIntensity is enough to reach full contrast, but not more
-                    if (userIntensity <= maxPossibleMult)
-                    {
-                        for (var y = 0; y < height; y++)
-                            for (var x = 0; x < width; x++)
-                            {
-                                var origColor = bmp.GetPixel(x, y);
-                                var gray = origColor.R;
-                                var newGray = center + (gray - center) * userIntensity;
-                                var finalGray = (int)Math.Round(newGray);
-                                finalGray = Math.Clamp(finalGray, 0, 255);
-                                if (finalGray != gray)
-                                    bmp.SetPixel(x, y, Color.FromArgb(origColor.A, finalGray, finalGray, finalGray));
-                            }
-                        WriteImageAsTGA(bmp, file);
-                        continue;
-                    }
+                    // If ideal span exceeds 255, we need to compress proportionally
+                    var compressionRatio = actualSpan / Math.Max(idealSpan, actualSpan);
 
-                    // If userIntensity exceeds maxPossibleMult, apply excess with DAMPEN
-                    var excess = userIntensity - maxPossibleMult;
-                    var hasFullContrast = minGray == 0 && maxGray == 255;
+                    bool hasChanges = false;
 
                     for (var y = 0; y < height; y++)
+                    {
                         for (var x = 0; x < width; x++)
                         {
                             var origColor = bmp.GetPixel(x, y);
                             var gray = origColor.R;
-                            var deviation = gray - center;
 
-                            // First, bring to full contrast
-                            var newDeviation = deviation * maxPossibleMult;
+                            // Calculate deviation from current center
+                            var deviation = gray - currentCenter;
 
-                            // If image already has full contrast, or after this pass, apply excess with DAMPEN
-                            if (hasFullContrast || Math.Abs(newDeviation) >= 127.5)
-                            {
-                                newDeviation += deviation * excess * NORMALMAP_EXCESS_INTENSITY_DAMPEN;
-                            }
+                            // Apply intensity scaling with compression if needed
+                            var newDeviation = deviation * userIntensity * compressionRatio;
 
-                            var newGray = center + newDeviation;
+                            // Calculate final value around new center
+                            var newGray = newCenter + newDeviation;
+
+                            // Clamp and round
                             var finalGray = (int)Math.Round(newGray);
                             finalGray = Math.Clamp(finalGray, 0, 255);
+
                             if (finalGray != gray)
-                                bmp.SetPixel(x, y, Color.FromArgb(origColor.A, finalGray, finalGray, finalGray));
+                            {
+                                hasChanges = true;
+                                var newColor = Color.FromArgb(origColor.A, finalGray, finalGray, finalGray);
+                                bmp.SetPixel(x, y, newColor);
+                            }
                         }
-                    WriteImageAsTGA(bmp, file);
+                    }
+
+                    if (hasChanges)
+                    {
+                        WriteImageAsTGA(bmp, file);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // MainWindow.Log($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}"); ui thread no touchy
+                    // MainWindow.Log($"{pack.Name}: error processing heightmap {Path.GetFileName(file)} — {ex.Message}");
                 }
             }
         }
-
     }
 
 
 
     private static void ProcessHeightmaps(PackInfo pack)
     {
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(pack.Path, "*_heightmap.tga", SearchOption.AllDirectories);
-        if (!files.Any())
+        // Get paired color and heightmap textures from texture sets
+        var texturePairs = TextureSetHelper.RetrieveTextureSetPairs(pack.Path, TextureSetHelper.TextureType.Color, TextureSetHelper.TextureType.Heightmap);
+
+        if (!texturePairs.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _heightmap.tga files found.", MainWindow.LogLevel.Warning);
+            MainWindow.Log($"{pack.Name}: no texture sets with color and heightmap found.", MainWindow.LogLevel.Warning);
             return;
         }
 
         var alpha = ButcheredHeightmapAlpha;
 
-        foreach (var heightmapFile in files)
+        foreach (var (colormapFile, heightmapFile) in texturePairs)
         {
+            // Skip if heightmap is missing (we need both for this process)
+            if (string.IsNullOrEmpty(heightmapFile))
+            {
+                MainWindow.Log($"{pack.Name}: heightmap not found for {Path.GetFileName(colormapFile)}; skipped.", MainWindow.LogLevel.Warning);
+                continue;
+            }
+
             try
             {
-                // Find colormap file path (same file name without _heightmap suffix)
-                var colormapFile = heightmapFile.Replace("_heightmap.tga", ".tga");
-
-                if (!File.Exists(colormapFile))
-                {
-                    MainWindow.Log($"{pack.Name}: colormap not found for {Path.GetFileName(heightmapFile)}; skipped.", MainWindow.LogLevel.Warning);
-                    continue;
-                }
-
                 using var heightmapBmp = ReadImage(heightmapFile, false);
                 using var colormapBmp = ReadImage(colormapFile, false);
 
@@ -895,13 +951,14 @@ public class Processor
 
     private static void ProcessRoughingUp(PackInfo pack)
     {
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
+        var files = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Mer);
+
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tga files found.", MainWindow.LogLevel.Warning);
+            MainWindow.Log($"{pack.Name}: no MERS texture files found from texture sets.");
             return;
         }
 
@@ -986,13 +1043,14 @@ public class Processor
             }
         }
 
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
+        var files = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Mer);
+
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tga files found.", MainWindow.LogLevel.Warning);
+            MainWindow.Log($"{pack.Name}: no MER(S) texture files found from texture sets.");
             return;
         }
 
@@ -1366,3 +1424,166 @@ public class Processor
 }
 
 
+
+public static class TextureSetHelper
+{
+    public enum TextureType
+    {
+        Color,
+        Mer,        // metalness_emissive_roughness or metalness_emissive_roughness_subsurface
+        Normal,
+        Heightmap
+    }
+
+    private static readonly string[] SupportedExtensions = { ".tga", ".png", ".jpg", ".jpeg" };
+
+    /// <summary>
+    /// Retrieves paired texture file paths from texture set JSONs.
+    /// </summary>
+    /// <param name="rootPath">Folder to search for texture set JSONs.</param>
+    /// <param name="primaryType">Primary texture type (e.g., Color).</param>
+    /// <param name="secondaryType">Secondary texture type (e.g., Heightmap).</param>
+    /// <returns>Array of texture pairs. Secondary can be null if not found.</returns>
+    public static (string primary, string? secondary)[] RetrieveTextureSetPairs(string rootPath, TextureType primaryType, TextureType secondaryType)
+    {
+        if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+            return Array.Empty<(string, string?)>();
+
+        var jsonFiles = Directory.GetFiles(rootPath, "*.texture_set.json", SearchOption.AllDirectories);
+        var foundPairs = new List<(string primary, string? secondary)>();
+
+        foreach (var jsonFile in jsonFiles)
+        {
+            try
+            {
+                var text = File.ReadAllText(jsonFile);
+                var root = JObject.Parse(text);
+                if (root.SelectToken("minecraft:texture_set") is not JObject set)
+                    continue;
+
+                string? primaryTextureName = primaryType switch
+                {
+                    TextureType.Color => set.Value<string>("color"),
+                    TextureType.Mer => set.Value<string>("metalness_emissive_roughness") ?? set.Value<string>("metalness_emissive_roughness_subsurface"),
+                    TextureType.Normal => set.Value<string>("normal"),
+                    TextureType.Heightmap => set.Value<string>("heightmap"),
+                    _ => null
+                };
+
+                string? secondaryTextureName = secondaryType switch
+                {
+                    TextureType.Color => set.Value<string>("color"),
+                    TextureType.Mer => set.Value<string>("metalness_emissive_roughness") ?? set.Value<string>("metalness_emissive_roughness_subsurface"),
+                    TextureType.Normal => set.Value<string>("normal"),
+                    TextureType.Heightmap => set.Value<string>("heightmap"),
+                    _ => null
+                };
+
+                if (string.IsNullOrEmpty(primaryTextureName))
+                    continue;
+
+                var folder = Path.GetDirectoryName(jsonFile);
+                var primaryFound = FindTextureFile(folder, primaryTextureName);
+
+                if (!string.IsNullOrEmpty(primaryFound))
+                {
+                    string? secondaryFound = null;
+                    if (!string.IsNullOrEmpty(secondaryTextureName))
+                    {
+                        secondaryFound = FindTextureFile(folder, secondaryTextureName);
+                    }
+
+                    foundPairs.Add((primaryFound, secondaryFound));
+                }
+            }
+            catch
+            {
+                // Ignore malformed JSONs or IO errors
+            }
+        }
+
+        return foundPairs.ToArray();
+    }
+
+    /// <summary>
+    /// Retrieves texture file paths referenced by texture set JSONs in the given folder.
+    /// </summary>
+    /// <param name="rootPath">Folder to search for texture set JSONs.</param>
+    /// <param name="type">Texture type to retrieve.</param>
+    /// <returns>Array of found texture file paths (unique entries only).</returns>
+    public static string[] RetrieveFilesFromTextureSets(string rootPath, TextureType type)
+    {
+        if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+            return Array.Empty<string>();
+
+        var jsonFiles = Directory.GetFiles(rootPath, "*.texture_set.json", SearchOption.AllDirectories);
+        var foundFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var jsonFile in jsonFiles)
+        {
+            try
+            {
+                var text = File.ReadAllText(jsonFile);
+                var root = JObject.Parse(text);
+                if (root.SelectToken("minecraft:texture_set") is not JObject set)
+                    continue;
+
+                string? textureName = type switch
+                {
+                    TextureType.Color => set.Value<string>("color"),
+                    TextureType.Mer => set.Value<string>("metalness_emissive_roughness") ?? set.Value<string>("metalness_emissive_roughness_subsurface"),
+                    TextureType.Normal => set.Value<string>("normal"),
+                    TextureType.Heightmap => set.Value<string>("heightmap"),
+                    _ => null
+                };
+
+                if (string.IsNullOrEmpty(textureName))
+                    continue;
+
+                var folder = Path.GetDirectoryName(jsonFile);
+                var found = FindTextureFile(folder, textureName);
+
+                if (!string.IsNullOrEmpty(found))
+                    foundFiles.Add(found);
+            }
+            catch
+            {
+                // Ignore malformed JSONs or IO errors
+            }
+        }
+
+        return foundFiles.ToArray();
+    }
+
+    /// <summary>
+    /// Finds a texture file with case-insensitive search, trying extensions in priority order.
+    /// </summary>
+    /// <param name="folder">Directory to search in.</param>
+    /// <param name="textureName">Base texture name without extension.</param>
+    /// <returns>Full path to found file, or null if not found.</returns>
+    private static string FindTextureFile(string folder, string textureName)
+    {
+        foreach (var ext in SupportedExtensions)
+        {
+            var targetPath = Path.Combine(folder, textureName + ext);
+
+            // Try exact case first (fastest)
+            if (File.Exists(targetPath))
+                return targetPath;
+
+            // If exact case fails, do case-insensitive search
+            try
+            {
+                var files = Directory.GetFiles(folder, textureName + ext, SearchOption.TopDirectoryOnly);
+                if (files.Length > 0)
+                    return files[0];
+            }
+            catch
+            {
+                // Directory might not exist or access denied, continue to next extension
+            }
+        }
+
+        return null;
+    }
+}
