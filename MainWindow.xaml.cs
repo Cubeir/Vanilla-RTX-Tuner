@@ -31,6 +31,19 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Once the self imposed TGA limitation is lifted (read all formats, but still only write back in TGA to keep high prio)
+and processing by TS json happens (must support mers too for vpbr), so normals bug gets fixed (thoroughly update the processor)
+remember to do this by tga > png > jpg > jpeg, if none are found then yeah the referenced file is missing, but if one is found, ignore the lower prio ones
+Could also do your idea of unifiying the processors into one that does everything, "read once"
+
+- Add a button near select packs check boxes "Select Other Packs"
+Allow selection of ANY pack for tuning, have a menu brought uo that tries to show names of packs installed in mc directories (preview or regular)
+Then user can click any pack and it'll be impacted by Tuner, have a menu pop up with pack name texts + icons to select from
+
+Try to find all manifests and all pack icons, list them cleanly in a winui pop up menu, allow multi select
+Only list packs that have either PBR or RayTraced property in their capabailities
+Vanilla PBR will also be supported this way!
+
 
 - Update the app to work well with the new user generated file locations and options.txt
 Anywhere in the app that dealt with minecraftuwp_8wekyetc... is now obsolete, must be updated
@@ -43,6 +56,7 @@ e.g.
 > Options.txt ALWAYS must change per-user!
 
 PackLocator, PackUpdater, and Launcher modules are probably all that are going to need to be updated?
+> They're updated now, just needs testing + to see if your assumption about non preview path is correct?
 
 
 - Replacing game files has never been easier, the game is no longer in protected WindowsApps folder
@@ -50,6 +64,12 @@ One-click RTX improvements are possible now by replacing ray_tracing folder file
 
 Maybe multiple presets, pixelated water normal, pixelated caustics, better look up tables for sky and sunlight
 If this is to be done, it must make back up of the said files.
+
+
+------------- these ideas tie in to top plans
+
+- The idea of finding textures through their TS jsons rather than looking for file name suffixes is now of higher priority
+Apparently your current "tricks" are failing, not reliable, sandstone normal normal is an example
 
 - Add support for Vanilla PBR for Vibrant Visuals, for tuning, possibly in auto updater too
 
@@ -67,6 +87,10 @@ Instead of having multiple processors each loading the same files over and over
 Basically, looking for pbr files can be done through TS jsons very reliably
 but excluding not. not reliable, stick with the old reliable double normal checking trickery, because of single files
 in subpacks that have no TS, but REPLACE a part of a TS.
+
+
+
+
 
 
 - Make fog multiplier partially impact water scattering (& absorbtion?)
@@ -1342,7 +1366,7 @@ public sealed partial class MainWindow : Window
     {
         if (int.TryParse(RoughenUpBox.Text, out int val))
         {
-            val = Math.Clamp(val, 0, 20);
+            val = Math.Clamp(val, 0, 25);
             RoughenUpIntensity = val;
             RoughenUpSlider.Value = val;
             RoughenUpBox.Text = val.ToString();
