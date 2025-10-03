@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
 
-// TODO: Utility methods for this class to identify type, belonging, version, and location of add-ons and extensions to pass them for tuning.
 public class PackLocator
 {
     public const string VANILLA_RTX_HEADER_UUID = "a5c3cc7d-1740-4b5e-ae2c-71bc14b3f63b";

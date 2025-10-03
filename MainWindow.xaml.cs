@@ -31,20 +31,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Once the self imposed TGA limitation is lifted (read all formats, but still only write back in TGA to keep high prio)
-and processing by TS json happens (must support mers too for vpbr), so normals bug gets fixed (thoroughly update the processor)
-remember to do this by tga > png > jpg > jpeg, if none are found then yeah the referenced file is missing, but if one is found, ignore the lower prio ones
-Could also do your idea of unifiying the processors into one that does everything, "read once"
-
-- Add a button near select packs check boxes "Select Other Packs"
-Allow selection of ANY pack for tuning, have a menu brought uo that tries to show names of packs installed in mc directories (preview or regular)
-Then user can click any pack and it'll be impacted by Tuner, have a menu pop up with pack name texts + icons to select from
-
-Try to find all manifests and all pack icons, list them cleanly in a winui pop up menu, allow multi select
-Only list packs that have either PBR or RayTraced property in their capabailities
-Vanilla PBR will also be supported this way!
-
-
 - Update the app to work well with the new user generated file locations and options.txt
 Anywhere in the app that dealt with minecraftuwp_8wekyetc... is now obsolete, must be updated
 
@@ -58,39 +44,43 @@ e.g.
 PackLocator, PackUpdater, and Launcher modules are probably all that are going to need to be updated?
 > They're updated now, just needs testing + to see if your assumption about non preview path is correct?
 
+--- call it a wrap for 1.5 here (already too many changes) release asap after gdk changes hit release
+
+a few things to test for:
+does the options.txt editor or whatever deals with user data care about numbers?
+make it insensitive to that, all individual folders in data folder number or shared must be modified
+Have you accounted for numbers varying per user? in fact, treat all folders in users folder a user, even the shared one
+
+Finally, The one thing to test for is if your assumption about data folder name of vanilla is correct or not
+
+
+- "RTX Render Distance Override" slider, updates RT render distance
+
+
+Implementing any pack processing capabilities for 1.6 --------------
+
+- Final Idea:
+Rename Locate Vanilla RTX button to "Locate Packs" button
+Have a scrollable, more dyanmic checkbox section next to Vanilla RTX's
+Once pressed, all Vanilla RTX packs are returned as usual [no changes there]
+in addition to that, manifests that have PBR or raytraced capability are listed
+List the pack names with small checkboxes near them
+
+Users will be able to select any number of packs from that list to have it Tuned.
+
+Remove official support for Vanilla RTX Opus -- Normals and regular are the only ones to have the dedicated checklist
+The rest, including VVV and other community made packs can appear in this secondary checklist!
+
+store the select pack's root locations in an array, compound it with preivous Tune selection and Export selection checks
+if anything's to be tuned... gotta figure that out
+
+
 
 - Replacing game files has never been easier, the game is no longer in protected WindowsApps folder
 One-click RTX improvements are possible now by replacing ray_tracing folder files.
 
 Maybe multiple presets, pixelated water normal, pixelated caustics, better look up tables for sky and sunlight
 If this is to be done, it must make back up of the said files.
-
-
-------------- these ideas tie in to top plans
-
-- The idea of finding textures through their TS jsons rather than looking for file name suffixes is now of higher priority
-Apparently your current "tricks" are failing, not reliable, sandstone normal normal is an example
-
-- Add support for Vanilla PBR for Vibrant Visuals, for tuning, possibly in auto updater too
-
-- Processor should deal with texture set jsons instead of assuming naming conventions
-Sure, you control the naming convention, but if the app was to expand into anything more, this must be done, and its cleaner, do it
-
-- For each processor, read through all jsons, and detect MERs, normal, etc... file names from there
-then process what's needed
-this way that wack normal finding trick won't be needed.
-
-While doing this, try to do a rewrite to load files once and process what's needed in memory
-Instead of having multiple processors each loading the same files over and over
-
-
-Basically, looking for pbr files can be done through TS jsons very reliably
-but excluding not. not reliable, stick with the old reliable double normal checking trickery, because of single files
-in subpacks that have no TS, but REPLACE a part of a TS.
-
-
-
-
 
 
 - Make fog multiplier partially impact water scattering (& absorbtion?)
@@ -100,7 +90,6 @@ Vanilla RTX doesn't use it because it doesn't work! test again, maybe there's be
 If it works, update water to use density param in its fog
 Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is a little unpredictable since both are compounded for the final color
 
-
 - Splash screen -- you decide where to take it from here with UpdateUI and whatnot, since they won't be necessery anymore.
 Have another window that isn't shown, show it briefly upon startup with Tuner's large lamp
 Possibly improve the tuner lamp too, the glows must affect mortar more... more mystical like that pixel art you did
@@ -109,7 +98,6 @@ Possibly improve the tuner lamp too, the glows must affect mortar more... more m
 And checks manifest against remote using already-existing pack updater class 
 And changes icon of reinstall latest packs to CloudDL or Archive and puts a log out there too
 basically telling the user hey! update available!
-
 
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended

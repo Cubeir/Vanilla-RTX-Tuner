@@ -17,8 +17,13 @@ public static class ProcessorVariables
     public const double FOG_EXCESS_DENSITY_TO_SCATTER_DAMPEN = 0.005;
     public const double FOG_EXCESS_SCATTERING_DAMPEN = 0.005;
     public const double EMISSIVE_EXCESS_INTENSITY_DAMPEN = 0.1;
-    public const double NORMALMAP_EXCESS_INTENSITY_DAMPEN = 0.1;
 }
+
+
+// TODO: Idea was to refactor the processor so it loads all files first, then processes them in multiple passes in memory instead of
+// constantly loading and saving, but the tuning already happens quite fast (with the files being raw tgas) so it may not be worth
+// the added complexity of defining which textures will be needed to be retrieved and all that
+// Still, if a kind soul out there wants to take a stab at it, be my guest.
 
 public class Processor
 {
@@ -1188,7 +1193,8 @@ public class Processor
 
 
     // This one is a copy of the above with something extra to keep the same noise pattern across texture variants
-    // e.g. on/off etc... but I'm not sure about it yet, or if it is event worth it.
+    // e.g. on/off etc... but I'm not sure about it yet, or if it is even worth it.
+    // The whole idea is that we got a bunch of words, we detect variations based on texture names
     private static void ProcessMaterialGrain(PackInfo pack)
     {
         double CalculateEffectiveness(int colorValue)
