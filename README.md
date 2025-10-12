@@ -1,6 +1,6 @@
 # Vanilla-RTX-Tuner
 
-All-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update Vanilla RTX ray tracing packages, launch Minecraft with RTX, and more...
+All-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update Vanilla RTX ray tracing packages, launch Minecraft with RTX easily, and more...
 
 ⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)  
 ⚠️ Requires Windows 10 20H1 (May 2020) or later
@@ -22,17 +22,17 @@ Below you'll find a comprehensive list of features and functionalities included 
   [MCPE-121850](https://bugs.mojang.com/browse/MCPE/issues/MCPE-121850): Ray Tracing performance starvation when VSync is enabled.
 
 - **`Reinstall Latest Packages`**  
-  Downloads and reinstalls the latest Vanilla RTX & Vanilla RTX Normals packages from the [Vanilla RTX GitHub repository](https://github.com/cubeir/Vanilla-RTX).
+  Downloads and reinstalls the latest Vanilla RTX & Vanilla RTX Normals packages from the [Vanilla RTX GitHub repository](https://github.com/cubeir/Vanilla-RTX), redeploys from cache unless a new update is available.
 
 - **`Export Selection`**  
-  Exports selected packs. Useful for sharing tuned packs with friends or backing up current snapshot of the pack before making more changes.
+  Exports selected packs. Useful for sharing tuned packs with friends or backing up your snapshot of the pack before making more changes.
 
 - **Minecraft Preview support**  
   All of the app's functionality is targeted at Preview/Beta version of Minecraft while  `Preview` button is active.
 ## Tuning
 - **`Locate Vanilla RTX`**  
   Locates all currently-installed Vanilla RTX versions. Present packs become selectable for tuning, exporting, etc...
-  If multiple versions are present for a single pack, only the most recent version will be picked up by the Tuner.
+  If multiple versions are present for a single pack, only the most recent version will be picked up.
 
 - **`Fog Multiplier`**  
   Updates all fog densities by a given number — e.g., `0.5` to halve, `3.0` to triple, or `0` to effectively disable air fog. If a fog density is already at 0, the multiplier is converted into an acceptable literal number between `0.0-1.0`.
