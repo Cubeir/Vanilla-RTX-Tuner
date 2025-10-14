@@ -50,7 +50,7 @@ Below you'll find a comprehensive list of features and functionalities included 
 Adds a small amount of emissivity to all surfaces, effectively increasing ambient light.
 This works in conjunction with the Emissivity Multiplier — higher multipliers (e.g. 6.0) will amplify the effect.
 Because changes stack on each tuning attempt, only use this once on freshly installed packs, and avoid setting higher emissivity multipliers on further consecutive tuning attempts.  
-Emissivity multiplier is automatically set to default (1.0) if previous tuning attempt has had this option enabled.
+`Emissivity Multiplier` is automatically reset to default (1.0) if previous tuning attempt has had this option enabled.
 
 - **`Normal Intensity Adjustment`**  
   Updates normal map intensity using a similar formula as the Emissive Multiplier, preserving relative intensity composition even at high percentage increases.
