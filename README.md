@@ -32,7 +32,7 @@ Below you'll find a comprehensive list of features and functionalities included 
 ## Tuning
 - **`Locate Vanilla RTX`**  
   Locates all currently-installed Vanilla RTX versions. Present packs become selectable for tuning, exporting, etc...
-  If multiple versions are present for a single pack, only the most recent version will be picked up.
+  If multiple versions of the same pack are installed, only the most recent version will be picked up.
 
 - **`Fog Multiplier`**  
   Updates all fog densities by a given number — e.g., `0.5` to halve, `3.0` to triple, or `0` to effectively disable air fog. If a fog density is already at 0, the multiplier is converted into an acceptable literal number between `0.0-1.0`.
