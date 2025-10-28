@@ -31,6 +31,9 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Any pack that is passed for processing must be ran through all processors
+It is the processors job to do nothing in the case that it can't find a set of files it wants to modify, or at least, that should be the outcome
+
 - Update the app to work well with the new user generated file locations and options.txt
 Anywhere in the app that dealt with minecraftuwp_8wekyetc... is now obsolete, must be updated
 
