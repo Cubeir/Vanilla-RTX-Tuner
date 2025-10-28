@@ -113,4 +113,5 @@ Because changes stack on each tuning attempt, only use this once on freshly inst
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
 
 ### PSA
-Mojang is slowly moving Minecraft user files to a new location, currently this change is being rolled out on Windows with the release of 1.21.120.21 Preview, if you're using this version or higher, Tuner will stop working. Keep an eye out for updates!
+If your Minecraft has been updated to 1.21.120+ make sure to update Vanilla RTX Tuner to 1.5.0.0+
+This is due to the GDK update which alters all local file paths compared to the UWP (1.21.114 and lower) versions of Minecraft 
