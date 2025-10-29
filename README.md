@@ -76,7 +76,7 @@ Because changes stack on each tuning attempt, only use this once on freshly inst
 ## Installation Guide
 
 > **Prerequisites:**    
-> 1. Requires [.NET 8.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) for Windows (64-bit).   
+> 1. Requires [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) for Windows (64-bit).   
 > In most cases, it installs automatically with the `.msix`. If that is failing, try installing it manually from the link above.   
 > 2. Windows [App Installer](https://learn.microsoft.com/en-us/windows/msix/app-installer/install-update-app-installer) to open `.msix` packages.  
 
