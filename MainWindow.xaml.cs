@@ -31,7 +31,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- TEST 1.4 and 1.5 changes more extensively
+- TEST 1.4 and 1.5 changes more extensively, also optimize the project and the hasty fuck ups with more research
 is individual user data folder processing bulletproof?
 
 - Any pack that is passed for processing must be ran through all processors
@@ -123,7 +123,7 @@ A variable is getting constantly updated with new logs, a worker in main UI thre
 
 public static class TunerVariables
 {
-    // When adding new variables, define the default if needed, save/load if needed, and finally account for it in UpdateUI method
+    // When adding new variables, define the default if needed, save/load if needed, and finally account for it in UpdateUI method, if it ties to a Ui element
 
     public static string? appVersion = null;
 
