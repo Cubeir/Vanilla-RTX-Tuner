@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Vanilla_RTX_Tuner_WinUI</RootNamespace>
     <Platforms>x86;x64;ARM64</Platforms>
@@ -691,29 +691,39 @@
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AssemblyName>Vanilla RTX Tuner WinUI</AssemblyName>
     <AssemblyOriginatorKeyFile>CubeirSoftware.pfx</AssemblyOriginatorKeyFile>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <ErrorReport>none</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DebugType>none</DebugType>
     <WarningLevel>1</WarningLevel>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebugType>none</DebugType>
     <WarningLevel>1</WarningLevel>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <DebugType>none</DebugType>
     <WarningLevel>1</WarningLevel>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <DebugType>none</DebugType>
     <WarningLevel>1</WarningLevel>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>none</DebugType>
     <WarningLevel>1</WarningLevel>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DebugType>none</DebugType>
     <WarningLevel>1</WarningLevel>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
 </Project>
