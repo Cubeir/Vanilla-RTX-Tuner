@@ -82,26 +82,13 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.9.0" />
-    <PackageReference Include="Magick.NET.Core" Version="14.9.0" />
-    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.11" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.9.1" />
+    <PackageReference Include="Magick.NET.Core" Version="14.9.1" />
+    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.12" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
     <PackageReference Include="Microsoft.Win32.SystemEvents" Version="9.0.10" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.20250829.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="1.8.38" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Base" Version="1.8.250831001" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.DWrite" Version="1.8.25090401" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.250906002" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="1.8.250906004" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.ML" Version="1.8.2095" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.251003001" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Widgets" Version="1.8.250904007" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="1.8.250906003" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.10" />
   </ItemGroup>
