@@ -211,6 +211,9 @@ public sealed partial class MainWindow : Window
     private static CancellationTokenSource? _lampBlinkCts;
     private static readonly Dictionary<string, BitmapImage> _imageCache = new();
 
+    private int _mojankClickCount = 0;
+    private DateTime _mojankLastClick = DateTime.MinValue;
+
     public MainWindow()
     {
         SetMainWindowProperties();
@@ -620,8 +623,8 @@ public sealed partial class MainWindow : Window
 
                     if (now >= nextSuperFlash)
                     {
-                        // Randomly choose between two superflash varaints 10% chance to trigger
-                        bool isRapidFlash = random.NextDouble() < 0.10;
+                        // Randomly choose between two superflash varaints 20% chance to trigger
+                        bool isRapidFlash = random.NextDouble() < 0.20;
 
                         if (isRapidFlash)
                         {
@@ -898,10 +901,11 @@ public sealed partial class MainWindow : Window
 
         if (RanOnceFlag.Set("Initialize_UI_Previews_Only_With_The_First_Call"))
         {
-            // Initialize Previes only once, Update UI is called once at the begenning, we want previews initilized only ONCE
+            // Initialize Previes only once, Update UI is called at least once (at the begenning, for the first time) we want previews initilized only ONCE
             // Why here? and not after UpdateUI in the MainWindow initializer?
-            // Because UpdateUI runs for a few miliseconds longer, the previewer ends up setting an image based on the final value update
+            // Because UpdateUI runs for a few miliseconds at startup, the previewer ends up setting an image based on the final value update and flicker as all values change
             // We'd want to initialize it only after the first UpdateUI method is called
+            // this is also the reason we hide the vessels when there is a UI update going on, to prevent flickering
 
             SetPreviews();
 
@@ -990,6 +994,24 @@ public sealed partial class MainWindow : Window
         OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
     }
 
+
+    private async void MojankEasterEggButton_Click(object sender, RoutedEventArgs e)
+    {
+        var now = DateTime.UtcNow;
+        if ((now - _mojankLastClick).TotalSeconds > 3)
+        {
+            _mojankClickCount = 0;
+        }
+        _mojankLastClick = now;
+        _mojankClickCount++;
+
+        if (_mojankClickCount >= 5)
+        {
+            _mojankClickCount = 0;
+            await MojankEasterEgg.TriggerAsync();
+            Log("If UAC prompt was accepted, Minecraft startup splash texts: Mojang -> Mojank", LogLevel.Informational);
+        }
+    }
 
 
     private void DonateButton_Click(object sender, RoutedEventArgs e)

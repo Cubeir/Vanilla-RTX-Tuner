@@ -122,8 +122,7 @@
         <Grid Grid.ColumnSpan="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Top"
-              Margin="0, 0"
-              IsHitTestVisible="False">
+              Margin="0, 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -145,7 +144,8 @@
                        Canvas.Left="-54"
                        Canvas.Top="-54"
                        Opacity="0.25"
-                       Canvas.ZIndex="2" />
+                       Canvas.ZIndex="2"
+                       IsHitTestVisible="False" />
 
                 <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
@@ -154,7 +154,8 @@
                        Width="20"
                        Canvas.Top="1"
                        Opacity="1.0"
-                       Canvas.ZIndex="3" />
+                       Canvas.ZIndex="3"
+                       IsHitTestVisible="False" />
 
                 <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
@@ -163,17 +164,32 @@
                        Width="20"
                        Canvas.Top="1"
                        Opacity="0.0"
-                       Canvas.ZIndex="4" />
+                       Canvas.ZIndex="4"
+                       IsHitTestVisible="False" />
+
+                <Button x:Name="MojankEasterEggButton"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Canvas.Left="0.5"
+                        Canvas.Top="1"
+                        Opacity="0.5"
+                        Height="20"
+                        Width="20"
+                        Canvas.ZIndex="5"
+                        CornerRadius="0"
+                        Click="MojankEasterEggButton_Click" />
             </Canvas>
 
+            
             <TextBlock x:Name="TitleBarText"
+                       Text="Vanilla RTX Tuner"
                        Grid.Column="1"
                        FontFamily="Segoe UI"
-                       Text="Vanilla RTX Tuner"
                        Margin="0,6,0,5"
                        VerticalAlignment="Center"
                        Canvas.ZIndex="0"
-                       IsTextScaleFactorEnabled="False"/>
+                       IsTextScaleFactorEnabled="False"
+                       IsHitTestVisible="False" />
         </Grid>
 
 
