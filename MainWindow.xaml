@@ -204,14 +204,11 @@
                   Height="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*" />
-                    <!-- Locate Packs button size proportions -->
                     <ColumnDefinition Width="12" />
-                    <!-- Spacing -->
                     <ColumnDefinition Width="1.425*" />
-                    <!-- Target Preview button -->
                 </Grid.ColumnDefinitions>
 
-                <!-- Locate Pack Button -->
+                <!-- Locate Pack Button (Main) -->
                 <Button x:Name="LocatePacksButton"
                         Grid.Column="0"
                         Click="LocatePacksButton_Click"
@@ -219,15 +216,26 @@
                         VerticalAlignment="Stretch"
                         FontWeight="SemiBold"
                         ToolTipService.ToolTip="Locates all currently-installed Vanilla RTX packages in Minecraft or Minecraft Preview (Optional: Enable Target Preview)">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xF78B;"
-                                  FontSize="18"
-                                  Margin="0,0,8,0"
-                                  VerticalAlignment="Center" />
-                        <TextBlock Text="Locate Vanilla RTX"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
+                    <TextBlock Text="Locate Vanilla RTX"
+                               VerticalAlignment="Center"
+                               Margin="34,0,0,0" />
+                </Button>
+
+                <!-- Magnifying Glass Button Overlay (Split Button) -->
+                <Button x:Name="BrowsePacksButton"
+                        Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        Width="42"
+                        Background="Transparent"
+                        BorderBrush="DimGray"
+                        BorderThickness="1.25"
+                        Opacity="1.0"
+                        Click="BrowsePacksButton_Click"
+                        ToolTipService.ToolTip="Browse for and select other PBR-enabled resource packs">
+                    <FontIcon Glyph="&#xF78B;"
+                              FontSize="18"
+                              Opacity="1.0" />
                 </Button>
 
                 <!-- Target Preview Button -->

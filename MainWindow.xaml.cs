@@ -32,7 +32,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 ### GENERAL TODO & IDEAS ###
 
 - TEST 1.4 and 1.5 changes more extensively, also optimize the project and the hasty fuck ups with more research
-is individual user data folder processing bulletproof?
+is individual user data folder processing bulletproof?es
 
 - Any pack that is passed for processing must be ran through all processors
 It is the processors job to do nothing in the case that it can't find a set of files it wants to modify, or at least, that should be the outcome
@@ -105,6 +105,8 @@ its scattering triplets will be multipled by a toned-down number, e.g. a 10x res
 these aren't really standard adjustments, but they allow absurd values to leave an impact.
 
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
+
+- Add a convenient way to clear ALL caches, e.g. all potential file paths, as well as windows storage entri
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify the logging
@@ -426,6 +428,10 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/previews/locate.png"
         );
 
+        Previewer.Instance.InitializeButton(BrowsePacksButton,
+            "ms-appx:///Assets/previews/locate.png"
+        );
+
         Previewer.Instance.InitializeButton(ExportButton,
             "ms-appx:///Assets/previews/chest.export.png"
         );
@@ -530,7 +536,8 @@ public sealed partial class MainWindow : Window
     }
 
 
-
+    // Not sure how unpredictable it'll become, but make the bool go away, make the method call a toggle in itself
+    // i.e. calling it just reverses the current run status, this way lamp can become excluded from control disabling during tasks
     public async Task BlinkingLamp(bool enable)
     {
         const double initialDelayMs = 900; // Initial speed of blinking *also the slowest possible blinking interval*
@@ -1079,7 +1086,7 @@ public sealed partial class MainWindow : Window
         {
             _mojankClickCount = 0;
             await MojankEasterEgg.TriggerAsync();
-            Log("Mojang startup splash texts may have been updated to Mojank.", LogLevel.Informational);
+            Log("Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
         }
 
         _ = BlinkingLamp(false);
@@ -1244,6 +1251,12 @@ public sealed partial class MainWindow : Window
                 UpdateSelectAllState();
             }
         }
+    }
+
+
+    private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
+    {
+        Log("I love mangos");
     }
 
 
