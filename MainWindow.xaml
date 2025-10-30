@@ -167,12 +167,13 @@
                        Canvas.ZIndex="4"
                        IsHitTestVisible="False" />
 
+                <!-- Button to make lamp interactive + Mojank easter egg -->
                 <Button x:Name="MojankEasterEggButton"
                         Background="Transparent"
                         BorderBrush="Transparent"
                         Canvas.Left="0.5"
                         Canvas.Top="1"
-                        Opacity="0.5"
+                        Opacity="0.0"
                         Height="20"
                         Width="20"
                         Canvas.ZIndex="5"
@@ -180,7 +181,6 @@
                         Click="MojankEasterEggButton_Click" />
             </Canvas>
 
-            
             <TextBlock x:Name="TitleBarText"
                        Text="Vanilla RTX Tuner"
                        Grid.Column="1"

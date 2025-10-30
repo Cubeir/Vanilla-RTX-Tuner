@@ -997,20 +997,92 @@ public sealed partial class MainWindow : Window
 
     private async void MojankEasterEggButton_Click(object sender, RoutedEventArgs e)
     {
+        _ = BlinkingLamp(true);
+
         var now = DateTime.UtcNow;
-        if ((now - _mojankLastClick).TotalSeconds > 3)
+        if ((now - _mojankLastClick).TotalSeconds > 8)
         {
             _mojankClickCount = 0;
         }
         _mojankLastClick = now;
         _mojankClickCount++;
 
-        if (_mojankClickCount >= 5)
+        if (_mojankClickCount >= 3)
+        {
+            string message;
+            switch (Random.Shared.Next(19))
+            {
+                case 0:
+                    message = "Easy there pal, you're about to void your Minecraft warranty.";
+                    break;
+                case 1:
+                    message = "Careful now... you're one click away from discovering the truth.";
+                    break;
+                case 2:
+                    message = "You're poking... something...";
+                    break;
+                case 3:
+                    message = "The next click can't be undone, kidding.";
+                    break;
+                case 4:
+                    message = "Bold move, brave explorer. The truth about Mojang awaits.";
+                    break;
+                case 5:
+                    message = "I'd stop there if I were you.";
+                    break;
+                case 6:
+                    message = "You’ve gone too far to pretend you didn’t mean it.";
+                    break;
+                case 7:
+                    message = "Strange things happen to those who click too much.";
+                    break;
+                case 8:
+                    message = "This is where the curious usually turn back.";
+                    break;
+                case 9:
+                    message = "Go on then... see what happens.";
+                    break;
+                case 10:
+                    message = "Take the red pill, see how deep the Mojank goes.";
+                    break;
+                case 11:
+                    message = "I have a good feeling about this.";
+                    break;
+                case 12:
+                    message = "The cake was a lie. This isn’t.";
+                    break;
+                case 13:
+                    message = "I’m afraid I can’t let you do that, [Steve].";
+                    break;
+                case 14:
+                    message = "Time to wake Mojang up, Samurai. We've got a game to fix.";
+                    break;
+                case 15:
+                    message = "Toss a coin to your sense of judgment.";
+                    break;
+                case 16:
+                    message = "You were warned not to push that button, Dovahkiin.";
+                    break;
+                case 17:
+                    message = "Some of these lines are cheesy I know, BUT";
+                    break;
+                default:
+                    message = "War never changes. Neither does Mojang’s QA.";
+                    break;
+            }
+
+            Log(message + " Continue and you might see a UAC prompt...", LogLevel.Warning);
+        }
+
+
+        if (_mojankClickCount >= 4)
         {
             _mojankClickCount = 0;
             await MojankEasterEgg.TriggerAsync();
-            Log("If UAC prompt was accepted, Minecraft startup splash texts: Mojang -> Mojank", LogLevel.Informational);
+            Log("Mojang startup splash texts may have been updated to Mojank.", LogLevel.Informational);
         }
+
+        _ = BlinkingLamp(false);
     }
 
 
