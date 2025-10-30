@@ -50,7 +50,8 @@ public class Processor
         {
         new PackInfo("Vanilla RTX", VanillaRTXLocation, IsVanillaRTXEnabled),               // 0
         new PackInfo("Vanilla RTX Normals", VanillaRTXNormalsLocation, IsNormalsEnabled),   // 1
-        new PackInfo("Vanilla RTX Opus", VanillaRTXOpusLocation, IsOpusEnabled)             // 2
+        new PackInfo("Vanilla RTX Opus", VanillaRTXOpusLocation, IsOpusEnabled),            // 2
+        new PackInfo(CustomPackDisplayName, CustomPackLocation, true)                       // 3
     };
 
 

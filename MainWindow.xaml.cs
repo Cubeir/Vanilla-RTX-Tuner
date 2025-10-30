@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI;
@@ -133,6 +134,9 @@ public static class TunerVariables
     public static string VanillaRTXLocation = string.Empty;
     public static string VanillaRTXNormalsLocation = string.Empty;
     public static string VanillaRTXOpusLocation = string.Empty;
+
+    public static string CustomPackLocation = string.Empty;
+    public static string CustomPackDisplayName = string.Empty;
 
     public static string VanillaRTXVersion = string.Empty;
     public static string VanillaRTXNormalsVersion = string.Empty;
@@ -535,6 +539,17 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    public static string SanitizeFileName(string name)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var sanitized = new string(name
+            .Select(c => char.IsWhiteSpace(c) || invalidChars.Contains(c) ? '_' : c)
+            .ToArray());
+        return Regex.Replace(sanitized.Trim('_'), "_{2,}", "_");
+    }
+
+
+
 
     // Not sure how unpredictable it'll become, but make the bool go away, make the method call a toggle in itself
     // i.e. calling it just reverses the current run status, this way lamp can become excluded from control disabling during tasks
@@ -849,8 +864,10 @@ public sealed partial class MainWindow : Window
         };
 
 
-
-
+        // Ensure status of checkboxes matches their actual variables
+        VanillaRTXCheckBox.IsChecked = IsVanillaRTXEnabled;
+        NormalsCheckBox.IsChecked = IsNormalsEnabled;
+        OpusCheckBox.IsChecked = IsOpusEnabled;
 
 
         // Handles toggle-like variables
@@ -1256,7 +1273,24 @@ public sealed partial class MainWindow : Window
 
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        Log("I love mangos");
+        var packBrowser = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow();
+
+        // Match main window size/position
+        var mainAppWindow = this.AppWindow;
+        packBrowser.AppWindow.Resize(new Windows.Graphics.SizeInt32(
+            mainAppWindow.Size.Width,
+            mainAppWindow.Size.Height));
+        packBrowser.AppWindow.Move(mainAppWindow.Position);
+
+        packBrowser.Closed += (s, args) =>
+        {
+            if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
+            {
+                MainWindow.Log($"Selected {TunerVariables.CustomPackDisplayName} for tuning.", LogLevel.Success);
+            }
+        };
+
+        packBrowser.Activate();
     }
 
 
@@ -1520,6 +1554,13 @@ public sealed partial class MainWindow : Window
         ButcheredHeightmapAlpha = Defaults.ButcheredHeightmapAlpha;
         AddEmissivityAmbientLight = Defaults.AddEmissivityAmbientLight;
 
+        CustomPackDisplayName = string.Empty;
+        CustomPackLocation = string.Empty;
+
+        IsVanillaRTXEnabled = false;
+        IsNormalsEnabled = false;
+        IsOpusEnabled = false;
+
         // FlushTheseVariables(true, true, true);
 
         // Manually updates UI based on new values
@@ -1535,7 +1576,7 @@ public sealed partial class MainWindow : Window
             RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
             var text = UpdateVanillaRTXButtonText.Text;
             Log($"Note: this does not restore the packs to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
-            Log("Tuner variables reset.", LogLevel.Success);
+            Log("Tuner variables and pack selections were reset.", LogLevel.Success);
         }
     }
 
@@ -1559,6 +1600,9 @@ public sealed partial class MainWindow : Window
 
             if (IsOpusEnabled && Directory.Exists(VanillaRTXOpusLocation))
                 exportQueue.Add((VanillaRTXOpusLocation, "Vanilla_RTX_Opus_" + VanillaRTXOpusVersion + suffix));
+
+            if (!string.IsNullOrEmpty(CustomPackDisplayName) && Directory.Exists(CustomPackLocation))
+                exportQueue.Add((CustomPackLocation, SanitizeFileName(CustomPackDisplayName) + suffix));
 
             foreach (var (path, name) in exportQueue)
                 await Exporter.ExportMCPACK(path, name);
@@ -1593,7 +1637,9 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
+            if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled &&
+                (string.IsNullOrEmpty(CustomPackLocation) || string.IsNullOrEmpty(CustomPackDisplayName))
+                )
             {
                 Log("Locate and select at least one package to tune.", LogLevel.Warning);
                 return;
