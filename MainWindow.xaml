@@ -267,7 +267,7 @@
 
                 <!-- Invisible overlay button -->
                 <Button x:Name="LogCopyButton"
-                        Margin="16,100,48,16"
+                        Margin="16,100,24,16"
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         Background="Transparent"

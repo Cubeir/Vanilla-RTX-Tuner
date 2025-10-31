@@ -217,12 +217,12 @@ public sealed partial class MainWindow : Window
         // Set reinstall latest packs button visuals based on cache status
         if (_updater.HasDeployableCache())
         {
-            UpdateVanillaRTXGlyph.Glyph = "\uE7B8";
+            UpdateVanillaRTXGlyph.Glyph = "\uE7B8"; // Archive icon
             UpdateVanillaRTXGlyph.FontSize = 16;
         }
         else
         {
-            UpdateVanillaRTXGlyph.Glyph = "\uEBD3";
+            UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default
             UpdateVanillaRTXGlyph.FontSize = 18;
         }
 
@@ -925,6 +925,7 @@ public sealed partial class MainWindow : Window
             VanillaRTXLocation = string.Empty;
             VanillaRTXNormalsLocation = string.Empty;
             VanillaRTXOpusLocation = string.Empty;
+            CustomPackLocation = string.Empty;
         }
         if (FlushCheckBoxes)
         {
@@ -948,6 +949,7 @@ public sealed partial class MainWindow : Window
             VanillaRTXVersion = string.Empty;
             VanillaRTXNormalsVersion = string.Empty;
             VanillaRTXOpusVersion = string.Empty;
+            CustomPackDisplayName = string.Empty;
         }
         // lasang🍝 
     }
