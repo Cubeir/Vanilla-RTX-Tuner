@@ -9,24 +9,8 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <!-- Light Theme Background - Bottom layer -->
-        <Rectangle x:Name="LightThemeBackground"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Stretch"
-                   IsHitTestVisible="False"
-                   Visibility="Collapsed"
-                   CacheMode="BitmapCache">
-            <Rectangle.Fill>
-                <ImageBrush x:Name="LightThemeImageBrush"
-                            ImageSource="ms-appx:///Assets/lighttheme.background.png"
-                            Opacity="0.25"
-                            Stretch="Fill"
-                            AlignmentX="Left"
-                            AlignmentY="Top" />
-            </Rectangle.Fill>
-        </Rectangle>
 
-        <!-- Loading State -->
+        <!-- Loading Screen -->
         <Grid x:Name="LoadingPanel"
               Visibility="Visible"
               Background="Transparent">
