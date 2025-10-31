@@ -20,6 +20,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Vanilla_RTX_Tuner_WinUI.Modules;
+using Vanilla_RTX_Tuner_WinUI.PackBrowser;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
 using Windows.Storage;
@@ -1218,7 +1219,7 @@ public sealed partial class MainWindow : Window
 
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        var packBrowser = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow();
+        var packBrowser = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
 
         // Match main window size/position
         var mainAppWindow = this.AppWindow;

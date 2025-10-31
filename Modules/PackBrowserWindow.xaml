@@ -60,29 +60,6 @@
                                IsTextScaleFactorEnabled="False"
                                IsHitTestVisible="False" />
                 </Grid>
-
-                <!-- Close Button -->
-                <Button x:Name="CloseButton"
-                        Click="CloseButton_Click"
-                        Content="&#xE711;"
-                        FontFamily="Segoe Fluent Icons"
-                        FontSize="10"
-                        Width="46"
-                        Height="32"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="0,0,0,0"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        CornerRadius="0"
-                        ToolTipService.ToolTip="Close">
-                    <Button.Resources>
-                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
-                                         Color="#10FFFFFF" />
-                        <SolidColorBrush x:Key="ButtonBackgroundPressed"
-                                         Color="#20FFFFFF" />
-                    </Button.Resources>
-                </Button>
             </Grid>
 
             <!-- Pack List -->

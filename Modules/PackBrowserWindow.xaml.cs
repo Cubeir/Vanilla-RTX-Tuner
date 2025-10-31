@@ -18,10 +18,12 @@ namespace Vanilla_RTX_Tuner_WinUI.PackBrowser;
 public sealed partial class PackBrowserWindow : Window
 {
     private readonly AppWindow _appWindow;
+    private readonly Window _mainWindow;
 
-    public PackBrowserWindow()
+    public PackBrowserWindow(MainWindow mainWindow)
     {
         this.InitializeComponent();
+        _mainWindow = mainWindow;
 
         // Remove title bar and hide system buttons
         var hWnd = WindowNative.GetWindowHandle(this);
@@ -40,7 +42,18 @@ public sealed partial class PackBrowserWindow : Window
 
         // Set title bar drag region
         this.Activated += PackBrowserWindow_Activated;
+
+
+        _mainWindow.Closed += MainWindow_Closed;
     }
+
+    private void MainWindow_Closed(object sender, WindowEventArgs e)
+    {
+        // Unsubscribe to avoid memory leaks
+        _mainWindow.Closed -= MainWindow_Closed;
+        this.Close();
+    }
+
 
     private async void PackBrowserWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
@@ -65,14 +78,7 @@ public sealed partial class PackBrowserWindow : Window
             try
             {
                 var scaleAdjustment = TitleBarArea.XamlRoot.RasterizationScale;
-                var dragRectWidth = (int)((TitleBarArea.ActualWidth - CloseButton.ActualWidth) * scaleAdjustment);
                 var dragRectHeight = (int)(TitleBarArea.ActualHeight * scaleAdjustment);
-
-                if (dragRectWidth > 0 && dragRectHeight > 0)
-                {
-                    var dragRect = new Windows.Graphics.RectInt32(0, 0, dragRectWidth, dragRectHeight);
-                    _appWindow.TitleBar.SetDragRectangles(new[] { dragRect });
-                }
             }
             catch (Exception ex)
             {
