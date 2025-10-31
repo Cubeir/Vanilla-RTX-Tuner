@@ -221,7 +221,7 @@ public sealed partial class PackBrowserWindow : Window
             var tagBorder = new Border
             {
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(175, 105, 105, 105)), // Dim grey
+                    Microsoft.UI.ColorHelper.FromArgb(200, 30, 30, 30)), // Dim grey
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4, 8, 4)
             };
@@ -232,7 +232,7 @@ public sealed partial class PackBrowserWindow : Window
                 FontSize = 12,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(175, 244, 244, 244)) // Light grey text
+                    Microsoft.UI.ColorHelper.FromArgb(225, 245, 245, 245)) // Light grey text
             };
 
             tagBorder.Child = tagText;

@@ -65,7 +65,9 @@
             <!-- Pack List -->
             <ScrollViewer Grid.Row="1"
                           Padding="20"
-                          Margin="0,8,0,0">
+                          Margin="0,8,0,0"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
                 <StackPanel x:Name="PackListContainer"
                             Spacing="8" />
             </ScrollViewer>
