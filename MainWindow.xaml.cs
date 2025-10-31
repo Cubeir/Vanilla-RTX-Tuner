@@ -35,6 +35,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 ### GENERAL TODO & IDEAS ###
 
 - Test and document all of the new features, improve them as you go
+Wrap your head around the thing, newer features especially, something feels missing
+i.e. it is not entirely well thought out how it works out with existing features, even though everything looks good on the surface
 
 - Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
@@ -173,6 +175,8 @@ public sealed partial class MainWindow : Window
         LoadSettings();
         UpdateUI();
 
+        _ = BlinkingLamp(true);
+
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
 
@@ -224,6 +228,8 @@ public sealed partial class MainWindow : Window
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default
             UpdateVanillaRTXGlyph.FontSize = 18;
         }
+
+        _ = BlinkingLamp(false);
 
         // Release Mutex and save some of the variables upon closure
         this.Closed += (s, e) =>
@@ -693,7 +699,7 @@ public sealed partial class MainWindow : Window
                     else
                     {
                         // Quick final SuperFlash when being cancelled (new blink cycle starting)
-                        await PerformFinalSuperFlash(onPath, superOnPath, 10);
+                        await PerformFinalSuperFlash(onPath, superOnPath, 50);
                     }
                 }
                 catch (OperationCanceledException)
@@ -755,8 +761,14 @@ public sealed partial class MainWindow : Window
             imageControl.Source = await GetCachedImageAsync(path);
         }
 
-        async Task AnimateOpacity(FrameworkElement element, double targetOpacity, double durationMs)
+        async Task AnimateOpacity(FrameworkElement element, double targetOpacity, double durationMs, CancellationToken ct = default)
         {
+            if (ct.IsCancellationRequested)
+            {
+                element.Opacity = targetOpacity; // Instant set
+                return;
+            }
+
             var storyboard = new Storyboard();
             var animation = new DoubleAnimation
             {
@@ -773,7 +785,15 @@ public sealed partial class MainWindow : Window
             storyboard.Completed += (s, e) => tcs.SetResult(true);
 
             storyboard.Begin();
-            await tcs.Task;
+
+            // Race between animation completing and cancellation
+            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(-1, ct));
+
+            if (ct.IsCancellationRequested)
+            {
+                storyboard.Stop();
+                element.Opacity = targetOpacity; // Jump to target immediately
+            }
         }
     }
 
