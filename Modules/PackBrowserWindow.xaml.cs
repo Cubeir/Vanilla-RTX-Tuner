@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.UI;
@@ -97,8 +98,8 @@ public sealed partial class PackBrowserWindow : Window
             {
                 EmptyStatePanel.Visibility = Visibility.Visible;
                 EmptyStateText.Text = TunerVariables.IsTargetingPreview
-                    ? "No compatible packs found in Minecraft Preview"
-                    : "No compatible packs found in Minecraft";
+                    ? "No compatible packs found in Minecraft Preview data directory."
+                    : "No compatible packs found in Minecraft data directory.";
                 return;
             }
 
@@ -278,9 +279,9 @@ public sealed partial class PackBrowserWindow : Window
 
         var scanPaths = new[]
         {
-    Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs"),
-    Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "development_resource_packs")
-        };
+        Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs"),
+        Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "development_resource_packs")
+    };
 
         foreach (var scanPath in scanPaths)
         {
@@ -290,16 +291,22 @@ public sealed partial class PackBrowserWindow : Window
                 continue;
             }
 
-            foreach (var packDir in Directory.GetDirectories(scanPath))
+            // Recursive search for manifest.json files
+            foreach (var manifestPath in Directory.EnumerateFiles(scanPath, "manifest.json", SearchOption.AllDirectories))
             {
-                var manifestPath = Path.Combine(packDir, "manifest.json");
-                if (!File.Exists(manifestPath)) continue;
+                var packDir = Path.GetDirectoryName(manifestPath);
+                if (packDir == null) continue;
 
                 try
                 {
                     var packData = await ParsePackAsync(packDir, manifestPath);
                     if (packData != null)
                         packs.Add(packData);
+                }
+                catch (JsonException jsonEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Invalid JSON in {manifestPath}: {jsonEx.Message}");
+                    // Skip this pack - likely encrypted marketplace content
                 }
                 catch (Exception ex)
                 {
@@ -455,39 +462,40 @@ public sealed partial class PackBrowserWindow : Window
 
     private async Task<Dictionary<string, string>> TryLoadLangFileAsync(string langFolder)
     {
-        string[] langFiles = { "en_US.lang", "en_GB.lang", "en_us.lang", "en_gb.lang" };
+        if (!Directory.Exists(langFolder))
+            return null;
 
-        foreach (var langFileName in langFiles)
+        var langFiles = Directory.GetFiles(langFolder, "*.lang")
+            .Where(f => Path.GetFileName(f).StartsWith("en", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        foreach (var langPath in langFiles)
         {
-            var langPath = Path.Combine(langFolder, langFileName);
-
-            if (File.Exists(langPath))
+            try
             {
-                try
-                {
-                    var langData = new Dictionary<string, string>();
-                    var lines = await File.ReadAllLinesAsync(langPath);
+                var langData = new Dictionary<string, string>();
+                var lines = await File.ReadAllLinesAsync(langPath);
 
-                    foreach (var line in lines)
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+                        continue;
+
+                    var equalIndex = line.IndexOf('=');
+                    if (equalIndex > 0)
                     {
-                        if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
-                            continue;
-
-                        var parts = line.Split('=', 2);
-                        if (parts.Length == 2)
-                        {
-                            var key = parts[0].Trim();
-                            var value = parts[1].Trim();
-                            langData[key] = value;
-                        }
+                        var key = line.Substring(0, equalIndex).Trim();
+                        var value = line.Substring(equalIndex + 1).Trim();
+                        langData[key] = value;
                     }
+                }
 
+                if (langData.ContainsKey("pack.name") || langData.ContainsKey("pack.description"))
                     return langData;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error loading lang file {langPath}: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading lang file {langPath}: {ex.Message}");
             }
         }
 
@@ -496,37 +504,39 @@ public sealed partial class PackBrowserWindow : Window
 
     private async Task<BitmapImage> LoadIconAsync(string packDir)
     {
-        string[] extensions = { ".png", ".jpg", ".jpeg", ".tga" };
-
-        foreach (var ext in extensions)
-        {
-            var iconPath = Path.Combine(packDir, $"pack_icon{ext}");
-            if (File.Exists(iconPath))
+        // Case-insensitive icon search
+        var iconFiles = Directory.GetFiles(packDir, "pack_icon.*")
+            .Where(f =>
             {
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine($"Loading icon: {iconPath}");
-                    var bitmap = new BitmapImage();
+                var ext = Path.GetExtension(f).ToLowerInvariant();
+                return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tga";
+            })
+            .ToArray();
 
-                    // Try to load without StorageFile API which can hang
-                    using (var fileStream = File.OpenRead(iconPath))
+        foreach (var iconPath in iconFiles)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Loading icon: {iconPath}");
+                var bitmap = new BitmapImage();
+
+                using (var fileStream = File.OpenRead(iconPath))
+                {
+                    using (var memoryStream = new MemoryStream())
                     {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await fileStream.CopyToAsync(memoryStream);
-                            memoryStream.Position = 0;
+                        await fileStream.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
 
-                            var randomAccessStream = memoryStream.AsRandomAccessStream();
-                            await bitmap.SetSourceAsync(randomAccessStream);
-                        }
+                        var randomAccessStream = memoryStream.AsRandomAccessStream();
+                        await bitmap.SetSourceAsync(randomAccessStream);
                     }
+                }
 
-                    return bitmap;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error loading icon {iconPath}: {ex.Message}");
-                }
+                return bitmap;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading icon {iconPath}: {ex.Message}");
             }
         }
 
