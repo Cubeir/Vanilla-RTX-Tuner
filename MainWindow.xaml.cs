@@ -1204,8 +1204,8 @@ public sealed partial class MainWindow : Window
             if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
             {
                 OpusCheckBox.IsEnabled = true;
-                OpusCheckBox.IsChecked = true;
-                IsOpusEnabled = true;
+                OpusCheckBox.IsChecked = false;
+                IsOpusEnabled = false;
             }
 
             if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
