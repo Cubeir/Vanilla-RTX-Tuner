@@ -974,6 +974,8 @@ public sealed partial class MainWindow : Window
     private async void MojankEasterEggButton_Click(object sender, RoutedEventArgs e)
     {
         _ = BlinkingLamp(true);
+        Thread.Sleep(27);
+        _ = BlinkingLamp(false);
 
         var now = DateTime.UtcNow;
         if ((now - _mojankLastClick).TotalSeconds > 8)
@@ -1058,7 +1060,7 @@ public sealed partial class MainWindow : Window
             Log("Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
         }
 
-        _ = BlinkingLamp(false);
+
     }
 
 
