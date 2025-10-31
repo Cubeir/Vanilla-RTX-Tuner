@@ -127,7 +127,7 @@ public class Processor
 
         if (!fogDirectories.Any())
         {
-            MainWindow.Log($"{pack.Name}: no 'fogs' directories found.");
+            MainWindow.Log($"{pack.Name}: does not contain fog files.");
             return;
         }
 
