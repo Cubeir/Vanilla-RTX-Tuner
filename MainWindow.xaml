@@ -228,7 +228,7 @@
                         VerticalAlignment="Stretch"
                         Width="42"
                         Background="Transparent"
-                        BorderBrush="DimGray"
+                        BorderBrush="#A4696969"
                         BorderThickness="1.25"
                         Opacity="1.0"
                         Click="BrowsePacksButton_Click"
@@ -251,18 +251,38 @@
             </Grid>
 
             <!-- Sidebar Log Box -->
-            <TextBox x:Name="SidebarLog"
-                     Margin="16,100,8,16"
-                     VerticalAlignment="Stretch"
-                     HorizontalAlignment="Stretch"
-                     TextWrapping="Wrap"
-                     IsTabStop="False"
-                     AcceptsReturn="True"
-                     IsReadOnly="True"
-                     AllowFocusOnInteraction="True"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ToolTipService.ToolTip="All relevant logs appear here."
-                     Padding="12,12,12,138" />
+            <Grid>
+                <!-- Textbox -->
+                <TextBox x:Name="SidebarLog"
+                         Margin="16,100,8,16"
+                         VerticalAlignment="Stretch"
+                         HorizontalAlignment="Stretch"
+                         TextWrapping="Wrap"
+                         IsTabStop="False"
+                         AcceptsReturn="True"
+                         IsReadOnly="True"
+                         AllowFocusOnInteraction="True"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         Padding="12,12,12,138" />
+
+                <!-- Invisible overlay button -->
+                <Button x:Name="LogCopyButton"
+                        Margin="32,116,32,24"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        IsTabStop="False"
+                        ToolTipService.ToolTip="All relevant logs appear here. Double tap to copy."
+                        DoubleTapped="LogCopyButton_DoubleTapped">
+                    <Button.Resources>
+                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
+                                         Color="Transparent" />
+                        <SolidColorBrush x:Key="ButtonBackgroundPressed"
+                                         Color="Transparent" />
+                    </Button.Resources>
+                </Button>
+            </Grid>
 
             <!-- Progress Bar -->
             <ProgressBar x:Name="ProgressBar"

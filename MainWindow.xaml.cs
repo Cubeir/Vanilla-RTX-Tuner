@@ -20,6 +20,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Vanilla_RTX_Tuner_WinUI.Modules;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
 using Windows.Storage;
 using Windows.System;
@@ -1031,7 +1032,7 @@ public sealed partial class MainWindow : Window
         _mojankLastClick = now;
         _mojankClickCount++;
 
-        if (_mojankClickCount >= 3)
+        if (_mojankClickCount == 3)
         {
             string message;
             switch (Random.Shared.Next(19))
@@ -1308,6 +1309,18 @@ public sealed partial class MainWindow : Window
         FlushTheseVariables(true, true, true);
     }
 
+
+
+    private void LogCopyButton_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(SidebarLog.Text))
+        {
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(SidebarLog.Text);
+            Clipboard.SetContent(dataPackage);
+            Log("Copied logs to clipboard.", LogLevel.Success);
+        }
+    }
 
 
 
