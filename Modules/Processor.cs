@@ -119,7 +119,11 @@ public class Processor
             return;
 
         // Find all directories named "fogs" within the pack path
-        var fogDirectories = Directory.GetDirectories(pack.Path, "fogs", SearchOption.AllDirectories);
+        var fogDirectories = Directory
+            .GetDirectories(pack.Path, "*", SearchOption.AllDirectories)
+            .Where(d => string.Equals(Path.GetFileName(d), "fogs", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
 
         if (!fogDirectories.Any())
         {
