@@ -34,6 +34,11 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Test and document all of the new features, improve them as you go
+
+- Tuner's lamp usually breaks on the first enabling/disabling attempt, but works fine after that, why?
+it keeps blinking when it should not
+
 - Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
 official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
@@ -495,8 +500,6 @@ public sealed partial class MainWindow : Window
 
 
 
-    // Not sure how unpredictable it'll become, but make the bool go away, make the method call a toggle in itself
-    // i.e. calling it just reverses the current run status, this way lamp can become excluded from control disabling during tasks
     public async Task BlinkingLamp(bool enable)
     {
         const double initialDelayMs = 900; // Initial speed of blinking *also the slowest possible blinking interval*
@@ -696,7 +699,7 @@ public sealed partial class MainWindow : Window
                     else
                     {
                         // Quick final SuperFlash when being cancelled (new blink cycle starting)
-                        await PerformFinalSuperFlash(onPath, superOnPath, 200);
+                        await PerformFinalSuperFlash(onPath, superOnPath, 10);
                     }
                 }
                 catch (OperationCanceledException)
@@ -968,8 +971,6 @@ public sealed partial class MainWindow : Window
     private async void MojankEasterEggButton_Click(object sender, RoutedEventArgs e)
     {
         _ = BlinkingLamp(true);
-        Thread.Sleep(27);
-        _ = BlinkingLamp(false);
 
         var now = DateTime.UtcNow;
         if ((now - _mojankLastClick).TotalSeconds > 8)
@@ -1054,7 +1055,7 @@ public sealed partial class MainWindow : Window
             Log("Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
         }
 
-
+        _ = BlinkingLamp(false);
     }
 
 
