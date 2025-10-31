@@ -924,7 +924,7 @@ public class PackUpdater
                 {
                     ForceWritable(topLevelFolder);
                     Directory.Delete(topLevelFolder, true);
-                    LogMessage($"🗑️ Removed previous {packName} pack.");
+                    LogMessage($"🗑️ Removed previous installation of: {packName}");
                 }
             }
         }
