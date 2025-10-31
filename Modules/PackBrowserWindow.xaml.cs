@@ -221,7 +221,7 @@ public sealed partial class PackBrowserWindow : Window
             var tagBorder = new Border
             {
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(200, 30, 30, 30)), // Dim grey
+                    Microsoft.UI.ColorHelper.FromArgb(200, 32, 32, 32)), // Dim grey
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4, 8, 4)
             };
