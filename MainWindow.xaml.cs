@@ -33,42 +33,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- TEST 1.4 and 1.5 changes more extensively, also optimize the project and the hasty fuck ups with more research
-is individual user data folder processing bulletproof?es
-
-- Any pack that is passed for processing must be ran through all processors
-It is the processors job to do nothing in the case that it can't find a set of files it wants to modify, or at least, that should be the outcome
-
-- "RTX Render Distance Override" slider, updates RT render distance
-
-- Idea:
-Rename Locate Vanilla RTX button to "Locate Packs" button
-Have a scrollable, more dyanmic checkbox section next to Vanilla RTX's
-Once pressed, all Vanilla RTX packs are returned as usual [no changes there]
-in addition to that, manifests that have PBR or raytraced capability are listed
-List the pack names with small checkboxes near them
-
-Users will be able to select any number of packs from that list to have it Tuned.
-
-Remove official support for Vanilla RTX Opus -- Normals and regular are the only ones to have the dedicated checklist
-The rest, including VVV and other community made packs can appear in this secondary checklist!
-
-store the select pack's root locations in an array, compound it with preivous Tune selection and Export selection checks
-if anything's to be tuned... gotta figure that out
-
--- this idea is good, but probably not cleanly executable through WinUI
-Maybe the hovering temporary panel with pack icons and whatnot can turn out cleaner, i.e. the earlier version of this idea.
-A "Select Other Packs" button of sorts
-
-
-
-- Replacing game files has never been easier, the game is no longer in protected WindowsApps folder
-One-click RTX improvements are possible now by replacing ray_tracing folder files.
-
-Maybe multiple presets, pixelated water normal, pixelated caustics, better look up tables for sky and sunlight
-If this is to be done, it must make back up of the said files.
-
-
 - Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
 official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
@@ -76,22 +40,9 @@ Vanilla RTX doesn't use it because it doesn't work! test again, maybe there's be
 If it works, update water to use density param in its fog
 Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is a little unpredictable since both are compounded for the final color
 
-- Splash screen -- you decide where to take it from here with UpdateUI and whatnot, since they won't be necessery anymore, start up happens in the background while splash is shown
+- A splash screen -- you decide where to take it from here with UpdateUI and whatnot, since they won't be necessery anymore, start up happens in the background while splash is shown
 Have another window that isn't shown, show it briefly upon startup with Tuner's large lamp
 Possibly improve the tuner lamp too, the glows must affect mortar more... more mystical like that pixel art you did
-
-- Have a worker that checks any possible local Vanilla RTX version (preview or not)
-And checks manifest against remote using already-existing pack updater class 
-And changes icon of reinstall latest packs to CloudDL or Archive and puts a log out there too
-basically telling the user hey! update available!
-
-CLEANER APPROACH:
-make the worker silent, and trigger it upon clicking "Locate Vanilla RTX" is clicked.
-A fire-and-forget task.
-IF Vanilla RTX gets successfully located, try to check for an update as well, let the user know!
-
-
-
 
 - Make random startup art many, or a few, randomly set an image after initializing Previews
 That way you'll have art displayed on startup as intended
