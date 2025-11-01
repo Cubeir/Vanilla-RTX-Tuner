@@ -1589,7 +1589,9 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
-            if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled)
+            if (!IsVanillaRTXEnabled && !IsNormalsEnabled && !IsOpusEnabled &&
+                (string.IsNullOrEmpty(CustomPackLocation) || string.IsNullOrEmpty(CustomPackDisplayName))
+                )
             {
                 Log("Locate and select at least one package to export.", LogLevel.Warning);
             }
