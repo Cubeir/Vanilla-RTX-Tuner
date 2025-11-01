@@ -175,7 +175,7 @@ public sealed partial class MainWindow : Window
         LoadSettings();
         UpdateUI();
 
-        _ = BlinkingLamp(true);
+        _ = BlinkingLamp(true, true);
 
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
@@ -201,14 +201,12 @@ public sealed partial class MainWindow : Window
         // Lazy PSA retrieval, show whenever or if retrieved
         _ = Task.Run(async () =>
         {
-            string? psa = await PSAUpdater.GetPSAAsync();
+            var psa = await PSAUpdater.GetPSAAsync();
             if (!string.IsNullOrWhiteSpace(psa))
             {
                 Log(psa, LogLevel.Informational);
             }
         });
-
-
 
         // Warning if MC is running
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
@@ -228,8 +226,6 @@ public sealed partial class MainWindow : Window
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default
             UpdateVanillaRTXGlyph.FontSize = 18;
         }
-
-        _ = BlinkingLamp(false);
 
         // Release Mutex and save some of the variables upon closure
         this.Closed += (s, e) =>
@@ -499,14 +495,13 @@ public sealed partial class MainWindow : Window
 
 
 
-
-    public async Task BlinkingLamp(bool enable)
+    public async Task BlinkingLamp(bool enable, bool singleFlash = false)
     {
-        const double initialDelayMs = 900; // Initial speed of blinking *also the slowest possible blinking interval*
-        const double minDelayMs = 150;  // Fastest possible blinking interval 
-        const double minRampSec = 1;  // Min length of how long it can on ramping up
-        const double maxRampSec = 8; // Max length...
-        const double fadeAnimationMs = 75; // How long does the fade animatoin take
+        const double initialDelayMs = 900;
+        const double minDelayMs = 150;
+        const double minRampSec = 1;
+        const double maxRampSec = 8;
+        const double fadeAnimationMs = 75;
 
         var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.small.png");
         var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png");
@@ -526,7 +521,7 @@ public sealed partial class MainWindow : Window
             onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.on.png");
             offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.off.png");
             superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "special", "pumpkin.super.png");
-            isSpecial = false; // Is special, but we want the halo, being special disables the halo and animation
+            isSpecial = false;
         }
         else if (today.Month == 12 && today.Day >= 25)
         {
@@ -534,7 +529,6 @@ public sealed partial class MainWindow : Window
             isSpecial = true;
         }
 
-        // Pre-load all images (removed emptyPath)
         var imagesToPreload = new List<string> { onPath, superOnPath, offPath };
         if (specialPath != null) imagesToPreload.Add(specialPath);
 
@@ -544,26 +538,66 @@ public sealed partial class MainWindow : Window
         _lampBlinkCts?.Cancel();
         _lampBlinkCts = null;
 
+        if (singleFlash)
+        {
+            await ExecuteSingleFlash(random, onPath, superOnPath, offPath);
+            return;
+        }
+
         if (enable)
         {
             _lampBlinkCts = new CancellationTokenSource();
 
             if (isSpecial)
             {
-                // For special cases: show static special image, hide halo
                 await SetImageAsync(iconImageBox, specialPath);
-                iconOverlayImageBox.Opacity = 0; // Clear overlay instead of using empty image
+                iconOverlayImageBox.Opacity = 0;
                 await AnimateOpacity(iconHaloImageBox, 0, fadeAnimationMs);
                 return;
             }
 
-            await BlinkLoop(_lampBlinkCts.Token, onPath, superOnPath, offPath);
+            _ = BlinkLoop(_lampBlinkCts.Token, onPath, superOnPath, offPath);
         }
         else
         {
-            // Static on state
             await SetImageAsync(iconImageBox, onPath);
-            iconOverlayImageBox.Opacity = 0; // Clear overlay instead of using empty image
+            iconOverlayImageBox.Opacity = 0;
+            await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
+        }
+
+        async Task ExecuteSingleFlash(Random rng, string onPath, string superOnPath, string offPath)
+        {
+            await SetImageAsync(iconImageBox, onPath);
+            await SetImageAsync(iconOverlayImageBox, offPath);
+
+            bool doSuperFlash = rng.NextDouble() < 0.75; // Most of the time do superflash instead of turning it off
+
+            if (doSuperFlash)
+            {
+                await SetImageAsync(iconImageBox, superOnPath);
+                iconOverlayImageBox.Opacity = 0;
+
+                var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
+                var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
+                await Task.WhenAll(superBaseTask, superHaloTask);
+
+                await Task.Delay(rng.Next(300, 800));
+            }
+            else
+            {
+                iconImageBox.Opacity = 1.0;
+                iconOverlayImageBox.Opacity = 0.0;
+
+                var overlayTask = AnimateOpacity(iconOverlayImageBox, 1.0, fadeAnimationMs);
+                var haloTask = AnimateOpacity(iconHaloImageBox, 0.025, fadeAnimationMs);
+                await Task.WhenAll(overlayTask, haloTask);
+
+                await Task.Delay(rng.Next(300, 800));
+            }
+
+            await SetImageAsync(iconImageBox, onPath);
+            iconOverlayImageBox.Opacity = 0.0;
+            iconImageBox.Opacity = 1.0;
             await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
         }
 
@@ -571,9 +605,8 @@ public sealed partial class MainWindow : Window
         {
             try
             {
-                // Setup layered images
-                await SetImageAsync(iconImageBox, onPath);      // Base layer (always visible)
-                await SetImageAsync(iconOverlayImageBox, offPath); // Overlay layer (fades in/out)
+                await SetImageAsync(iconImageBox, onPath);
+                await SetImageAsync(iconOverlayImageBox, offPath);
 
                 iconImageBox.Opacity = 1.0;
                 iconOverlayImageBox.Opacity = 0.0;
@@ -583,8 +616,7 @@ public sealed partial class MainWindow : Window
                 bool rampingUp = true;
                 double currentRampDuration = GetRandomRampDuration();
                 var rampStartTime = DateTime.UtcNow;
-                var nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 0 + 0); // First schedule (0 seconds makes it happen the first time) 
-                                                                                              // it is rescheduled again after it is triggered
+                var nextSuperFlash = DateTime.UtcNow;
 
                 while (!token.IsCancellationRequested)
                 {
@@ -592,39 +624,32 @@ public sealed partial class MainWindow : Window
 
                     if (now >= nextSuperFlash)
                     {
-                        // Randomly choose between two superflash varaints 20% chance to trigger
                         bool isRapidFlash = random.NextDouble() < 0.20;
 
                         if (isRapidFlash)
                         {
-                            // Second variant: Rapid continuous flash (overcharged lamp effect)
-                            var flashCount = random.Next(1, 6); // Number of rapid flashes
-                            var flashSpeed = random.Next(50, 100); // random time between flashes
+                            var flashCount = random.Next(1, 6);
+                            var flashSpeed = random.Next(50, 100);
 
                             for (int i = 0; i < flashCount; i++)
                             {
-                                // Flash to super bright
                                 await SetImageAsync(iconImageBox, superOnPath);
                                 iconOverlayImageBox.Opacity = 0;
                                 var superTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
-                                await Task.Delay(75, token); // Hold super state for 75ms
+                                await Task.Delay(75, token);
 
-                                // Flash back to normal on (but never off)
                                 await SetImageAsync(iconImageBox, onPath);
                                 var normalTask = AnimateOpacity(iconHaloImageBox, 0.5, fadeAnimationMs);
-                                await Task.Delay(flashSpeed, token); // Variable speed between flashes
+                                await Task.Delay(flashSpeed, token);
                             }
                         }
                         else
                         {
-                            // First variant: Long-lasting static superflash
-                            var superFlashDuration = random.Next(300, 1500); // 900 ms on avg
+                            var superFlashDuration = random.Next(300, 1500);
 
-                            // Switch to super-bright mode and stay there
                             await SetImageAsync(iconImageBox, superOnPath);
                             iconOverlayImageBox.Opacity = 0;
 
-                            // Animate to super bright state and hold the super state for the duration
                             var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
                             var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
                             await Task.WhenAll(superBaseTask, superHaloTask);
@@ -632,27 +657,22 @@ public sealed partial class MainWindow : Window
                             await Task.Delay(superFlashDuration, token);
                         }
 
-                        // Common cleanup for both variants - reset to normal mode
                         await SetImageAsync(iconImageBox, onPath);
                         await SetImageAsync(iconOverlayImageBox, offPath);
 
-                        // Now animate both halo and overlay to "off" state simultaneously
                         var resetHaloTask = AnimateOpacity(iconHaloImageBox, 0.025, fadeAnimationMs);
                         var resetOverlayTask = AnimateOpacity(iconOverlayImageBox, 1.0, fadeAnimationMs);
 
-                        // Wait for both animations to complete together
                         await Task.WhenAll(resetOverlayTask, resetHaloTask);
 
-                        // Ensure we're in the "off" state for the next cycle
                         state = false;
                         rampingUp = true;
                         currentRampDuration = GetRandomRampDuration();
                         rampStartTime = DateTime.UtcNow;
-                        nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 5 + 4); // Schedule next one for the next 5-9 seconds
+                        nextSuperFlash = DateTime.UtcNow.AddSeconds(random.NextDouble() * 5 + 4);
                         continue;
                     }
 
-                    // rEGULAR blinking with smooth transitions
                     phaseTime = (now - rampStartTime).TotalSeconds;
                     double progress = Math.Clamp(phaseTime / currentRampDuration, 0, 1);
                     double eased = EaseInOut(progress);
@@ -661,9 +681,8 @@ public sealed partial class MainWindow : Window
                         ? initialDelayMs - (initialDelayMs - minDelayMs) * eased
                         : minDelayMs + (initialDelayMs - minDelayMs) * eased;
 
-                    // Smooth opacity transitions
-                    double overlayOpacity = state ? 0.0 : 1.0; // Off image overlay
-                    double normalHaloOpacity = state ? 0.5 : 0.025; // Halo intensity
+                    double overlayOpacity = state ? 0.0 : 1.0;
+                    double normalHaloOpacity = state ? 0.5 : 0.025;
 
                     var overlayTask = AnimateOpacity(iconOverlayImageBox, overlayOpacity, fadeAnimationMs);
                     var normalHaloTask = AnimateOpacity(iconHaloImageBox, normalHaloOpacity, fadeAnimationMs);
@@ -681,60 +700,41 @@ public sealed partial class MainWindow : Window
 
                     await Task.Delay((int)delay, token);
                 }
-
-                // Cleanup used to happen here, moved it to a finally to ensure it happens no matter how blinking is stopped
             }
             finally
             {
-                // Final SuperFlash before cleanup - but only if we're not being cancelled by a new blinking call
                 try
                 {
-                    // Check if cancellation was requested - if so, we might be in the middle of starting a new blink cycle
-                    // We'll still do the final flash, but with a shorter duration to avoid conflicts
                     if (!token.IsCancellationRequested)
                     {
-                        // Full final SuperFlash when naturally ending
-                        await PerformFinalSuperFlash(onPath, superOnPath, random.Next(400, 800));
+                        await PerformFinalSuperFlash(onPath, superOnPath, random.Next(450, 900));
                     }
                     else
                     {
-                        // Quick final SuperFlash when being cancelled (new blink cycle starting)
-                        await PerformFinalSuperFlash(onPath, superOnPath, 50);
+                        await PerformFinalSuperFlash(onPath, superOnPath, 400);
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    // If the final superflash gets cancelled, that's fine - just proceed to cleanup
-                }
-                catch
-                {
-                    // Any other exception during final flash - proceed to cleanup to ensure proper state
-                }
+                catch (OperationCanceledException) { }
+                catch { }
 
-                // Always reset to default state regardless of what happened above
                 await SetImageAsync(iconImageBox, onPath);
                 iconOverlayImageBox.Opacity = 0.0;
                 iconImageBox.Opacity = 1.0;
-                await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs); // default opacity as defined in xaml
+                await AnimateOpacity(iconHaloImageBox, 0.25, fadeAnimationMs);
             }
 
             async Task PerformFinalSuperFlash(string onPath, string superOnPath, int duration)
             {
-                // Switch to super-bright mode
                 await SetImageAsync(iconImageBox, superOnPath);
                 iconOverlayImageBox.Opacity = 0;
 
-                // Animate to super bright state
                 var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
                 var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
                 await Task.WhenAll(superBaseTask, superHaloTask);
 
-                // Hold the super state
-                await Task.Delay(duration, CancellationToken.None); // Use CancellationToken.None to ensure final flash completes
+                await Task.Delay(duration, CancellationToken.None);
             }
         }
-        // -- End of blinking loop -- 
-
 
         double GetRandomRampDuration()
             => random.NextDouble() * (maxRampSec - minRampSec) + minRampSec;
@@ -765,7 +765,7 @@ public sealed partial class MainWindow : Window
         {
             if (ct.IsCancellationRequested)
             {
-                element.Opacity = targetOpacity; // Instant set
+                element.Opacity = targetOpacity;
                 return;
             }
 
@@ -786,13 +786,12 @@ public sealed partial class MainWindow : Window
 
             storyboard.Begin();
 
-            // Race between animation completing and cancellation
             var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(-1, ct));
 
             if (ct.IsCancellationRequested)
             {
                 storyboard.Stop();
-                element.Opacity = targetOpacity; // Jump to target immediately
+                element.Opacity = targetOpacity;
             }
         }
     }
@@ -984,7 +983,7 @@ public sealed partial class MainWindow : Window
 
     private async void MojankEasterEggButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = BlinkingLamp(true);
+        _ = BlinkingLamp(true, true);
 
         var now = DateTime.UtcNow;
         if ((now - _mojankLastClick).TotalSeconds > 8)
@@ -1068,8 +1067,6 @@ public sealed partial class MainWindow : Window
             await MojankEasterEgg.TriggerAsync();
             Log("Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
         }
-
-        _ = BlinkingLamp(false);
     }
 
 
