@@ -40,6 +40,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 Wrap your head around the thing, newer features especially, something feels missing
 i.e. it is not entirely well thought out how it works out with existing features, even though everything looks good on the surface
 
+- Fog slider development:
+
 - Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
 official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
@@ -47,7 +49,6 @@ Vanilla RTX doesn't use it because it doesn't work! test again, maybe there's be
 If it works, update water to use density param in its fog
 Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is a little unpredictable since both are compounded for the final color
 
-- Fog slider development:
 1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
 e.g. someone does a 10x on a fog that is already 1.0 in density
 its scattering triplets will be multipled by a toned-down number, e.g. a 10x results in a 2.5x for scattering valuesm a quarter
@@ -55,6 +56,8 @@ its scattering triplets will be multipled by a toned-down number, e.g. a 10x res
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
 
 - Add a convenient way to clear ALL caches, e.g. all potential file paths, as well as windows storage entries
+This is for more advanced users who want to do a full reset of the app without reinstalling
+A way to invalidate ALL caches
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify the logging
@@ -316,6 +319,7 @@ public sealed partial class MainWindow : Window
             HookThemeChangeListener();
         };
     }
+
 
     private void SetPreviews()
     {
@@ -803,6 +807,7 @@ public sealed partial class MainWindow : Window
         // Hide and unhide preview vessels while they update to avoid flickering as slider values update
         HidePreviewVessels();
 
+        // Sliders
         var sliderConfigs = new[]
         {
         (FogMultiplierSlider, FogMultiplierBox, TunerVariables.Persistent.FogMultiplier, false),
@@ -813,16 +818,20 @@ public sealed partial class MainWindow : Window
         (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)TunerVariables.Persistent.ButcheredHeightmapAlpha, true)
         };
 
+        // Bools/Checkboxes/Toggles, etc...
         VanillaRTXCheckBox.IsChecked = TunerVariables.IsVanillaRTXEnabled;
         NormalsCheckBox.IsChecked = TunerVariables.IsNormalsEnabled;
         OpusCheckBox.IsChecked = TunerVariables.IsOpusEnabled;
         EmissivityAmbientLightToggle.IsOn = TunerVariables.Persistent.AddEmissivityAmbientLight;
         TargetPreviewToggle.IsChecked = TunerVariables.Persistent.IsTargetingPreview;
 
+        // Animate sliders (intentionally put here, don't move up or down)
         await AnimateSliders(sliderConfigs, animationDurationSeconds);
 
         if (RanOnceFlag.Set("Initialize_UI_Previews_Only_With_The_First_Call"))
         {
+            // UpdateUI is called once at the start. we want previews to initialize only once. Thus this flag, which allows this code block
+            // To run once and then never again.
             SetPreviews();
         }
 
@@ -1189,6 +1198,7 @@ public sealed partial class MainWindow : Window
     }
 
 
+
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
         var packBrowser = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
@@ -1491,6 +1501,7 @@ public sealed partial class MainWindow : Window
         // Show/hide the warning icon
         EmissivityWarningIcon.Visibility = toggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
     }
+    
 
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
@@ -1649,8 +1660,8 @@ public sealed partial class MainWindow : Window
         try
         {
             ToggleControls(this, false);
-                _progressManager.ShowProgress();
-            BlinkingLamp(true);
+            _progressManager.ShowProgress();
+            _ = BlinkingLamp(true);
 
             var updater = new PackUpdater();
 
@@ -1669,8 +1680,8 @@ public sealed partial class MainWindow : Window
 
             if (success)
             {
-                Log("Reinstallation completed.", LogLevel.Success);     
-                // TODO: Trigger an artificial locate pack button click if packages were installed with success?
+                Log("Reinstallation completed.", LogLevel.Success);
+                // LocatePacksButton_Click(null, null);
             }
             else
             {
