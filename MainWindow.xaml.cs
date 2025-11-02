@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -483,6 +484,8 @@ public sealed partial class MainWindow : Window
             Log($"Details: {ex.Message}", LogLevel.Informational);
         }
     }
+
+
 
     public static string SanitizeFileName(string name)
     {
@@ -1274,13 +1277,24 @@ public sealed partial class MainWindow : Window
     {
         if (!string.IsNullOrEmpty(SidebarLog.Text))
         {
+            var sb = new StringBuilder();
+            sb.AppendLine(SidebarLog.Text);
+            sb.AppendLine();
+            sb.AppendLine("=== Internal Tuner Variables ===");
+
+            var fields = typeof(TunerVariables).GetFields(BindingFlags.Public | BindingFlags.Static);
+            foreach (var field in fields)
+            {
+                var value = field.GetValue(null);
+                sb.AppendLine($"{field.Name}: {value ?? "null"}");
+            }
+
             var dataPackage = new DataPackage();
-            dataPackage.SetText(SidebarLog.Text);
+            dataPackage.SetText(sb.ToString());
             Clipboard.SetContent(dataPackage);
             Log("Copied logs to clipboard.", LogLevel.Success);
         }
     }
-
 
 
     private void SelectAll_Checked(object sender, RoutedEventArgs e)
