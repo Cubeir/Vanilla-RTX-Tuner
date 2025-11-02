@@ -10,6 +10,11 @@
 
     <Grid>
 
+        <Rectangle Fill="#24202020"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   IsHitTestVisible="False" />
+
         <!-- Loading Screen -->
         <Grid x:Name="LoadingPanel"
               Visibility="Visible"

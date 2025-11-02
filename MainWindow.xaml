@@ -60,8 +60,6 @@
             </Rectangle.Fill>
         </Rectangle>
 
-
-
         <!-- Titlebar Buttons -->
         <Button x:Name="HelpButton"
                 Grid.ColumnSpan="2"

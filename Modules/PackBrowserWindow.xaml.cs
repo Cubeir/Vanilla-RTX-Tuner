@@ -139,18 +139,6 @@ public sealed partial class PackBrowserWindow : Window
             Tag = pack
         };
 
-        // Theme detect, dark fallack, we want to make light theme readable
-        // Issue: this won't update the ui after these are constructed
-        var theme = (this.Content as FrameworkElement)?.ActualTheme ?? ElementTheme.Dark;
-        if (theme == ElementTheme.Light)
-        {
-            button.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                Microsoft.UI.ColorHelper.FromArgb(255, 255, 255, 255));
-            button.BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                Microsoft.UI.ColorHelper.FromArgb(128, 128, 128, 128));
-            button.BorderThickness = new Thickness(1);
-        }
-
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(56) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(12) });
@@ -233,7 +221,7 @@ public sealed partial class PackBrowserWindow : Window
             var tagBorder = new Border
             {
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(200, 32, 32, 32)), // Dim grey
+                    Microsoft.UI.ColorHelper.FromArgb(105, 35, 35, 35)), // Dim grey
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4, 8, 4)
             };
@@ -244,7 +232,7 @@ public sealed partial class PackBrowserWindow : Window
                 FontSize = 12,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(225, 245, 245, 245)) // Light grey text
+                    Microsoft.UI.ColorHelper.FromArgb(255, 250, 240, 240)) // Light grey text
             };
 
             tagBorder.Child = tagText;

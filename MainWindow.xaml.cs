@@ -84,7 +84,10 @@ public static class TunerVariables
     public static string VanillaRTXNormalsVersion = string.Empty;
     public static string VanillaRTXOpusVersion = string.Empty;
     public static string CustomPackDisplayName = string.Empty;
+    // We already know names of Vanilla RTX packs so we get version instead, for custom pack, name's enough.
+    // We invalidate the retrieved name whenever we want to disable processing of the custom pack, so it has multiple purposes
 
+    // Tied to checkboxes
     public static bool IsVanillaRTXEnabled = false;
     public static bool IsNormalsEnabled = false;
     public static bool IsOpusEnabled = false;
@@ -1508,14 +1511,11 @@ public sealed partial class MainWindow : Window
         IsNormalsEnabled = false;
         IsOpusEnabled = false;
 
-        // FlushTheseVariables(true, true, true);
-
         // Manually updates UI based on new values
         UpdateUI();
 
         // Empty the sidebarlog
         SidebarLog.Text = "";
-
 
         // Ignore the run-once flag for now, let the warning be said every time since we empty the log
         if (true || RanOnceFlag.Set("Said_Reset_Warning"))
