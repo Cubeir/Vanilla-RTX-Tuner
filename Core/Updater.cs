@@ -723,7 +723,7 @@ public class PackUpdater
         try
         {
             // Find the resource pack path, where we wanna deploy
-            string basePath = TunerVariables.IsTargetingPreview
+            string basePath = TunerVariables.Persistent.IsTargetingPreview
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock Preview")
                 : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock");
 

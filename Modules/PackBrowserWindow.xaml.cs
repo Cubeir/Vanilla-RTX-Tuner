@@ -103,7 +103,7 @@ public sealed partial class PackBrowserWindow : Window
             if (packs.Count == 0)
             {
                 EmptyStatePanel.Visibility = Visibility.Visible;
-                EmptyStateText.Text = TunerVariables.IsTargetingPreview
+                EmptyStateText.Text = TunerVariables.Persistent.IsTargetingPreview
                     ? "No compatible packs found in Minecraft Preview data directory."
                     : "No compatible packs found in Minecraft data directory.";
                 return;
@@ -280,7 +280,7 @@ public sealed partial class PackBrowserWindow : Window
         var packs = new List<PackData>();
 
         string basePath;
-        if (TunerVariables.IsTargetingPreview)
+        if (TunerVariables.Persistent.IsTargetingPreview)
         {
             basePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

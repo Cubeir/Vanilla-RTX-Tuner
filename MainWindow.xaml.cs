@@ -29,6 +29,7 @@ using Windows.System;
 using Windows.UI;
 using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
+using static Vanilla_RTX_Tuner_WinUI.TunerVariables.Persistent;
 
 namespace Vanilla_RTX_Tuner_WinUI;
 
@@ -72,40 +73,36 @@ A variable is getting constantly updated with new logs, a worker in main UI thre
 
 public static class TunerVariables
 {
-    // When adding new variables, define the default if needed, save/load if needed, and finally account for it in UpdateUI method, if it ties to a Ui element
-
     public static string? appVersion = null;
 
-    // Pack save locations in MC folders + versions, variables are flushed and reused for Preview
     public static string VanillaRTXLocation = string.Empty;
     public static string VanillaRTXNormalsLocation = string.Empty;
     public static string VanillaRTXOpusLocation = string.Empty;
-
     public static string CustomPackLocation = string.Empty;
-    public static string CustomPackDisplayName = string.Empty;
 
     public static string VanillaRTXVersion = string.Empty;
     public static string VanillaRTXNormalsVersion = string.Empty;
     public static string VanillaRTXOpusVersion = string.Empty;
+    public static string CustomPackDisplayName = string.Empty;
 
-    // For checkboxes
     public static bool IsVanillaRTXEnabled = false;
     public static bool IsNormalsEnabled = false;
     public static bool IsOpusEnabled = false;
 
-    // Used throughout the app to target Minecraft Preview instead of regular Minecraft
-    public static bool IsTargetingPreview = false;
+    // These variables are saved and loaded, they persist
+    public static class Persistent
+    {
+        public static bool IsTargetingPreview = false;
+        public static double FogMultiplier = 1.0;
+        public static double EmissivityMultiplier = 1.0;
+        public static int NormalIntensity = 100;
+        public static int MaterialNoiseOffset = 0;
+        public static int RoughenUpIntensity = 0;
+        public static int ButcheredHeightmapAlpha = 0;
+        public static bool AddEmissivityAmbientLight = false;
+    }
 
-    // Tuning variables
-    public static double FogMultiplier = 1.0;
-    public static double EmissivityMultiplier = 1.0;
-    public static int NormalIntensity = 100;
-    public static int MaterialNoiseOffset = 0;
-    public static int RoughenUpIntensity = 0;
-    public static int ButcheredHeightmapAlpha = 0;
-    public static bool AddEmissivityAmbientLight = false;
-
-    // Defaults backup (used as a compass for slider previews to know their defaults)
+    // Defaults are backed up to be used as a compass by other classes
     public static class Defaults
     {
         public const double FogMultiplier = 1.0;
@@ -117,37 +114,34 @@ public static class TunerVariables
         public const bool AddEmissivityAmbientLight = false;
     }
 
-    // Settings we want saved and loaded upon startup, use in conjunction with UpdateUI method.
+    // Saves persistent variables
     public static void SaveSettings()
     {
         var localSettings = ApplicationData.Current.LocalSettings;
+        var fields = typeof(Persistent).GetFields(BindingFlags.Public | BindingFlags.Static);
 
-        localSettings.Values["FogMultiplier"] = FogMultiplier;
-        localSettings.Values["EmissivityMultiplier"] = EmissivityMultiplier;
-        localSettings.Values["NormalIntensity"] = NormalIntensity;
-        localSettings.Values["MaterialNoiseOffset"] = MaterialNoiseOffset;
-        localSettings.Values["RoughenUpIntensity"] = RoughenUpIntensity;
-        localSettings.Values["ButcheredHeightmapAlpha"] = ButcheredHeightmapAlpha;
-
-        localSettings.Values["AddEmissivityAmbientLight"] = AddEmissivityAmbientLight;
-
-        localSettings.Values["TargetingPreview"] = IsTargetingPreview;
+        foreach (var field in fields)
+        {
+            var value = field.GetValue(null);
+            localSettings.Values[field.Name] = value;
+        }
     }
+
+    // Loads persitent variables
     public static void LoadSettings()
     {
         var localSettings = ApplicationData.Current.LocalSettings;
+        var fields = typeof(Persistent).GetFields(BindingFlags.Public | BindingFlags.Static);
 
-        // load with fallback to initialised values
-        FogMultiplier = (double)(localSettings.Values["FogMultiplier"] ?? FogMultiplier);
-        EmissivityMultiplier = (double)(localSettings.Values["EmissivityMultiplier"] ?? EmissivityMultiplier);
-        NormalIntensity = (int)(localSettings.Values["NormalIntensity"] ?? NormalIntensity);
-        MaterialNoiseOffset = (int)(localSettings.Values["MaterialNoiseOffset"] ?? MaterialNoiseOffset);
-        RoughenUpIntensity = (int)(localSettings.Values["RoughenUpIntensity"] ?? RoughenUpIntensity);
-        ButcheredHeightmapAlpha = (int)(localSettings.Values["ButcheredHeightmapAlpha"] ?? ButcheredHeightmapAlpha);
-
-        AddEmissivityAmbientLight = (bool)(localSettings.Values["AddEmissivityAmbientLight"] ?? AddEmissivityAmbientLight);
-
-        IsTargetingPreview = (bool)(localSettings.Values["TargetingPreview"] ?? IsTargetingPreview);
+        foreach (var field in fields)
+        {
+            if (localSettings.Values.ContainsKey(field.Name))
+            {
+                var savedValue = localSettings.Values[field.Name];
+                var convertedValue = Convert.ChangeType(savedValue, field.FieldType);
+                field.SetValue(null, convertedValue);
+            }
+        }
     }
 }
 
@@ -801,137 +795,95 @@ public sealed partial class MainWindow : Window
 
 
 
-    public async void UpdateUI(double animationDurationSeconds = 0.05)
+    public async void UpdateUI(double animationDurationSeconds = 0.1)
     {
-        // Hide vessels during UI updates, because previews trigger vessel updates upon value change, the conflict looks glitchy
-        // This is a true band-aid solution, the real solution must be implemented in previews.cs (will you?)
-        PreviewVesselTop.Visibility = Visibility.Collapsed;
-        PreviewVesselBottom.Visibility = Visibility.Collapsed;
-        PreviewVesselBackground.Visibility = Visibility.Collapsed;
+        // Hide and unhide preview vessels while they update to avoid flickering as slider values update
+        HidePreviewVessels();
 
-        // store slider variable, slider and box configs, add new ones here 🍝
         var sliderConfigs = new[]
         {
-            (FogMultiplierSlider, FogMultiplierBox, FogMultiplier, false),
-            (EmissivityMultiplierSlider, EmissivityMultiplierBox, EmissivityMultiplier, false),
-            (NormalIntensitySlider, NormalIntensityBox, (double)NormalIntensity, true),
-            (MaterialNoiseSlider, MaterialNoiseBox, (double)MaterialNoiseOffset, true),
-            (RoughenUpSlider, RoughenUpBox, (double)RoughenUpIntensity, true),
-            (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)ButcheredHeightmapAlpha, true)
+        (FogMultiplierSlider, FogMultiplierBox, TunerVariables.Persistent.FogMultiplier, false),
+        (EmissivityMultiplierSlider, EmissivityMultiplierBox, TunerVariables.Persistent.EmissivityMultiplier, false),
+        (NormalIntensitySlider, NormalIntensityBox, (double)TunerVariables.Persistent.NormalIntensity, true),
+        (MaterialNoiseSlider, MaterialNoiseBox, (double)TunerVariables.Persistent.MaterialNoiseOffset, true),
+        (RoughenUpSlider, RoughenUpBox, (double)TunerVariables.Persistent.RoughenUpIntensity, true),
+        (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)TunerVariables.Persistent.ButcheredHeightmapAlpha, true)
         };
 
-        // store toggle-like variables
-        var boolConfigs = new[]
-        {
-             (EmissivityAmbientLightToggle, AddEmissivityAmbientLight)
-        };
+        VanillaRTXCheckBox.IsChecked = TunerVariables.IsVanillaRTXEnabled;
+        NormalsCheckBox.IsChecked = TunerVariables.IsNormalsEnabled;
+        OpusCheckBox.IsChecked = TunerVariables.IsOpusEnabled;
+        EmissivityAmbientLightToggle.IsOn = TunerVariables.Persistent.AddEmissivityAmbientLight;
+        TargetPreviewToggle.IsChecked = TunerVariables.Persistent.IsTargetingPreview;
 
-
-        // Ensure status of checkboxes matches their actual variables
-        VanillaRTXCheckBox.IsChecked = IsVanillaRTXEnabled;
-        NormalsCheckBox.IsChecked = IsNormalsEnabled;
-        OpusCheckBox.IsChecked = IsOpusEnabled;
-
-
-        // Handles toggle-like variables
-        foreach (var (toggle, targetValue) in boolConfigs)
-        {
-            toggle.IsOn = targetValue;
-        }
-
-        // Handles a single slider/textbox pair
-        void UpdateControl(Microsoft.UI.Xaml.Controls.Slider slider, Microsoft.UI.Xaml.Controls.TextBox textBox,
-                          double startValue, double targetValue, double progress, bool isInteger = false)
-        {
-            var currentValue = Lerp(startValue, targetValue, progress);
-            double roundedValue = isInteger ? Math.Round(currentValue) : Math.Round(currentValue, 2);
-
-            slider.Value = roundedValue;
-            textBox.Text = isInteger ? roundedValue.ToString() : roundedValue.ToString("0.00");
-        }
-        double Lerp(double start, double end, double t)
-        {
-            return start + (end - start) * t;
-        }
-
-        // Store starting values
-        var startValues = sliderConfigs.Select(config => config.Item1.Value).ToArray();
-
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var totalMs = animationDurationSeconds * 1000;
-
-        while (stopwatch.ElapsedMilliseconds < totalMs)
-        {
-            var progress = stopwatch.ElapsedMilliseconds / totalMs;
-            var easeProgress = 1 - Math.Pow(1 - progress, 3); // Smooth easing
-
-            // Update all controls
-            for (int i = 0; i < sliderConfigs.Length; i++)
-            {
-                var config = sliderConfigs[i];
-                UpdateControl(config.Item1, config.Item2, startValues[i], config.Item3, easeProgress, config.Item4);
-            }
-
-            await Task.Delay(4); // 16 = roughly 60 FPS
-        }
-
-        // Make sure final values are exact
-        for (int i = 0; i < sliderConfigs.Length; i++)
-        {
-            var config = sliderConfigs[i];
-            UpdateControl(config.Item1, config.Item2, config.Item3, config.Item3, 1.0, config.Item4);
-        }
-
-        // Special
-        TargetPreviewToggle.IsChecked = IsTargetingPreview;
-
+        await AnimateSliders(sliderConfigs, animationDurationSeconds);
 
         if (RanOnceFlag.Set("Initialize_UI_Previews_Only_With_The_First_Call"))
         {
-            // Initialize Previes only once, Update UI is called at least once (at the begenning, for the first time) we want previews initilized only ONCE
-            // Why here? and not after UpdateUI in the MainWindow initializer?
-            // Because UpdateUI runs for a few miliseconds at startup, the previewer ends up setting an image based on the final value update and flicker as all values change
-            // We'd want to initialize it only after the first UpdateUI method is called
-            // this is also the reason we hide the vessels when there is a UI update going on, to prevent flickering
-
             SetPreviews();
-
-            // Log("We got art!");
-            // As for other times, we manually make vessels invisible and then visible again after updating UI is done, with an empty image as defined below.
-            // That way when reset button calls UpdateUI the final state will be visible and empty
-
-            // Really the code below should be taking care of the the first initialization as well
-            // But I just wanted to make sure I use my cool flagging class which is super useful elsewhere.
-
-            // But no seriously, it feels slightly different, I can't put my finger on it, but initializing after updating UI in MainWindow()
-            // Will end up being slightly worse
-            // Here's the actual problem, upon first restart, for some god knows why reason the image vessel gets set the last thing changed by updateUI
-            // EVEN THOUGH AT THE END OF UPDATE UI WE CLEARLY SET IT TO EMPTY BEFORE MAKING IT VISIBLE
-            // WHAT'S WORSE: IT HAPPENS ONCE, RESTARTING THE APP AGAIN WON'T TRIGGER IT?!!??!?! WHY?!
         }
 
-        Previewer.Instance.ClearPreviews();
-        // TODO: This is the place to randomly set an splash art in the future, fade it in using setimages
-        // Previewer.Instance.SetImages("ms-appx:///Assets/previews/fog.default.png", "ms-appx:///Assets/previews/fog.default.png", true);
-        // Set a default image or whatever you think is a good "default" for startup/after-reset
+        ShowPreviewVessels();
 
-        // Here is why this prevents the final Previewer update image from appearing
-        // If you set an empty image here using Previewer.SetImage, it can be sometimes dodgy/unreliable
-        // Previewer.Instance.SetImages("ms-appx:///Assets/empty.png", "ms-appx:///Assets/empty.png", true);
-        // Likely because of WinUI timing issues
-        // ClearPreviews specifically FADES the vessels awa using a smooth transition 
-        // This smooth transition drags on longer than the final attempt of a control at updating the image vessel
-        // This makes it work correctly all the time reliably, because the fading drags on after updating UI controls is finished
 
-        // Reset opacities so fading can work again (collapsing image alone while its opacity is already at 100 from before won't do well)
-        PreviewVesselTop.Opacity = 0.0;
-        PreviewVesselBottom.Opacity = 0.0;
-        PreviewVesselBackground.Opacity = 0.0;
+        void HidePreviewVessels()
+        {
+            PreviewVesselTop.Visibility = Visibility.Collapsed;
+            PreviewVesselBottom.Visibility = Visibility.Collapsed;
+            PreviewVesselBackground.Visibility = Visibility.Collapsed;
+        }
 
-        PreviewVesselTop.Visibility = Visibility.Visible;
-        PreviewVesselBottom.Visibility = Visibility.Visible;
-        // BG vessel becomes visible again from previewer.cs upon controls exchanging the vessel (this makes it 100% requires user interaction)
-        // instead of automatically becoming visible like other vessels upon value changes
+        void ShowPreviewVessels()
+        {
+            Previewer.Instance.ClearPreviews();
+
+            PreviewVesselTop.Opacity = 0.0;
+            PreviewVesselBottom.Opacity = 0.0;
+            PreviewVesselBackground.Opacity = 0.0;
+
+            PreviewVesselTop.Visibility = Visibility.Visible;
+            PreviewVesselBottom.Visibility = Visibility.Visible;
+            // Background image automatically becomes visible on next user interaction
+        }
+
+        async Task AnimateSliders(
+            (Slider slider, TextBox textBox, double targetValue, bool isInteger)[] configs,
+            double durationSeconds)
+        {
+            var startValues = configs.Select(c => c.slider.Value).ToArray();
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var totalMs = durationSeconds * 1000;
+
+            while (stopwatch.ElapsedMilliseconds < totalMs)
+            {
+                var progress = stopwatch.ElapsedMilliseconds / totalMs;
+                var easedProgress = 1 - Math.Pow(1 - progress, 3);
+
+                for (int i = 0; i < configs.Length; i++)
+                {
+                    var (slider, textBox, targetValue, isInteger) = configs[i];
+                    var currentValue = Lerp(startValues[i], targetValue, easedProgress);
+                    SetSliderValue(slider, textBox, currentValue, isInteger);
+                }
+
+                await Task.Delay(4);
+            }
+
+            for (int i = 0; i < configs.Length; i++)
+            {
+                var (slider, textBox, targetValue, isInteger) = configs[i];
+                SetSliderValue(slider, textBox, targetValue, isInteger);
+            }
+        }
+
+        void SetSliderValue(Slider slider, TextBox textBox, double value, bool isInteger)
+        {
+            var rounded = isInteger ? Math.Round(value) : Math.Round(value, 2);
+            slider.Value = rounded;
+            textBox.Text = isInteger ? rounded.ToString() : rounded.ToString("0.00");
+        }
+
+        double Lerp(double start, double end, double t) => start + (end - start) * t;
     }
 
 
@@ -1280,10 +1232,19 @@ public sealed partial class MainWindow : Window
             var sb = new StringBuilder();
             sb.AppendLine(SidebarLog.Text);
             sb.AppendLine();
-            sb.AppendLine("=== Internal Tuner Variables ===");
+            sb.AppendLine("===== Tuner Variables");
 
             var fields = typeof(TunerVariables).GetFields(BindingFlags.Public | BindingFlags.Static);
             foreach (var field in fields)
+            {
+                var value = field.GetValue(null);
+                sb.AppendLine($"{field.Name}: {value ?? "null"}");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("===== Persistent Variables");
+            var persistentFields = typeof(TunerVariables.Persistent).GetFields(BindingFlags.Public | BindingFlags.Static);
+            foreach (var field in persistentFields)
             {
                 var value = field.GetValue(null);
                 sb.AppendLine($"{field.Name}: {value ?? "null"}");
@@ -1561,7 +1522,7 @@ public sealed partial class MainWindow : Window
         {
             RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
             var text = UpdateVanillaRTXButtonText.Text;
-            Log($"Note: this does not restore the packs to their default state!\nTo reset the pack back to original, use '{text as string}' button.", LogLevel.Informational);
+            Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you must reimport them. You can quickly reinstall the latest version of Vanilla RTX using the '{text as string}' button.", LogLevel.Informational);
             Log("Tuner variables and pack selections were reset.", LogLevel.Success);
         }
     }
