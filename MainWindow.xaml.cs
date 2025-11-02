@@ -1531,29 +1531,44 @@ public sealed partial class MainWindow : Window
 
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
-        BlinkingLamp(true);
+        _ = BlinkingLamp(true);
         _progressManager.ShowProgress();
         ToggleControls(this, false);
         try
         {
             var exportQueue = new List<(string path, string name)>();
-
             var suffix = $"_export_tuner_{appVersion}";
+
             if (IsVanillaRTXEnabled && Directory.Exists(VanillaRTXLocation))
                 exportQueue.Add((VanillaRTXLocation, "Vanilla_RTX_" + VanillaRTXVersion + suffix));
-
             if (IsNormalsEnabled && Directory.Exists(VanillaRTXNormalsLocation))
                 exportQueue.Add((VanillaRTXNormalsLocation, "Vanilla_RTX_Normals_" + VanillaRTXNormalsVersion + suffix));
-
             if (IsOpusEnabled && Directory.Exists(VanillaRTXOpusLocation))
                 exportQueue.Add((VanillaRTXOpusLocation, "Vanilla_RTX_Opus_" + VanillaRTXOpusVersion + suffix));
-
             if (!string.IsNullOrEmpty(CustomPackDisplayName) && Directory.Exists(CustomPackLocation))
                 exportQueue.Add((CustomPackLocation, SanitizeFileName(CustomPackDisplayName) + suffix));
 
-            foreach (var (path, name) in exportQueue)
-                await Exporter.ExportMCPACK(path, name);
+            // Deduplicate by normalized paths
+            var seenPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dedupedQueue = new List<(string path, string name)>();
 
+            foreach (var (path, name) in exportQueue)
+            {
+                var normalizedPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                if (seenPaths.ContainsKey(normalizedPath))
+                {
+                    Log($"{seenPaths[normalizedPath]} was selected twice, but will only be exported once!", LogLevel.Informational);
+                }
+                else
+                {
+                    seenPaths.Add(normalizedPath, name.Replace(suffix, "")); // Store display name without suffix
+                    dedupedQueue.Add((path, name));
+                }
+            }
+
+            foreach (var (path, name) in dedupedQueue)
+                await Exporter.ExportMCPACK(path, name);
         }
         catch (Exception ex)
         {
@@ -1571,11 +1586,10 @@ public sealed partial class MainWindow : Window
             {
                 Log("Export Queue Finished.", LogLevel.Success);
             }
-            BlinkingLamp(false);
+            _ = BlinkingLamp(false);
             _progressManager.HideProgress();
             ToggleControls(this, true);
         }
-
     }
 
 
