@@ -1646,7 +1646,6 @@ public sealed partial class MainWindow : Window
     }
 
 
-
     private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
         // Set to original glyph while checking, in the end if a deployable cache is available it is set to something else again

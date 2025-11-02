@@ -393,7 +393,7 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     FontWeight="SemiBold"
-                    ToolTipService.ToolTip="Resets tuning options back to their default values. (Note: this doesn't reset packs back to their original state! To do that, reinstall the latest packs)">
+                    ToolTipService.ToolTip="Resets tuning options back to their default values and clears pack selections.">
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center">
                     <FontIcon Glyph="&#xE72C;"
