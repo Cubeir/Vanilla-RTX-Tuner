@@ -1569,7 +1569,7 @@ public sealed partial class MainWindow : Window
 
                 if (seenPaths.ContainsKey(normalizedPath))
                 {
-                    Log($"{seenPaths[normalizedPath]} was selected twice, but will only be exported once!", LogLevel.Informational);
+                    Log($"{seenPaths[normalizedPath]} was selected twice, but will only be exported once!", LogLevel.Warning);
                 }
                 else
                 {

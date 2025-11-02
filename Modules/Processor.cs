@@ -69,7 +69,7 @@ public class Processor
         if (standardPacksDict.ContainsKey(customPathNormalized))
         {
             var duplicateName = standardPacksDict[customPathNormalized];
-            MainWindow.Log($"{duplicateName} was selected twice, but will only be processed once!", MainWindow.LogLevel.Informational);
+            MainWindow.Log($"{duplicateName} was selected twice, but will only be processed once!", MainWindow.LogLevel.Warning);
         }
         else
         {
