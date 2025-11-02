@@ -8,6 +8,7 @@ using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables.Persistent;
 using static Vanilla_RTX_Tuner_WinUI.Modules.Helpers;
 using static Vanilla_RTX_Tuner_WinUI.Modules.ProcessorVariables;
+using System.Diagnostics;
 
 namespace Vanilla_RTX_Tuner_WinUI.Modules;
 
@@ -49,61 +50,67 @@ public class Processor
 
         var packs = new[]
         {
-        new PackInfo("Vanilla RTX", VanillaRTXLocation, IsVanillaRTXEnabled),               // 0
-        new PackInfo("Vanilla RTX Normals", VanillaRTXNormalsLocation, IsNormalsEnabled),   // 1
-        new PackInfo("Vanilla RTX Opus", VanillaRTXOpusLocation, IsOpusEnabled),            // 2
-        new PackInfo(CustomPackDisplayName, CustomPackLocation, true)                       // 3
+        new PackInfo("Vanilla RTX", VanillaRTXLocation, IsVanillaRTXEnabled),
+        new PackInfo("Vanilla RTX Normals", VanillaRTXNormalsLocation, IsNormalsEnabled),
+        new PackInfo("Vanilla RTX Opus", VanillaRTXOpusLocation, IsOpusEnabled),
+        new PackInfo(CustomPackDisplayName, CustomPackLocation, true)
     };
 
+        // Filter enabled packs, excluding custom pack if it duplicates any standard pack path
+        var enabledPacks = packs.Take(3).Where(p => p.Enabled).ToList();
 
-        if (FogMultiplier != 1.0)
+        var customPathNormalized = Path.GetFullPath(CustomPackLocation).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var standardPacksDict = enabledPacks
+            .ToDictionary(
+                p => Path.GetFullPath(p.Path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                p => p.Name,
+                StringComparer.OrdinalIgnoreCase);
+
+        if (standardPacksDict.ContainsKey(customPathNormalized))
         {
-            foreach (var p in packs) // All
-            {
-                if (p.Enabled)
-                    ProcessFog(p);
-            }
+            var duplicateName = standardPacksDict[customPathNormalized];
+            MainWindow.Log($"{duplicateName} was selected twice, but will only be processed once!", MainWindow.LogLevel.Informational);
+        }
+        else
+        {
+            enabledPacks.Add(packs[3]);
         }
 
-        if (EmissivityMultiplier != 1.0 || AddEmissivityAmbientLight == true)
+        // Pass the clean packs to processors if the options aren't the same as defaults
+
+        if (FogMultiplier != Defaults.FogMultiplier)
         {
-            foreach (var p in packs)
-            {
-                if (p.Enabled)
-                    ProcessEmissivity(p); // All
-            }
+            foreach (var p in enabledPacks)
+                ProcessFog(p);
         }
 
-        if (NormalIntensity != 100)
+        if (EmissivityMultiplier != Defaults.EmissivityMultiplier || AddEmissivityAmbientLight == Defaults.AddEmissivityAmbientLight)
         {
-            foreach (var p in packs)
-            {
-                if (p.Enabled)
-                    ProcessNormalIntensity(p); // All
-            }
+            foreach (var p in enabledPacks)
+                ProcessEmissivity(p);
         }
 
-        if (MaterialNoiseOffset != 0)
+        if (NormalIntensity != Defaults.NormalIntensity)
         {
-            foreach (var p in packs)
-            {
-                if (p.Enabled)
-                    ProcessMaterialNoise(p); // All
-            }
+            foreach (var p in enabledPacks)
+                ProcessNormalIntensity(p);
         }
 
-        if (RoughenUpIntensity != 0)
+        if (MaterialNoiseOffset != Defaults.MaterialNoiseOffset)
         {
-            foreach (var p in packs)
-            {
-                if (p.Enabled)
-                    ProcessRoughingUp(p); // All
-            }
+            foreach (var p in enabledPacks)
+                ProcessMaterialNoise(p);
         }
 
-        if (ButcheredHeightmapAlpha != 0 && packs[0].Enabled) // Only Vanilla RTX if enabled
+        if (RoughenUpIntensity != Defaults.RoughenUpIntensity)
         {
-            ProcessHeightmaps(packs[0]); 
+            foreach (var p in enabledPacks)
+                ProcessRoughingUp(p);
+        }
+
+        if (ButcheredHeightmapAlpha != Defaults.ButcheredHeightmapAlpha)
+        {
+            ProcessHeightmaps(packs[0]);
         }
     }
 
@@ -943,17 +950,16 @@ public class Processor
                 if (wroteBack)
                 {
                     WriteImageAsTGA(heightmapBmp, heightmapFile);
-                    // MainWindow.Log($"{packName}: updated heightmap in {Path.GetFileName(heightmapFile)}.");
+                    Debug.WriteLine($"{pack.Name}: updated heightmap in {Path.GetFileName(heightmapFile)}.");
                 }
                 else
                 {
-                    // MainWindow.Log($"{packName}: no heightmap changes in {Path.GetFileName(heightmapFile)}.");
+                    Debug.WriteLine($"{pack.Name}: no heightmap changes in {Path.GetFileName(heightmapFile)}.");
                 }
             }
             catch (Exception ex)
             {
-                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(heightmapFile)} — {ex.Message}");
-                // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
+                Debug.WriteLine($"{pack.Name}: error processing {Path.GetFileName(heightmapFile)} — {ex.Message}");
             }
         }
     }

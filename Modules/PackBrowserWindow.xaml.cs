@@ -360,6 +360,7 @@ public sealed partial class PackBrowserWindow : Window
         }
 
         // Filter out Vanilla RTX packs
+        /*
         if (!string.IsNullOrEmpty(headerUUID) && !string.IsNullOrEmpty(moduleUUID))
         {
             if ((string.Equals(headerUUID, PackLocator.VANILLA_RTX_HEADER_UUID, StringComparison.OrdinalIgnoreCase) &&
@@ -373,6 +374,7 @@ public sealed partial class PackBrowserWindow : Window
                 return null; // Skip this pack
             }
         }
+        */
 
         // Check capabilities
         var capabilityTags = new List<string>();
