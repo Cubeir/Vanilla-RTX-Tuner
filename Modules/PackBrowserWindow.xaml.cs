@@ -139,6 +139,18 @@ public sealed partial class PackBrowserWindow : Window
             Tag = pack
         };
 
+        // Theme detect, dark fallack, we want to make light theme readable
+        // Issue: this won't update the ui after these are constructed
+        var theme = (this.Content as FrameworkElement)?.ActualTheme ?? ElementTheme.Dark;
+        if (theme == ElementTheme.Light)
+        {
+            button.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(255, 255, 255, 255));
+            button.BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(128, 128, 128, 128));
+            button.BorderThickness = new Thickness(1);
+        }
+
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(56) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(12) });
