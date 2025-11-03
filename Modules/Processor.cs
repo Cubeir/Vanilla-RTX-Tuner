@@ -76,8 +76,7 @@ public class Processor
             enabledPacks.Add(packs[3]);
         }
 
-        // Pass the clean packs to processors if the options aren't the same as defaults
-
+        // Pass the clean pack list to processors if the options aren't the same as defaults
         if (FogMultiplier != Defaults.FogMultiplier)
         {
             foreach (var p in enabledPacks)
