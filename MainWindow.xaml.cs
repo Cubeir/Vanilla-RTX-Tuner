@@ -21,7 +21,6 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Vanilla_RTX_Tuner_WinUI.Modules;
-using Vanilla_RTX_Tuner_WinUI.PackBrowser;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
 using Windows.Storage;
@@ -98,19 +97,20 @@ public static class TunerVariables
     // These variables are saved and loaded, they persist
     public static class Persistent
     {
-        public static bool IsTargetingPreview = false;
-        public static double FogMultiplier = 1.0;
-        public static double EmissivityMultiplier = 1.0;
-        public static int NormalIntensity = 100;
-        public static int MaterialNoiseOffset = 0;
-        public static int RoughenUpIntensity = 0;
-        public static int ButcheredHeightmapAlpha = 0;
-        public static bool AddEmissivityAmbientLight = false;
+        public static bool IsTargetingPreview = Defaults.IsTargetingPreview;
+        public static double FogMultiplier = Defaults.FogMultiplier;
+        public static double EmissivityMultiplier = Defaults.EmissivityMultiplier;
+        public static int NormalIntensity = Defaults.NormalIntensity;
+        public static int MaterialNoiseOffset = Defaults.MaterialNoiseOffset;
+        public static int RoughenUpIntensity = Defaults.RoughenUpIntensity;
+        public static int ButcheredHeightmapAlpha = Defaults.ButcheredHeightmapAlpha;
+        public static bool AddEmissivityAmbientLight = Defaults.AddEmissivityAmbientLight;
     }
 
     // Defaults are backed up to be used as a compass by other classes
     public static class Defaults
     {
+        public const bool IsTargetingPreview = false;
         public const double FogMultiplier = 1.0;
         public const double EmissivityMultiplier = 1.0;
         public const int NormalIntensity = 100;
@@ -138,14 +138,20 @@ public static class TunerVariables
     {
         var localSettings = ApplicationData.Current.LocalSettings;
         var fields = typeof(Persistent).GetFields(BindingFlags.Public | BindingFlags.Static);
-
         foreach (var field in fields)
         {
-            if (localSettings.Values.ContainsKey(field.Name))
+            try
             {
-                var savedValue = localSettings.Values[field.Name];
-                var convertedValue = Convert.ChangeType(savedValue, field.FieldType);
-                field.SetValue(null, convertedValue);
+                if (localSettings.Values.ContainsKey(field.Name))
+                {
+                    var savedValue = localSettings.Values[field.Name];
+                    var convertedValue = Convert.ChangeType(savedValue, field.FieldType);
+                    field.SetValue(null, convertedValue);
+                }
+            }
+            catch
+            {
+                Debug.WriteLine($"An issue occured loading settings");
             }
         }
     }
@@ -168,21 +174,34 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
+        // Things to do before mainwindow is initialized
         SetMainWindowProperties();
+
         InitializeComponent();
-
-        // Load settings, then update UI, image vessels are handled in UpdateUI as well
-        Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
-        LoadSettings();
-        UpdateUI();
-
-        _ = BlinkingLamp(true, true);
 
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
 
         Instance = this;
 
+        var defaultSize = new SizeInt32(980, 720);
+        _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
+
+        // Silent background credits retriever, false = don't show, just tries to get it
+        _ = CreditsUpdater.GetCredits(false);
+
+        // Do upon app closure
+        this.Closed += (s, e) =>
+        {
+            SaveSettings();
+            App.CleanupMutex();
+        };
+
+        // Things to do after mainwindow is initialized
+        this.Activated += MainWindow_Activated;
+    }
+    private void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
+    {
         // Version and initial logs
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
@@ -192,12 +211,25 @@ public sealed partial class MainWindow : Window
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
 
-        // Apply window state after everything is initialized
-        var defaultSize = new SizeInt32(980, 720);
-        _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
+        // Load settings, update ui later, image vessels are handled in UpdateUI as well
+        Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
+        LoadSettings();
+        UpdateUI();
 
-        // Silent background credits & psa retriever
-        CreditsUpdater.GetCredits(false);
+        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+
+        // Set reinstall latest packs button visuals based on cache status
+        // TODO: Make a helper method for pack updates, check cache against remote, if newer available, go with the "else" block
+        if (_updater.HasDeployableCache())
+        {
+            UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Archive icon
+            UpdateVanillaRTXButtonText.Text = "Reinstall Latest Packs";
+        }
+        else
+        {
+            UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default
+            UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
+        }
 
         // Lazy PSA retrieval, show whenever or if retrieved
         _ = Task.Run(async () =>
@@ -216,25 +248,10 @@ public sealed partial class MainWindow : Window
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
 
-        // Set reinstall latest packs button visuals based on cache status
-        if (_updater.HasDeployableCache())
-        {
-            UpdateVanillaRTXGlyph.Glyph = "\uE7B8"; // Archive icon
-            UpdateVanillaRTXGlyph.FontSize = 16;
-        }
-        else
-        {
-            UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default
-            UpdateVanillaRTXGlyph.FontSize = 18;
-        }
-
-        // Release Mutex and save some of the variables upon closure
-        this.Closed += (s, e) =>
-        {
-            SaveSettings();
-            App.CleanupMutex();
-        };
+        // Unsubscribe to avoid running this again
+        this.Activated -= MainWindow_Activated;
     }
+
 
     #region Main Window properties and essential components used throughout the app
     private void SetMainWindowProperties()
@@ -499,7 +516,7 @@ public sealed partial class MainWindow : Window
 
 
 
-    public async Task BlinkingLamp(bool enable, bool singleFlash = false)
+    public async Task BlinkingLamp(bool enable, bool singleFlash = false, double singleFlashOnChance = 0.75)
     {
         const double initialDelayMs = 900;
         const double minDelayMs = 150;
@@ -574,7 +591,7 @@ public sealed partial class MainWindow : Window
             await SetImageAsync(iconImageBox, onPath);
             await SetImageAsync(iconOverlayImageBox, offPath);
 
-            bool doSuperFlash = rng.NextDouble() < 0.75; // Most of the time do superflash instead of turning it off
+            bool doSuperFlash = rng.NextDouble() < singleFlashOnChance; // Most of the time do superflash instead of turning it off
 
             if (doSuperFlash)
             {
@@ -1154,6 +1171,7 @@ public sealed partial class MainWindow : Window
 
     private void LocatePacksButton_Click(object sender, RoutedEventArgs e)
     {
+        _ = BlinkingLamp(true, true, 1.0);
         FlushTheseVariables(true, true, true);
 
         var statusMessage = PackLocator.LocatePacks(IsTargetingPreview,
@@ -1215,9 +1233,9 @@ public sealed partial class MainWindow : Window
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
                 MainWindow.Log($"Selected {TunerVariables.CustomPackDisplayName} for tuning.", LogLevel.Success);
+                _ = BlinkingLamp(true, true, 1.0);
             }
         };
-
         packBrowser.Activate();
     }
 
@@ -1267,8 +1285,12 @@ public sealed partial class MainWindow : Window
             dataPackage.SetText(sb.ToString());
             Clipboard.SetContent(dataPackage);
             Log("Copied logs to clipboard.", LogLevel.Success);
+
+            // Lamp off single flash
+            _ = BlinkingLamp(true, true, 0.0);
         }
     }
+
 
 
     private void SelectAll_Checked(object sender, RoutedEventArgs e)
@@ -1323,6 +1345,7 @@ public sealed partial class MainWindow : Window
                     break;
             }
         }
+        _ = BlinkingLamp(true, true, 0.0);
         UpdateSelectAllState();
     }
     private void UpdateSelectAllState()
@@ -1528,6 +1551,9 @@ public sealed partial class MainWindow : Window
         // Empty the sidebarlog
         SidebarLog.Text = "";
 
+        // Lamp single off flash
+        _ = BlinkingLamp(true, true, 0.0);
+
         // Ignore the run-once flag for now, let the warning be said every time since we empty the log
         if (true || RanOnceFlag.Set("Said_Reset_Warning"))
         {
@@ -1536,13 +1562,12 @@ public sealed partial class MainWindow : Window
             Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you must reimport them. You can quickly reinstall the latest version of Vanilla RTX using the '{text as string}' button.", LogLevel.Informational);
             Log("Tuner variables and pack selections were reset.", LogLevel.Success);
         }
-    }
 
+    }
 
 
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = BlinkingLamp(true);
         _progressManager.ShowProgress();
         ToggleControls(this, false);
         try
@@ -1579,7 +1604,12 @@ public sealed partial class MainWindow : Window
             }
 
             foreach (var (path, name) in dedupedQueue)
+            {
                 await Exporter.ExportMCPACK(path, name);
+
+                // Blinks once for each exported pack!
+                _ = BlinkingLamp(true, true, 1.0);
+            }   
         }
         catch (Exception ex)
         {
@@ -1591,13 +1621,12 @@ public sealed partial class MainWindow : Window
                 (string.IsNullOrEmpty(CustomPackLocation) || string.IsNullOrEmpty(CustomPackDisplayName))
                 )
             {
-                Log("Locate and select at least one package to export.", LogLevel.Warning);
+                Log("Queue was empty. Locate or select at least one package to export.", LogLevel.Warning);
             }
             else
             {
                 Log("Export Queue Finished.", LogLevel.Success);
             }
-            _ = BlinkingLamp(false);
             _progressManager.HideProgress();
             ToggleControls(this, true);
         }
@@ -1648,10 +1677,6 @@ public sealed partial class MainWindow : Window
 
     private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
-        // Set to original glyph while checking, in the end if a deployable cache is available it is set to something else again
-        UpdateVanillaRTXGlyph.Glyph = "\uE8F7";
-        UpdateVanillaRTXGlyph.FontSize = 18;
-
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
         {
             Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
@@ -1680,7 +1705,6 @@ public sealed partial class MainWindow : Window
             if (success)
             {
                 Log("Reinstallation completed.", LogLevel.Success);
-                // LocatePacksButton_Click(null, null);
             }
             else
             {
@@ -1701,22 +1725,23 @@ public sealed partial class MainWindow : Window
             // Set reinstall latest packs button visuals based on cache status
             if (_updater.HasDeployableCache())
             {
-                UpdateVanillaRTXGlyph.Glyph = "\uE7B8";
-                UpdateVanillaRTXGlyph.FontSize = 16;
+                UpdateVanillaRTXGlyph.Glyph = "\uE8F7";
+                UpdateVanillaRTXButtonText.Text = "Reinstall Latest Packs";
             }
             else
             {
                 UpdateVanillaRTXGlyph.Glyph = "\uEBD3";
-                UpdateVanillaRTXGlyph.FontSize = 18;
+                UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
             }
+
+            // Trigger an automatic pack location check after update
+            LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
         }
     }
 
 
-
     private async void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
-        _ = BlinkingLamp(true);
 
         if (PackUpdater.IsMinecraftRunning())
         {
@@ -1730,7 +1755,7 @@ public sealed partial class MainWindow : Window
         }
         finally
         {
-            _ = BlinkingLamp(false);
+            _ = BlinkingLamp(true, true, 0.0);
         }
     }
 }
