@@ -1265,34 +1265,60 @@ public class CreditsUpdater
 public class PSAUpdater
 {
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-Tuner/master/README.md";
+    private const string CACHE_KEY = "PSAContentCache";
+    private const string TIMESTAMP_KEY = "PSALastCheckedTimestamp";
+    private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(2);
 
     public static async Task<string?> GetPSAAsync()
     {
         try
         {
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
+            // Check if we have cached data and if cooldown is still active
+            if (localSettings.Values.ContainsKey(TIMESTAMP_KEY) &&
+                localSettings.Values.ContainsKey(CACHE_KEY))
+            {
+                var lastChecked = DateTime.Parse(localSettings.Values[TIMESTAMP_KEY] as string);
+                if (DateTime.UtcNow - lastChecked < COOLDOWN)
+                {
+                    // Return cached content
+                    return localSettings.Values[CACHE_KEY] as string;
+                }
+            }
+
+            // Cooldown expired or no cache, fetch new data
             using (HttpClient client = new HttpClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
-                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
+                var userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
                 client.DefaultRequestHeaders.Add("User-Agent", userAgent);
-
                 var response = await client.GetAsync(README_URL);
                 if (!response.IsSuccessStatusCode)
-                    return null;
+                    return localSettings.Values[CACHE_KEY] as string; // Return cached on failure
 
                 var content = await response.Content.ReadAsStringAsync();
-
                 int psaIndex = content.IndexOf("### PSA", StringComparison.OrdinalIgnoreCase);
                 if (psaIndex == -1)
                     return null;
 
-                string afterPSA = content.Substring(psaIndex + "### PSA".Length).Trim();
-                return string.IsNullOrWhiteSpace(afterPSA) ? null : afterPSA;
+                var afterPSA = content.Substring(psaIndex + "### PSA".Length).Trim();
+                var result = string.IsNullOrWhiteSpace(afterPSA) ? null : afterPSA;
+
+                // Cache the result and timestamp
+                localSettings.Values[CACHE_KEY] = result;
+                localSettings.Values[TIMESTAMP_KEY] = DateTime.UtcNow.ToString("O");
+
+                return result;
             }
         }
         catch
         {
-            return null;
+            // On error, return previously cached content if available
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            return localSettings.Values.ContainsKey(CACHE_KEY)
+                ? localSettings.Values[CACHE_KEY] as string
+                : null;
         }
     }
 }
