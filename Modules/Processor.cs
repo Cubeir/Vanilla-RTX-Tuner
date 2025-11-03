@@ -56,60 +56,66 @@ public class Processor
         new PackInfo(CustomPackDisplayName, CustomPackLocation, true)
     };
 
-        // Filter enabled packs, excluding custom pack if it duplicates any standard pack path
-        var enabledPacks = packs.Take(3).Where(p => p.Enabled).ToList();
 
-        var customPathNormalized = Path.GetFullPath(CustomPackLocation).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        var standardPacksDict = enabledPacks
-            .ToDictionary(
-                p => Path.GetFullPath(p.Path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                p => p.Name,
-                StringComparer.OrdinalIgnoreCase);
 
-        if (standardPacksDict.ContainsKey(customPathNormalized))
+        // Removes custom pack from the array if its path duplicates an already selected pack
+        string NormalizePath(string path)
         {
-            var duplicateName = standardPacksDict[customPathNormalized];
-            MainWindow.Log($"{duplicateName} was selected twice, but will only be processed once!", MainWindow.LogLevel.Warning);
-        }
-        else
-        {
-            enabledPacks.Add(packs[3]);
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            return Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
-        // Pass the clean pack list to processors if the options aren't the same as defaults
+        var customPackNormalizedPath = NormalizePath(CustomPackLocation);
+
+        bool isDuplicate = packs
+            .Take(packs.Length - 1)
+            .Where(p => p.Enabled)
+            .Any(p => NormalizePath(p.Path).Equals(customPackNormalizedPath, StringComparison.OrdinalIgnoreCase));
+
+        // Remove custom pack path if it's a duplicate of an already selected pack
+        if (isDuplicate)
+        {
+            MainWindow.Log($"{CustomPackDisplayName} was selected twice, but will only be processed once!", MainWindow.LogLevel.Warning);
+            packs = packs.Take(packs.Length - 1).ToArray();
+        }
+
+
+
+
         if (FogMultiplier != Defaults.FogMultiplier)
         {
-            foreach (var p in enabledPacks)
+            foreach (var p in packs)
                 ProcessFog(p);
         }
 
-        if (EmissivityMultiplier != Defaults.EmissivityMultiplier || AddEmissivityAmbientLight == Defaults.AddEmissivityAmbientLight)
+        if (EmissivityMultiplier != Defaults.EmissivityMultiplier || AddEmissivityAmbientLight != Defaults.AddEmissivityAmbientLight)
         {
-            foreach (var p in enabledPacks)
+            foreach (var p in packs)
                 ProcessEmissivity(p);
         }
 
         if (NormalIntensity != Defaults.NormalIntensity)
         {
-            foreach (var p in enabledPacks)
+            foreach (var p in packs)
                 ProcessNormalIntensity(p);
         }
 
         if (MaterialNoiseOffset != Defaults.MaterialNoiseOffset)
         {
-            foreach (var p in enabledPacks)
+            foreach (var p in packs)
                 ProcessMaterialNoise(p);
         }
 
         if (RoughenUpIntensity != Defaults.RoughenUpIntensity)
         {
-            foreach (var p in enabledPacks)
+            foreach (var p in packs)
                 ProcessRoughingUp(p);
         }
 
         if (ButcheredHeightmapAlpha != Defaults.ButcheredHeightmapAlpha)
         {
-            ProcessHeightmaps(packs[0]);
+            foreach (var p in packs)
+                ProcessRoughingUp(p);
         }
     }
 
@@ -120,8 +126,6 @@ public class Processor
     #region ------------------- Processors
     private static void ProcessFog(PackInfo pack)
     {
-
-
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
