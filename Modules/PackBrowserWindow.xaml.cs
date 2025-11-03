@@ -35,15 +35,9 @@ public sealed partial class PackBrowserWindow : Window
             _appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
             _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
             _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-            // Hide all system buttons
-            _appWindow.TitleBar.IconShowOptions = IconShowOptions.HideIconAndSystemMenu;
         }
 
-        // Set title bar drag region
         this.Activated += PackBrowserWindow_Activated;
-
-
         _mainWindow.Closed += MainWindow_Closed;
     }
 
