@@ -505,17 +505,6 @@ public sealed partial class MainWindow : Window
 
 
 
-    public static string SanitizeFileName(string name)
-    {
-        var invalidChars = Path.GetInvalidFileNameChars();
-        var sanitized = new string(name
-            .Select(c => char.IsWhiteSpace(c) || invalidChars.Contains(c) ? '_' : c)
-            .ToArray());
-        return Regex.Replace(sanitized.Trim('_'), "_{2,}", "_");
-    }
-
-
-
     public async Task BlinkingLamp(bool enable, bool singleFlash = false, double singleFlashOnChance = 0.75)
     {
         const double initialDelayMs = 900;
@@ -818,8 +807,8 @@ public sealed partial class MainWindow : Window
     }
 
 
-
-    public async void UpdateUI(double animationDurationSeconds = 0.1)
+    // ISSUE: Background Preview vessel remains visible after tuning for some reason, maybe this isn't the culprit, because UpdateUI after being called by Reset button works
+    public async void UpdateUI(double animationDurationSeconds = 0.12)
     {
         // Hide and unhide preview vessels while they update to avoid flickering as slider values update
         HidePreviewVessels();
@@ -1203,8 +1192,8 @@ public sealed partial class MainWindow : Window
             if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
             {
                 OpusCheckBox.IsEnabled = true;
-                OpusCheckBox.IsChecked = false;
-                IsOpusEnabled = false;
+                OpusCheckBox.IsChecked = true;
+                IsOpusEnabled = true;
             }
 
             if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
@@ -1345,7 +1334,7 @@ public sealed partial class MainWindow : Window
                     break;
             }
         }
-        _ = BlinkingLamp(true, true, 0.0);
+        // _ = BlinkingLamp(true, true, 0.0);
         UpdateSelectAllState();
     }
     private void UpdateSelectAllState()
@@ -1583,6 +1572,15 @@ public sealed partial class MainWindow : Window
                 exportQueue.Add((VanillaRTXOpusLocation, "Vanilla_RTX_Opus_" + VanillaRTXOpusVersion + suffix));
             if (!string.IsNullOrEmpty(CustomPackDisplayName) && Directory.Exists(CustomPackLocation))
                 exportQueue.Add((CustomPackLocation, SanitizeFileName(CustomPackDisplayName) + suffix));
+
+            string SanitizeFileName(string name)
+            {
+                var invalidChars = Path.GetInvalidFileNameChars();
+                var sanitized = new string(name
+                    .Select(c => char.IsWhiteSpace(c) || invalidChars.Contains(c) ? '_' : c)
+                    .ToArray());
+                return Regex.Replace(sanitized.Trim('_'), "_{2,}", "_");
+            }
 
             // Deduplicate by normalized paths
             var seenPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
