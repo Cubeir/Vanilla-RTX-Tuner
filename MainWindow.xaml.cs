@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -36,27 +37,32 @@ namespace Vanilla_RTX_Tuner_WinUI;
 ### GENERAL TODO & IDEAS ###
 
 - Test and document all of the new features, improve them as you go
-Wrap your head around the thing, newer features especially, something feels missing
-i.e. it is not entirely well thought out how it works out with existing features, even though everything looks good on the surface
+Finalize the custom pack selection, new tuner lamp behavior, and locate packs artifical clicks
+IT all SHOULD be working well just, lots of testing IS needed.
+Discovering potential edge cases also remains
 
 - Fog slider development:
 
-- Make fog multiplier partially impact water scattering (& absorbtion?)
+Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
 official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
 Vanilla RTX doesn't use it because it doesn't work! test again, maybe there's been a bug
 If it works, update water to use density param in its fog
 Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is a little unpredictable since both are compounded for the final color
 
-1. Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
+Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
 e.g. someone does a 10x on a fog that is already 1.0 in density
 its scattering triplets will be multipled by a toned-down number, e.g. a 10x results in a 2.5x for scattering valuesm a quarter
 
+Get rid of the overly bloated stupid dampening nonsense come up with something better
+
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
 
-- Add a convenient way to clear ALL caches, e.g. all potential file paths, as well as windows storage entries
+- Add a convenient way to clear ALL caches + temp files they reference, e.g. all potential file paths, as well as windows storage entries
 This is for more advanced users who want to do a full reset of the app without reinstalling
 A way to invalidate ALL caches
+
+IDEA: Double clicking "Reset" button?
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify the logging
@@ -972,10 +978,10 @@ public sealed partial class MainWindow : Window
             switch (Random.Shared.Next(19))
             {
                 case 0:
-                    message = "Easy there pal, you're about to void your Minecraft warranty.";
+                    message = "Easy there pal, I'm about to void your Minecraft warranty.";
                     break;
                 case 1:
-                    message = "Careful now... you're one click away from discovering the truth.";
+                    message = "Careful now... you're one click away from discovering something.";
                     break;
                 case 2:
                     message = "You're poking... something...";
@@ -984,10 +990,10 @@ public sealed partial class MainWindow : Window
                     message = "The next click can't be undone, kidding.";
                     break;
                 case 4:
-                    message = "Bold move, brave explorer. The truth about Mojang awaits.";
+                    message = "Bold move, explorer. The truth of Mojang awaits.";
                     break;
                 case 5:
-                    message = "I'd stop there if I were you.";
+                    message = "I wouldn't stop there if I were you.";
                     break;
                 case 6:
                     message = "You’ve gone too far to pretend you didn’t mean it.";
@@ -1002,10 +1008,10 @@ public sealed partial class MainWindow : Window
                     message = "Go on then... see what happens.";
                     break;
                 case 10:
-                    message = "Take the red pill, see how deep the Mojank goes.";
+                    message = "Wanna take the red pill?";
                     break;
                 case 11:
-                    message = "I have a good feeling about this.";
+                    message = "I have a great feeling about this.";
                     break;
                 case 12:
                     message = "The cake was a lie. This isn’t.";
@@ -1017,16 +1023,16 @@ public sealed partial class MainWindow : Window
                     message = "Time to wake Mojang up, Samurai. We've got a game to fix.";
                     break;
                 case 15:
-                    message = "Toss a coin to your sense of judgment.";
+                    message = "Toss a coin into your sense of judgment.";
                     break;
                 case 16:
                     message = "You were warned not to push that button, Dovahkiin.";
                     break;
                 case 17:
-                    message = "Some of these lines are cheesy I know, BUT";
+                    message = "Some of these lines are cheesy at best, BUT";
                     break;
                 default:
-                    message = "War never changes. Neither does Mojang’s QA.";
+                    message = "War never changes. Neither does Mojang’s [non-existent] QA.";
                     break;
             }
 
@@ -1038,7 +1044,7 @@ public sealed partial class MainWindow : Window
         {
             _mojankClickCount = 0;
             await MojankEasterEgg.TriggerAsync();
-            Log("Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
+            Log("Your Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
         }
     }
 
