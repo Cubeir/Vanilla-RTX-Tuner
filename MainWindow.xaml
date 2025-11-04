@@ -757,11 +757,15 @@
                 </Button>
             </Grid>
         </Grid>
+
+        <!-- Modal Blocker -->
         <Grid x:Name="ModalBlocker"
               Grid.ColumnSpan="2"
               Background="#40000000"
               Visibility="Collapsed"
               IsHitTestVisible="True"
               Canvas.ZIndex="99999" />
+
+    <!-- End of Main Grid-->
     </Grid>
 </Window>

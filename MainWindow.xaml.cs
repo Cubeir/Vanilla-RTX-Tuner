@@ -494,21 +494,24 @@ public sealed partial class MainWindow : Window
     }
 
 
-
     public static void OpenUrl(string url)
     {
-        try
-        {
-            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
-                throw new ArgumentException("Malformed URL.");
-
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            Log("Failed to open URL. Make sure you have a browser installed and associated with web links.", LogLevel.Warning);
-            Log($"Details: {ex.Message}", LogLevel.Informational);
-        }
+#if DEBUG
+        Log("OpenUrl is disabled in debug builds.", LogLevel.Informational);
+        return;
+#else
+    try
+    {
+        if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            throw new ArgumentException("Malformed URL.");
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    }
+    catch (Exception ex)
+    {
+        Log("Failed to open URL. Make sure you have a browser installed and associated with web links.", LogLevel.Warning);
+        Log($"Details: {ex.Message}", LogLevel.Informational);
+    }
+#endif
     }
 
 
