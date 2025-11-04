@@ -301,7 +301,7 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
-                   Canvas.ZIndex="9999"
+                   Canvas.ZIndex="999"
                    Visibility="Visible"
                    Opacity="100"
                    Source="ms-appx:///Assets/empty.png"
@@ -315,7 +315,7 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
-                   Canvas.ZIndex="9998"
+                   Canvas.ZIndex="998"
                    Visibility="Visible"
                    Opacity="100"
                    Source="ms-appx:///Assets/empty.png"
@@ -329,13 +329,11 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
-                   Canvas.ZIndex="9997"
+                   Canvas.ZIndex="997"
                    Visibility="Visible"
                    Opacity="0"
                    Source="ms-appx:///Assets/previews/huge_background.png"
                    CacheMode="BitmapCache" />
-
-
         </Grid>
 
         
@@ -759,5 +757,11 @@
                 </Button>
             </Grid>
         </Grid>
+        <Grid x:Name="ModalBlocker"
+              Grid.ColumnSpan="2"
+              Background="#40000000"
+              Visibility="Collapsed"
+              IsHitTestVisible="True"
+              Canvas.ZIndex="99999" />
     </Grid>
 </Window>

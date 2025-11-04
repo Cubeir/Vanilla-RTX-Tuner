@@ -172,6 +172,8 @@ public sealed partial class MainWindow : Window
     private readonly ProgressBarManager _progressManager;
     private readonly PackUpdater _updater = new();
 
+    private Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow? _packBrowserWindow;
+
     private static CancellationTokenSource? _lampBlinkCts;
     private static readonly Dictionary<string, BitmapImage> _imageCache = new();
 
@@ -1214,24 +1216,36 @@ public sealed partial class MainWindow : Window
 
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        var packBrowser = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
+        if (_packBrowserWindow is { } existing)
+        {
+            existing.Activate();
+            return;
+        }
 
-        // Match main window size/position
+        _packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
+
+        // Show modal overlay to block input
+        ModalBlocker.Visibility = Visibility.Visible;
+
         var mainAppWindow = this.AppWindow;
-        packBrowser.AppWindow.Resize(new Windows.Graphics.SizeInt32(
+        _packBrowserWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(
             mainAppWindow.Size.Width,
             mainAppWindow.Size.Height));
-        packBrowser.AppWindow.Move(mainAppWindow.Position);
+        _packBrowserWindow.AppWindow.Move(mainAppWindow.Position);
 
-        packBrowser.Closed += (s, args) =>
+        _packBrowserWindow.Closed += (s, args) =>
         {
+            _packBrowserWindow = null;
+            // Hide modal overlay to re-enable input
+            ModalBlocker.Visibility = Visibility.Collapsed;
+
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
-                MainWindow.Log($"Selected {TunerVariables.CustomPackDisplayName} for tuning.", LogLevel.Success);
+                Log($"Selected {TunerVariables.CustomPackDisplayName} for tuning.", LogLevel.Success);
                 _ = BlinkingLamp(true, true, 1.0);
             }
         };
-        packBrowser.Activate();
+        _packBrowserWindow.Activate();
     }
 
 
