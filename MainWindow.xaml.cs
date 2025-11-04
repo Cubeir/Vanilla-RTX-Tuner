@@ -172,8 +172,6 @@ public sealed partial class MainWindow : Window
     private readonly ProgressBarManager _progressManager;
     private readonly PackUpdater _updater = new();
 
-    private Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow? _packBrowserWindow;
-
     private static CancellationTokenSource? _lampBlinkCts;
     private static readonly Dictionary<string, BitmapImage> _imageCache = new();
 
@@ -1215,31 +1213,20 @@ public sealed partial class MainWindow : Window
         }
     }
 
-
-
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_packBrowserWindow is { } existing)
-        {
-            existing.Activate();
-            return;
-        }
-
-        _packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
-
-        // Show modal overlay to block input
         ModalBlocker.Visibility = Visibility.Visible;
 
+        var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
         var mainAppWindow = this.AppWindow;
-        _packBrowserWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(
+
+        packBrowserWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(
             mainAppWindow.Size.Width,
             mainAppWindow.Size.Height));
-        _packBrowserWindow.AppWindow.Move(mainAppWindow.Position);
+        packBrowserWindow.AppWindow.Move(mainAppWindow.Position);
 
-        _packBrowserWindow.Closed += (s, args) =>
+        packBrowserWindow.Closed += (s, args) =>
         {
-            _packBrowserWindow = null;
-            // Hide modal overlay to re-enable input
             ModalBlocker.Visibility = Visibility.Collapsed;
 
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
@@ -1248,7 +1235,8 @@ public sealed partial class MainWindow : Window
                 _ = BlinkingLamp(true, true, 1.0);
             }
         };
-        _packBrowserWindow.Activate();
+
+        packBrowserWindow.Activate();
     }
 
 
