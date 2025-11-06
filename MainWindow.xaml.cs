@@ -180,9 +180,8 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
-        // Things to do before mainwindow is initialized
+        // Properties to set before it is rendered
         SetMainWindowProperties();
-
         InitializeComponent();
 
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
@@ -193,8 +192,14 @@ public sealed partial class MainWindow : Window
         var defaultSize = new SizeInt32(980, 720);
         _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
 
-        // Silent background credits retriever, false = don't show, just tries to get it
-        _ = CreditsUpdater.GetCredits(false);
+        // Version, title and initial logs
+        var version = Windows.ApplicationModel.Package.Current.Id.Version;
+        var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
+        appVersion = versionString;
+
+        Log($"App Version: {versionString}" + new string('\n', 2) +
+             "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
 
         // Do upon app closure
         this.Closed += (s, e) =>
@@ -206,38 +211,35 @@ public sealed partial class MainWindow : Window
         // Things to do after mainwindow is initialized
         this.Activated += MainWindow_Activated;
     }
-    private void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
+    private async void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
     {
-        // Version and initial logs
-        var version = Windows.ApplicationModel.Package.Current.Id.Version;
-        var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
-        appVersion = versionString;
+        // Unsubscribe to avoid running this again
+        this.Activated -= MainWindow_Activated;
 
-        Log($"App Version: {versionString}" + new string('\n', 2) +
-             "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
+        // Give the window time to render for the first time
+        await Task.Delay(75);
 
         // Load settings, update ui later, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
         UpdateUI();
 
+        // Locate packs, also triggers a lamp flash
         LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
 
         // Set reinstall latest packs button visuals based on cache status
-        // TODO: Make a helper method for pack updates, check cache against remote, if newer available, go with the "else" block
         if (_updater.HasDeployableCache())
         {
-            UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Archive icon
+            UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Syncfolder icon
             UpdateVanillaRTXButtonText.Text = "Reinstall Latest Packs";
         }
         else
         {
-            UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default
+            UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default cloud icon
             UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
         }
 
-        // Lazy PSA retrieval, show whenever or if retrieved
+        // Lazy PSA retrieval, shows whenever or if ready
         _ = Task.Run(async () =>
         {
             var psa = await PSAUpdater.GetPSAAsync();
@@ -247,15 +249,15 @@ public sealed partial class MainWindow : Window
             }
         });
 
+        // Silent background credits retriever, false = don't show, just tries to get it for the hover event of donate button later
+        _ = CreditsUpdater.GetCredits(false);
+
         // Warning if MC is running
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
         {
             var buttonName = LaunchButtonText.Text;
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
-
-        // Unsubscribe to avoid running this again
-        this.Activated -= MainWindow_Activated;
     }
 
 
