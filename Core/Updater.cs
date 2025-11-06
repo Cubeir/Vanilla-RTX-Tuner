@@ -100,7 +100,7 @@ public class AppUpdater
                 );
                 if (!versionMatch.Success)
                 {
-                    return (false, $"⚠️ Could not extract version from filename: {fileName}");
+                    return (false, $"⚠️ Could not extract version information from: {fileName}");
                 }
 
                 string extractedVersion = versionMatch.Groups[1].Value;
