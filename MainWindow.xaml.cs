@@ -36,36 +36,38 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Retire use of MLD2 assets and older font styles
+Unify the app's font in app.xaml under one style, segoe UI, default win11, consistent
+Remove all of the individual font definitions from mainwindow and packbrowser window XAMLs, make it global.
+
 - Test and document all of the new features, improve them as you go
 Finalize the custom pack selection, new tuner lamp behavior, and locate packs artifical clicks
 IT all SHOULD be working well just, lots of testing IS needed.
 Discovering potential edge cases also remains
 
-- IDEA FOR EMISSIVES, Remove Dampening, let it ride in infinite mathematical space then shrink it back, csn this apply to more processors? 
-i.e. 3, 64, and 128 get tripled emissive ALL. 9, 183, 366 whatever which is Out of range, Shrink all by the same % until highest is 255!! Preserves ALL details easily AS YOU INTENDED.
+- The current dampening logic of emissivity multiplier is good.
+The unbound multiplication then scaling down method works better for normals/heightmap contrast adjustments
+Its perfect there, so leave that be. And leave emissivity multiplier be as well?
 
 - Fog slider development:
 
 Make fog multiplier partially impact water scattering (& absorbtion?)
 Here's a couple of things to consider:
-official fog docs say there is a density param for fog, Vanilla RTX doesn't use it
-Vanilla RTX doesn't use it because it doesn't work! test again, maybe there's been a bug
-If it works, update water to use density param in its fog
-Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is a little unpredictable since both are compounded for the final color
+official fog docs say there is a density param for water fog, Vanilla RTX doesn't use it, because it still doesn't work after many years
+If it one day does work, use that param
+Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is unpredictable since both are compounded for the final color
 
-Fog intensity increase beyond 1.0: Use the excess to increase the scattering amount of Air by a certain %
-e.g. someone does a 10x on a fog that is already 1.0 in density
-its scattering triplets will be multipled by a toned-down number, e.g. a 10x results in a 2.5x for scattering valuesm a quarter
+Get rid of the overly bloated stupid dampening nonsense come up with something better and cleaner overall
+No need to spill excess density to scattering or otherwise -- too complicated and unpredictable with Vanilla RTX's current fog implementation which heavily relies on absorbtion
 
-Get rid of the overly bloated stupid dampening nonsense come up with something better
+Or come up with something better.
 
 - Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
 
 - Add a convenient way to clear ALL caches + temp files they reference, e.g. all potential file paths, as well as windows storage entries
 This is for more advanced users who want to do a full reset of the app without reinstalling
 A way to invalidate ALL caches
-
-IDEA: Double clicking "Reset" button?
+IDEA: Do it by double clicking "Reset" button? (Hard reset)
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify the logging
@@ -604,7 +606,7 @@ public sealed partial class MainWindow : Window
                 iconOverlayImageBox.Opacity = 0;
 
                 var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
+                var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
                 await Task.WhenAll(superBaseTask, superHaloTask);
 
                 await Task.Delay(rng.Next(300, 800));
@@ -661,7 +663,7 @@ public sealed partial class MainWindow : Window
                             {
                                 await SetImageAsync(iconImageBox, superOnPath);
                                 iconOverlayImageBox.Opacity = 0;
-                                var superTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
+                                var superTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
                                 await Task.Delay(75, token);
 
                                 await SetImageAsync(iconImageBox, onPath);
@@ -677,7 +679,7 @@ public sealed partial class MainWindow : Window
                             iconOverlayImageBox.Opacity = 0;
 
                             var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                            var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
+                            var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
                             await Task.WhenAll(superBaseTask, superHaloTask);
 
                             await Task.Delay(superFlashDuration, token);
@@ -755,7 +757,7 @@ public sealed partial class MainWindow : Window
                 iconOverlayImageBox.Opacity = 0;
 
                 var superBaseTask = AnimateOpacity(iconImageBox, 1.0, fadeAnimationMs);
-                var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.8, fadeAnimationMs);
+                var superHaloTask = AnimateOpacity(iconHaloImageBox, 0.6, fadeAnimationMs);
                 await Task.WhenAll(superBaseTask, superHaloTask);
 
                 await Task.Delay(duration, CancellationToken.None);
