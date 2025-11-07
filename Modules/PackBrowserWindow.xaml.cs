@@ -51,6 +51,8 @@ public sealed partial class PackBrowserWindow : Window
 
     private async void PackBrowserWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        await Task.Delay(25);
+
         if (args.WindowActivationState != WindowActivationState.Deactivated)
         {
             this.Activated -= PackBrowserWindow_Activated;

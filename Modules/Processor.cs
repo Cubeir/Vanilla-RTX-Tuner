@@ -115,7 +115,7 @@ public class Processor
         if (ButcheredHeightmapAlpha != Defaults.ButcheredHeightmapAlpha)
         {
             foreach (var p in packs)
-                ProcessRoughingUp(p);
+                ProcessHeightmaps(p);
         }
     }
 
