@@ -59,7 +59,6 @@
                 <Grid HorizontalAlignment="Center"
                       VerticalAlignment="Center">
                     <TextBlock Text="Select Another Resource Pack"
-                               FontFamily="Segoe UI"
                                Margin="0,6,0,5"
                                VerticalAlignment="Center"
                                IsTextScaleFactorEnabled="False"

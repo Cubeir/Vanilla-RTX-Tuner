@@ -62,9 +62,9 @@
 
         <!-- Titlebar Buttons -->
         <Button x:Name="HelpButton"
+                Style="{StaticResource ButtonSegIcons}"
                 Grid.ColumnSpan="2"
                 Content="&#xE897;"
-                FontFamily="Segoe MDL2 Assets"
                 Width="40"
                 Height="32"
                 CornerRadius="0"
@@ -79,9 +79,9 @@
                 IsTextScaleFactorEnabled="False" />
 
         <Button x:Name="DonateButton"
+                Style="{StaticResource ButtonSegIcons}"
                 Grid.ColumnSpan="2"
                 Content="&#xEB51;"
-                FontFamily="Segoe MDL2 Assets"
                 Width="40"
                 Height="32"
                 HorizontalAlignment="Right"
@@ -98,9 +98,9 @@
                 IsTextScaleFactorEnabled="False" />
 
         <Button x:Name="AppUpdaterButton"
+                Style="{StaticResource ButtonSegIcons}"
                 Grid.ColumnSpan="2"
                 Content="&#xE895;"
-                FontFamily="Segoe MDL2 Assets"
                 Width="40"
                 Height="32"
                 HorizontalAlignment="Right"
@@ -113,7 +113,6 @@
                 Click="AppUpdaterButton_Click"
                 ToolTipService.ToolTip="Check for update"
                 IsTextScaleFactorEnabled="False" />
-
 
 
         <!-- Titlebar Center Content -->
@@ -182,7 +181,6 @@
             <TextBlock x:Name="TitleBarText"
                        Text="Vanilla RTX Tuner"
                        Grid.Column="1"
-                       FontFamily="Segoe UI"
                        Margin="0,6,0,5"
                        VerticalAlignment="Center"
                        Canvas.ZIndex="0"
@@ -513,13 +511,13 @@
                                       AutomationProperties.Name="Emissivity Ambient Light Toggle"
                                       Toggled="EmissivityAmbientLightToggle_Toggled" />
                         <TextBlock x:Name="EmissivityWarningIcon"
+                                   Style="{StaticResource TextBlockSegIcons}"
                                    Grid.Column="1"
                                    Text="&#xE814;"
-                                   FontFamily="Segoe MDL2 Assets"
-                                   FontSize="28"
+                                   FontSize="35"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Right"
-                                   Margin="0,0,16,0"
+                                   Margin="0,0,13.5,0"
                                    Visibility="Collapsed"
                                    ToolTipService.ToolTip="Higher emissivity multipliers after tuning more than once with this option can break the pack. Keep Emissive Multiplier at default (1.0) if you've previously tuned the pack with this option enabled." />
                     </Grid>
