@@ -41,6 +41,9 @@ Finalize the custom pack selection, new tuner lamp behavior, and locate packs ar
 IT all SHOULD be working well just, lots of testing IS needed.
 Discovering potential edge cases also remains
 
+- IDEA FOR EMISSIVES, Remove Dampening, let it ride in infinite mathematical space then shrink it back, csn this apply to more processors? 
+i.e. 3, 64, and 128 get tripled emissive ALL. 9, 183, 366 whatever which is Out of range, Shrink all by the same % until highest is 255!! Preserves ALL details easily AS YOU INTENDED.
+
 - Fog slider development:
 
 Make fog multiplier partially impact water scattering (& absorbtion?)
@@ -217,15 +220,11 @@ public sealed partial class MainWindow : Window
         this.Activated -= MainWindow_Activated;
 
         // Give the window time to render for the first time
-        await Task.Delay(75);
+        await Task.Delay(50);
 
         // Load settings, update ui later, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
-        UpdateUI();
-
-        // Locate packs, also triggers a lamp flash
-        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
 
         // Set reinstall latest packs button visuals based on cache status
         if (_updater.HasDeployableCache())
@@ -258,6 +257,12 @@ public sealed partial class MainWindow : Window
             var buttonName = LaunchButtonText.Text;
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
+
+        // Slower UI update for an smoother startup
+        UpdateUI(0.31415926535);
+
+        // Locate packs, also triggers a lamp flash
+        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
     }
 
 
@@ -965,6 +970,7 @@ public sealed partial class MainWindow : Window
     }
 
 
+
     private async void MojankEasterEggButton_Click(object sender, RoutedEventArgs e)
     {
         _ = BlinkingLamp(true, true);
@@ -979,71 +985,9 @@ public sealed partial class MainWindow : Window
 
         if (_mojankClickCount == 3)
         {
-            string message;
-            switch (Random.Shared.Next(19))
-            {
-                case 0:
-                    message = "Easy there pal, I'm about to void your Minecraft warranty.";
-                    break;
-                case 1:
-                    message = "Careful now... you're one click away from discovering something.";
-                    break;
-                case 2:
-                    message = "You're poking... something...";
-                    break;
-                case 3:
-                    message = "The next click can't be undone, kidding.";
-                    break;
-                case 4:
-                    message = "Bold move, explorer. The truth of Mojang awaits.";
-                    break;
-                case 5:
-                    message = "I wouldn't stop there if I were you.";
-                    break;
-                case 6:
-                    message = "You’ve gone too far to pretend you didn’t mean it.";
-                    break;
-                case 7:
-                    message = "Strange things happen to those who click too much.";
-                    break;
-                case 8:
-                    message = "This is where the curious usually turn back.";
-                    break;
-                case 9:
-                    message = "Go on then... see what happens.";
-                    break;
-                case 10:
-                    message = "Wanna take the red pill?";
-                    break;
-                case 11:
-                    message = "I have a great feeling about this.";
-                    break;
-                case 12:
-                    message = "The cake was a lie. This isn’t.";
-                    break;
-                case 13:
-                    message = "I’m afraid I can’t let you do that, [Steve].";
-                    break;
-                case 14:
-                    message = "Time to wake Mojang up, Samurai. We've got a game to fix.";
-                    break;
-                case 15:
-                    message = "Toss a coin into your sense of judgment.";
-                    break;
-                case 16:
-                    message = "You were warned not to push that button, Dovahkiin.";
-                    break;
-                case 17:
-                    message = "Some of these lines are cheesy at best, BUT";
-                    break;
-                default:
-                    message = "War never changes. Neither does Mojang’s [non-existent] QA.";
-                    break;
-            }
-
+            var message = MojankMessages.WarningMessages[Random.Shared.Next(MojankMessages.WarningMessages.Length)];
             Log(message + " Continue and you might see a UAC prompt...", LogLevel.Warning);
         }
-
 
         if (_mojankClickCount >= 4)
         {

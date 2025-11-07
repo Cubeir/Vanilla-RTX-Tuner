@@ -8,6 +8,33 @@ using Vanilla_RTX_Tuner_WinUI.Modules;
 using Windows.Storage;
 
 namespace Vanilla_RTX_Tuner_WinUI.Modules;
+public static class MojankMessages
+{
+    public static readonly string[] WarningMessages = new[]
+    {
+        "Easy there pal, I'm about to void your Minecraft warranty.",
+        "Careful now...",
+        "You're one click away from the akashic records.",
+        "You're poking... something...",
+        "The next click can't be undone!\njust kidding.",
+        "Bold move, curious one. The truth of Mojang awaits.",
+        "I wouldn't stop there if I were you.",
+        "You've gone too far to pretend you didn't mean it.",
+        "Strange things happen to those who click too much.",
+        "This is where the curious usually turn back.",
+        "Go on then... see what happens.",
+        "Wanna take ze red pill!??",
+        "I have a greeeaaaat feeling about this!",
+        "The cake was a lie, this isn't.",
+        "I can't let you do that, [Steve].",
+        "I can't let you do that, [Alex].",
+        "Time to wake Mojang up, Samurai. We've got a game to fix.",
+        "Toss a coin into your sense of judgment.",
+        "You were warned not to push that button, Dovahkiin.",
+        "Some of these lines are cheesy at best, BUT",
+        "War never changes. Neither does Mojang's non-existent QA."
+    };
+}
 
 public static class MojankEasterEgg
 {
