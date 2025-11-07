@@ -385,9 +385,10 @@
             <!-- Reset Sliders Button -->
             <Button x:Name="ResetButton"
                     Click="ResetButton_Click"
-                    Width="90"
+                    Width="92"
+                    Height="40"
                     Padding="7"
-                    Margin="8,150,16,16"
+                    Margin="8,129,16,16"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     FontWeight="SemiBold"
@@ -659,7 +660,7 @@
             <Grid Margin="8,16,16,16"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Bottom"
-                  Height="80">
+                  Height="90">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="10" />
@@ -682,7 +683,7 @@
                         ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is finished.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xE9F5;"
+                        <FontIcon Glyph="&#xF4A5;"
                                   FontSize="18"
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center" />
