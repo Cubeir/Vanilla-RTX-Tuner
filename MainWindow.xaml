@@ -772,18 +772,20 @@
             <Grid.Background>
                 <SolidColorBrush Color="{ThemeResource SplashBackgroundColor}" />
             </Grid.Background>
-
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center">
-                <!-- 3 images, animated startup! -->
-                <Image x:Name="SplashLamp"
-                       Source="ms-appx:///Assets/icons/SplashScreen.png"/>
-
-                <Image x:Name="SplashLampSuper"
-                       Source="ms-appx:///Assets/icons/SplashScreen.png"/>
-
+                <!-- Halo (Bottom layer, larger) -->
                 <Image x:Name="SplashLampHalo"
-                       Source="ms-appx:///Assets/icons/SplashScreen.png"/>
+                       Source="ms-appx:///Assets/icons/SplashScreen.Halo.png"
+                       Opacity="0.2" />
+                <!-- Base lamp -->
+                <Image x:Name="SplashLamp"
+                       Source="ms-appx:///Assets/icons/SplashScreen.Regular.png"
+                       Opacity="1.0" />
+                <!-- Super overlay -->
+                <Image x:Name="SplashLampSuper"
+                       Source="ms-appx:///Assets/icons/SplashScreen.Super.png"
+                       Opacity="0.0" />
             </Grid>
         </Grid>
 

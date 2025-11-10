@@ -31,15 +31,15 @@
                         Value="Segoe Fluent Icons" />
             </Style>
             <ResourceDictionary.ThemeDictionaries>
-
-                <!-- Light theme -->
-                <ResourceDictionary x:Key="Light">
-                    <Color x:Key="SplashBackgroundColor">#FFE3E3E3</Color>
-                </ResourceDictionary>
-
+                
                 <!-- Dark theme -->
                 <ResourceDictionary x:Key="Dark">
                     <Color x:Key="SplashBackgroundColor">#FF202020</Color>
+                </ResourceDictionary>
+                
+                <!-- Light theme -->
+                <ResourceDictionary x:Key="Light">
+                    <Color x:Key="SplashBackgroundColor">#FFE3E3E3</Color>
                 </ResourceDictionary>
 
             </ResourceDictionary.ThemeDictionaries>

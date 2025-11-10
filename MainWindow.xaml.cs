@@ -242,6 +242,8 @@ public sealed partial class MainWindow : Window
         // Give the window time to render for the first time
         await Task.Delay(50);
 
+        _ = AnimateSplashFlash(750);
+
         // Load settings, update ui later, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
@@ -277,7 +279,7 @@ public sealed partial class MainWindow : Window
 
         // Brief delay to ensure everything is fully rendered, then fade out splash screen
         // ================ Do all UI updates you DON'T want to be seen BEFORE here ======================= and what you want seen after splash
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(1100);
         await FadeOutSplash();
 
         // Locate packs, also triggers a lamp flash
@@ -870,7 +872,63 @@ public sealed partial class MainWindow : Window
             }
         }
     }
+    private async Task AnimateSplashFlash(double splashDurationMs)
+    {
+        if (SplashLamp == null || SplashLampSuper == null || SplashLampHalo == null)
+            return;
 
+        const double fadeAnimationMs = 75;
+        const double minFlashDuration = 300;
+        const double maxFlashDuration = 800;
+
+        // Calculate flash timing based on splash duration
+        // Flash should start after a brief delay and complete before fadeout
+        double availableTime = splashDurationMs - 400; // Reserve 400ms for final fadeout
+        double flashStart = Math.Max(200, availableTime * 0.3); // Start at 30% of available time
+        double flashDuration = Math.Clamp(availableTime * 0.4, minFlashDuration, maxFlashDuration);
+
+        // Initial state: normal lamp with low halo
+        SplashLamp.Opacity = 1.0;
+        SplashLampSuper.Opacity = 0.0;
+        SplashLampHalo.Opacity = 0.2;
+
+        // Wait for flash start
+        await Task.Delay((int)flashStart);
+
+        // Superflash: fade in super overlay and boost halo
+        var superFadeIn = AnimateOpacitySplash(SplashLampSuper, 1.0, fadeAnimationMs);
+        var haloBoost = AnimateOpacitySplash(SplashLampHalo, 0.6, fadeAnimationMs);
+        await Task.WhenAll(superFadeIn, haloBoost);
+
+        // Hold the superflash
+        await Task.Delay((int)flashDuration);
+
+        // Fade back to normal
+        var superFadeOut = AnimateOpacitySplash(SplashLampSuper, 0.0, fadeAnimationMs);
+        var haloNormal = AnimateOpacitySplash(SplashLampHalo, 0.2, fadeAnimationMs);
+        await Task.WhenAll(superFadeOut, haloNormal);
+
+        async Task AnimateOpacitySplash(FrameworkElement element, double targetOpacity, double durationMs)
+        {
+            var storyboard = new Storyboard();
+            var animation = new DoubleAnimation
+            {
+                To = targetOpacity,
+                Duration = TimeSpan.FromMilliseconds(durationMs),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+            };
+
+            Storyboard.SetTarget(animation, element);
+            Storyboard.SetTargetProperty(animation, "Opacity");
+            storyboard.Children.Add(animation);
+
+            var tcs = new TaskCompletionSource<bool>();
+            storyboard.Completed += (s, e) => tcs.SetResult(true);
+
+            storyboard.Begin();
+            await tcs.Task;
+        }
+    }
 
     // ISSUE: Background Preview vessel remains visible after tuning for some reason, maybe this isn't the culprit, because UpdateUI after being called by Reset button works
     public async void UpdateUI(double animationDurationSeconds = 0.12)
