@@ -354,7 +354,7 @@ public static class RanOnceFlag
 {
     private static readonly HashSet<string> _flags = new();
 
-    public static bool Has(string key) => _flags.Contains(key);
+    public static bool Has(string key) => _flags.Contains(key); // Below does the same as this one
 
     public static bool Set(string key)
     {
@@ -365,6 +365,6 @@ public static class RanOnceFlag
         return true;
     }
 
-    public static bool Unset(string key) => _flags.Remove(key); // ✅ new
+    public static bool Unset(string key) => _flags.Remove(key);
 }
 

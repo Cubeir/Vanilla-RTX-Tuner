@@ -593,7 +593,7 @@
                             Spacing="0">
                     <TextBlock Text="Roughen Up (0-25)"
                                FontWeight="Bold"
-                               ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact lower values more. (Affects: All Packs)" />
+                               ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact glossy surfaces the most. (Affects: All Packs)" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"

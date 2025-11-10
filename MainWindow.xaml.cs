@@ -36,9 +36,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Retire use of MLD2 assets and older font styles
-Unify the app's font in app.xaml under one style, segoe UI, default win11, consistent
-Remove all of the individual font definitions from mainwindow and packbrowser window XAMLs, make it global.
+- Implement a way for current custom pack selection be visible even outside of logs
 
 - Test and document all of the new features, improve them as you go
 Finalize the custom pack selection, new tuner lamp behavior, and locate packs artifical clicks
@@ -82,6 +80,9 @@ A variable is getting constantly updated with new logs, a worker in main UI thre
 - Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
 
+- Once reaching the end of development, expose as many params as you can
+Most importantly, the hardcoded Minecraft paths, expose those, paths to search in and go to and whatever class that deals with
+MC data folder, whatever and whatever they are cleanly expose them so if you leave the app people can easily change it
 */
 
 public static class TunerVariables
@@ -1179,7 +1180,7 @@ public sealed partial class MainWindow : Window
 
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
-                Log($"Selected {TunerVariables.CustomPackDisplayName} for tuning.", LogLevel.Success);
+                Log($"Selected: {TunerVariables.CustomPackDisplayName}.", LogLevel.Success);
                 _ = BlinkingLamp(true, true, 1.0);
             }
         };
