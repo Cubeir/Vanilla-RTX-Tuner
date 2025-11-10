@@ -343,17 +343,6 @@ public sealed partial class MainWindow : Window
         // Watches theme changes and adjusts based on theme
         ThemeWatcher(this, theme =>
         {
-            if (theme == ElementTheme.Light)
-            {
-                LightThemeBackground.Visibility = Visibility.Visible;
-                TitleBarImageBrush.Opacity = 0.1;
-            }
-            else
-            {
-                LightThemeBackground.Visibility = Visibility.Collapsed;
-                TitleBarImageBrush.Opacity = 0.3;
-            }
-
             var titleBar = appWindow.TitleBar;
             if (titleBar == null) return;
 

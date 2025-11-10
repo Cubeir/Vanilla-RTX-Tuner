@@ -34,7 +34,7 @@
             <Rectangle.Fill>
                 <ImageBrush x:Name="TitleBarImageBrush"
                             ImageSource="ms-appx:///Assets/titlebar.background.png"
-                            Opacity="0.0"
+                            Opacity="{ThemeResource TitleBarImageBrushOpacity}"
                             Stretch="Fill"
                             AlignmentX="Left"
                             AlignmentY="Top" />
@@ -47,7 +47,7 @@
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Stretch"
                    IsHitTestVisible="False"
-                   Visibility="Collapsed"
+                   Visibility="{ThemeResource LightThemeBackgroundVisibility}"
                    CacheMode="BitmapCache"
                    Canvas.ZIndex="-1">
             <Rectangle.Fill>

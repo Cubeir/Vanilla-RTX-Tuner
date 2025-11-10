@@ -31,15 +31,19 @@
                         Value="Segoe Fluent Icons" />
             </Style>
             <ResourceDictionary.ThemeDictionaries>
-                
+
                 <!-- Dark theme -->
                 <ResourceDictionary x:Key="Dark">
                     <Color x:Key="SplashBackgroundColor">#FF202020</Color>
+                    <x:Double x:Key="TitleBarImageBrushOpacity">0.3</x:Double>
+                    <Visibility x:Key="LightThemeBackgroundVisibility">Collapsed</Visibility>
                 </ResourceDictionary>
-                
+
                 <!-- Light theme -->
                 <ResourceDictionary x:Key="Light">
                     <Color x:Key="SplashBackgroundColor">#FFE3E3E3</Color>
+                    <x:Double x:Key="TitleBarImageBrushOpacity">0.1</x:Double>
+                    <Visibility x:Key="LightThemeBackgroundVisibility">Visible</Visibility>
                 </ResourceDictionary>
 
             </ResourceDictionary.ThemeDictionaries>
