@@ -27,6 +27,7 @@ using Windows.Graphics;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI;
+using Microsoft.UI.Xaml.Input;
 using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
 using static Vanilla_RTX_Tuner_WinUI.TunerVariables.Persistent;
@@ -36,29 +37,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-
-- Get rid of theme watcher if all of it can be moved to resource dictionaries in app.xaml
-
-- Add a convenient way to clear ALL caches + temp files they reference, e.g. all potential file paths, as well as windows storage entries
-This is for more advanced users who want to do a full reset of the app without reinstalling
-A way to invalidate ALL caches
-IDEA:hold for 3 seconds to WIPE ALL app storage keys, potential download cache locations
-Have something to log all the keys that get wiped, examine, ensure this doesn't cause unexpected issues and is reliable that way
-you use windows storage lots so, check exactly what, would like to know everything/where it is used and why and for what
-
-Then restart the app too? good idea, it is kind of like reinstalling the app, without doing so
-
-
 - Implement a way for current custom pack selection be visible even outside of logs
-
-- Test and document all of the new features, improve them as you go
-Finalize the custom pack selection, new tuner lamp behavior, and locate packs artifical clicks
-IT all SHOULD be working well just, lots of testing IS needed.
-Discovering potential edge cases also remains
-
-- The current dampening logic of emissivity multiplier is good.
-The unbound multiplication then scaling down method works better for normals/heightmap contrast adjustments
-Its perfect there, so leave that be. And leave emissivity multiplier be as well?
 
 - Fog slider development:
 
@@ -914,6 +893,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
+
     // ISSUE: Background Preview vessel remains visible after tuning for some reason, maybe this isn't the culprit, because UpdateUI after being called by Reset button works
     public async void UpdateUI(double animationDurationSeconds = 0.12)
     {
@@ -1566,6 +1546,17 @@ public sealed partial class MainWindow : Window
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
+        // HARD RESET 
+        var shiftState = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
+        if (shiftState.HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+        {   
+            ToggleControls(this, false, ["LogCopyButton"]);
+            _ = BlinkingLamp(true, true, 0.0);
+            _ = WipeAllStorageData();
+            return;
+        }
+        // HARD RESET 
+
         // Defaults
         FogMultiplier = Defaults.FogMultiplier;
         EmissivityMultiplier = Defaults.EmissivityMultiplier;
@@ -1601,7 +1592,87 @@ public sealed partial class MainWindow : Window
         }
 
     }
+    private async Task WipeAllStorageData()
+    {
+        try
+        {
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            var roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
 
+            Log("Wiping all of app's storage data...", LogLevel.Warning);
+            await Task.Delay(200);
+
+            // Wipe local settings
+            var localKeys = localSettings.Values.Keys.ToList();
+            foreach (var key in localKeys)
+            {
+                localSettings.Values.Remove(key);
+                Log($"Deleted: {key}", LogLevel.Informational);
+                await Task.Delay(20);
+            }
+
+            // Wipe roaming settings (even though you don't use it, because of its limits and that you don't need it)
+            var roamingKeys = roamingSettings.Values.Keys.ToList();
+            foreach (var key in roamingKeys)
+            {
+                roamingSettings.Values.Remove(key);
+                Log($"Deleted: {key}", LogLevel.Informational);
+                await Task.Delay(20);
+            }
+            Log($"Wiped {localKeys.Count + roamingKeys.Count} keys.", LogLevel.Success);
+
+
+            // Temp folder locations, TODO: This must be updated IF Helpers' Download method fallbacks are updated!
+            Log("Checking for temporary cache folders...", LogLevel.Informational);
+            var cacheFolderChecks = new[]
+            {
+            Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner_cache"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "vanilla_rtx_tuner_cache"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vanilla_rtx_tuner_cache"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner_cache"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "vanilla_rtx_tuner_cache")
+            };
+
+            int deletedFolders = 0;
+            foreach (var cacheFolder in cacheFolderChecks)
+            {
+                try
+                {
+                    if (Directory.Exists(cacheFolder))
+                    {
+                        Directory.Delete(cacheFolder, true);
+                        Log($"Deleted cache folder: {cacheFolder}", LogLevel.Informational);
+                        deletedFolders++;
+                        await Task.Delay(15);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Could not delete {cacheFolder}: {ex.Message}", LogLevel.Warning);
+                    await Task.Delay(15);
+                }
+            }
+
+            if (deletedFolders > 0)
+            {
+                Log($"Deleted {deletedFolders} cache folder(s).", LogLevel.Success);
+            }
+            else
+            {
+                Log("No cache folders found.", LogLevel.Informational);
+            }
+
+            await Task.Delay(500);
+            _ = BlinkingLamp(true, true, 0.5);
+            Log("Hard reset complete! Restarting in a moment...", LogLevel.Success);
+            await Task.Delay(3000);
+            var restartResult = Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Empty);
+        }
+        catch (Exception ex)
+        {
+            Log($"Error during hard reset: {ex.Message}", LogLevel.Error);
+        }
+    }
 
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
