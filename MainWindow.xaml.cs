@@ -36,6 +36,21 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+
+- Get rid of theme watcher if all of it can be moved to resource dictionaries in app.xaml
+
+- Add a convenient way to clear ALL caches + temp files they reference, e.g. all potential file paths, as well as windows storage entries
+This is for more advanced users who want to do a full reset of the app without reinstalling
+A way to invalidate ALL caches
+IDEA: Do it by double clicking "Reset" button? (Hard reset)
+
+Or hold for 3 seconds to WIPE ALL app storage keys, potential download cache locations
+Have something to log all the keys that get wiped, examine, ensure this doesn't cause unexpected issues and is reliable that way
+you use windows storage lots so, check exactly what, would like to know everything/where it is used and why and for what
+
+Then restart the app too? good idea, it is kind of like reinstalling the app, without doing so
+
+
 - Implement a way for current custom pack selection be visible even outside of logs
 
 - Test and document all of the new features, improve them as you go
@@ -60,12 +75,9 @@ No need to spill excess density to scattering or otherwise -- too complicated an
 
 Or come up with something better.
 
-- Window goes invisible if previous save state was a monitor that is now unplugged, bound checking is messed up too
-
-- Add a convenient way to clear ALL caches + temp files they reference, e.g. all potential file paths, as well as windows storage entries
-This is for more advanced users who want to do a full reset of the app without reinstalling
-A way to invalidate ALL caches
-IDEA: Do it by double clicking "Reset" button? (Hard reset)
+- With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
+It is too integerated, previewer class has some funky behavior tied to it, circumvented by it, 3am brainfart
+It's a mess but it works perfectly, so, only fix it once you have an abundance of time...!
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify the logging
@@ -190,6 +202,12 @@ public sealed partial class MainWindow : Window
         SetMainWindowProperties();
         InitializeComponent();
 
+        // Show splash screen immedietly
+        if (SplashOverlay != null)
+        {
+            SplashOverlay.Visibility = Visibility.Visible;
+        }
+
         _windowStateManager = new WindowStateManager(this, false, msg => Log(msg));
         _progressManager = new ProgressBarManager(ProgressBar);
 
@@ -217,6 +235,7 @@ public sealed partial class MainWindow : Window
         // Things to do after mainwindow is initialized
         this.Activated += MainWindow_Activated;
     }
+
     private async void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
     {
         // Unsubscribe to avoid running this again
@@ -261,11 +280,43 @@ public sealed partial class MainWindow : Window
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
 
-        // Slower UI update for an smoother startup
+        // Slower UI update for a smoother startup
         UpdateUI(0.31415926535);
 
         // Locate packs, also triggers a lamp flash
         LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+
+        // Brief delay to ensure everything is fully rendered, then fade out splash screen
+        await Task.Delay(TimeSpan.FromSeconds(1.5));
+        await FadeOutSplash();
+
+        async Task FadeOutSplash()
+        {
+            if (SplashOverlay == null) return;
+
+            var fadeOut = new DoubleAnimation
+            {
+                From = 1.0,
+                To = 0.0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+            };
+
+            var storyboard = new Storyboard();
+            Storyboard.SetTarget(fadeOut, SplashOverlay);
+            Storyboard.SetTargetProperty(fadeOut, "Opacity");
+            storyboard.Children.Add(fadeOut);
+
+            var tcs = new TaskCompletionSource<bool>();
+            storyboard.Completed += (s, e) =>
+            {
+                SplashOverlay.Visibility = Visibility.Collapsed;
+                tcs.SetResult(true);
+            };
+
+            storyboard.Begin();
+            await tcs.Task;
+        }
     }
 
 
