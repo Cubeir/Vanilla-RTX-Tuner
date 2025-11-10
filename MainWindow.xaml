@@ -142,7 +142,8 @@
                        Canvas.Top="-54"
                        Opacity="0.25"
                        Canvas.ZIndex="2"
-                       IsHitTestVisible="False" />
+                       IsHitTestVisible="False"
+                       CacheMode="BitmapCache"/>
 
                 <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
@@ -152,7 +153,8 @@
                        Canvas.Top="1"
                        Opacity="1.0"
                        Canvas.ZIndex="3"
-                       IsHitTestVisible="False" />
+                       IsHitTestVisible="False"
+                       CacheMode="BitmapCache"/>
 
                 <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
@@ -162,7 +164,8 @@
                        Canvas.Top="1"
                        Opacity="0.0"
                        Canvas.ZIndex="4"
-                       IsHitTestVisible="False" />
+                       IsHitTestVisible="False"
+                       CacheMode="BitmapCache"/>
 
                 <!-- Button to make lamp interactive + Mojank easter egg -->
                 <Button x:Name="MojankEasterEggButton"
@@ -772,21 +775,37 @@
             <Grid.Background>
                 <SolidColorBrush Color="{ThemeResource SplashBackgroundColor}" />
             </Grid.Background>
-            <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
-                <!-- Halo (Bottom layer, larger) -->
-                <Image x:Name="SplashLampHalo"
-                       Source="ms-appx:///Assets/icons/SplashScreen.Halo.png"
-                       Opacity="0.2" />
-                <!-- Base lamp -->
-                <Image x:Name="SplashLamp"
-                       Source="ms-appx:///Assets/icons/SplashScreen.Regular.png"
-                       Opacity="1.0" />
-                <!-- Super overlay -->
-                <Image x:Name="SplashLampSuper"
-                       Source="ms-appx:///Assets/icons/SplashScreen.Super.png"
-                       Opacity="0.0" />
-            </Grid>
+
+            <Viewbox HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     Margin="208, 208, 208, 208"
+                     Stretch="Uniform">
+                <Grid Width="256"
+                      Height="256">
+                    <Image x:Name="SplashLampHalo"
+                           Source="ms-appx:///Assets/icons/SplashScreen.Halo.png"
+                           Width="1280"
+                           Height="1280"
+                           Margin="-512,-512,-512,-512"
+                           Opacity="0.175"
+                           Stretch="Uniform"
+                           CacheMode="BitmapCache"/>
+                    <Image x:Name="SplashLamp"
+                           Source="ms-appx:///Assets/icons/SplashScreen.Regular.png"
+                           Width="192"
+                           Height="192"
+                           Opacity="1.0"
+                           Stretch="Uniform"
+                           CacheMode="BitmapCache"/>
+                    <Image x:Name="SplashLampSuper"
+                           Source="ms-appx:///Assets/icons/SplashScreen.Super.png"
+                           Width="192"
+                           Height="192"
+                           Opacity="0.0"
+                           Stretch="Uniform"
+                           CacheMode="BitmapCache"/>
+                </Grid>
+            </Viewbox>
         </Grid>
 
         <!-- End of Main Grid-->

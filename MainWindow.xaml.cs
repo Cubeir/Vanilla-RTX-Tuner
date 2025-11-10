@@ -211,15 +211,14 @@ public sealed partial class MainWindow : Window
 
         Instance = this;
 
-        var defaultSize = new SizeInt32(980, 720);
-        _windowStateManager.ApplySavedStateOrDefaults(defaultSize);
+        var defaultSize = new SizeInt32(1000, 650);
+        _windowStateManager.ApplySavedStateOrDefaults();
 
         // Version, title and initial logs
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
         appVersion = versionString;
-
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
 
@@ -242,9 +241,9 @@ public sealed partial class MainWindow : Window
         // Give the window time to render for the first time
         await Task.Delay(50);
 
-        _ = AnimateSplashFlash(750);
+        // Splash Blinking Animation
+        _ = AnimateSplash(450);
 
-        // Load settings, update ui later, image vessels are handled in UpdateUI as well
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
 
@@ -278,14 +277,15 @@ public sealed partial class MainWindow : Window
         }
 
         // Brief delay to ensure everything is fully rendered, then fade out splash screen
-        // ================ Do all UI updates you DON'T want to be seen BEFORE here ======================= and what you want seen after splash
-        await Task.Delay(1100);
+        await Task.Delay(1000);
+
+        // ================ Do all UI updates you DON'T want to be seen BEFORE here, and what you want seen AFTER ======================= 
         await FadeOutSplash();
 
-        // Locate packs, also triggers a lamp flash
+        // Locate packs, always triggers a lamp flash btw, cool!
         LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
-        // Slower UI update for a smoother startup
-        UpdateUI(0.5);
+        // Slower UI update override for a smoother startup
+        UpdateUI(0.31415926535);
 
         async Task FadeOutSplash()
         {
@@ -295,7 +295,7 @@ public sealed partial class MainWindow : Window
             {
                 From = 1.0,
                 To = 0.0,
-                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+                Duration = new Duration(TimeSpan.FromMilliseconds(256)),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
             };
 
@@ -872,14 +872,14 @@ public sealed partial class MainWindow : Window
             }
         }
     }
-    private async Task AnimateSplashFlash(double splashDurationMs)
+    private async Task AnimateSplash(double splashDurationMs)
     {
         if (SplashLamp == null || SplashLampSuper == null || SplashLampHalo == null)
             return;
 
-        const double fadeAnimationMs = 75;
+        const double fadeAnimationMs = 100;
         const double minFlashDuration = 300;
-        const double maxFlashDuration = 800;
+        const double maxFlashDuration = 700;
 
         // Calculate flash timing based on splash duration
         // Flash should start after a brief delay and complete before fadeout
@@ -887,17 +887,12 @@ public sealed partial class MainWindow : Window
         double flashStart = Math.Max(200, availableTime * 0.3); // Start at 30% of available time
         double flashDuration = Math.Clamp(availableTime * 0.4, minFlashDuration, maxFlashDuration);
 
-        // Initial state: normal lamp with low halo
-        SplashLamp.Opacity = 1.0;
-        SplashLampSuper.Opacity = 0.0;
-        SplashLampHalo.Opacity = 0.2;
-
         // Wait for flash start
         await Task.Delay((int)flashStart);
 
         // Superflash: fade in super overlay and boost halo
         var superFadeIn = AnimateOpacitySplash(SplashLampSuper, 1.0, fadeAnimationMs);
-        var haloBoost = AnimateOpacitySplash(SplashLampHalo, 0.6, fadeAnimationMs);
+        var haloBoost = AnimateOpacitySplash(SplashLampHalo, 0.75, fadeAnimationMs);
         await Task.WhenAll(superFadeIn, haloBoost);
 
         // Hold the superflash
@@ -905,7 +900,7 @@ public sealed partial class MainWindow : Window
 
         // Fade back to normal
         var superFadeOut = AnimateOpacitySplash(SplashLampSuper, 0.0, fadeAnimationMs);
-        var haloNormal = AnimateOpacitySplash(SplashLampHalo, 0.2, fadeAnimationMs);
+        var haloNormal = AnimateOpacitySplash(SplashLampHalo, 0.175, fadeAnimationMs);
         await Task.WhenAll(superFadeOut, haloNormal);
 
         async Task AnimateOpacitySplash(FrameworkElement element, double targetOpacity, double durationMs)
@@ -1284,7 +1279,7 @@ public sealed partial class MainWindow : Window
 
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
-                Log($"Selected: {TunerVariables.CustomPackDisplayName}.", LogLevel.Success);
+                Log($"Selected: {TunerVariables.CustomPackDisplayName}", LogLevel.Success);
                 _ = BlinkingLamp(true, true, 1.0);
             }
         };
