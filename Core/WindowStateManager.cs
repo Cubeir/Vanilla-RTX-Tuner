@@ -6,7 +6,9 @@ using Windows.Graphics;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
 
-// Replace this mess with something battle-tested
+/// <summary>
+/// Window state manager
+/// </summary>
 public class WindowStateManager : IDisposable
 {
     private AppWindow? _appWindow;
@@ -19,7 +21,6 @@ public class WindowStateManager : IDisposable
     private const int DEFAULT_WINDOW_WIDTH = 980;
     private const int DEFAULT_WINDOW_HEIGHT = 720;
 
-    // DPI awareness
     private double? _cachedDpiScale;
     private const double DEFAULT_DPI = 96.0;
 
@@ -65,7 +66,6 @@ public class WindowStateManager : IDisposable
             return;
         }
 
-        // Get default size with proper DPI scaling
         var logicalDefaultSize = new SizeInt32(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
         var physicalDefaultSize = LogicalToPhysical(logicalDefaultSize);
 
@@ -78,10 +78,8 @@ public class WindowStateManager : IDisposable
             var state = savedState.Value;
             Log($"Loaded saved state: {state.Width}x{state.Height} at ({state.X},{state.Y})");
 
-            // Validate saved size (in logical coordinates)
             if (state.Width >= MIN_WINDOW_WIDTH && state.Height >= MIN_WINDOW_HEIGHT)
             {
-                // Convert saved logical size to current physical size
                 var savedLogicalSize = new SizeInt32(state.Width, state.Height);
                 sizeToUse = LogicalToPhysical(savedLogicalSize);
                 Log($"Using saved size: {state.Width}x{state.Height} (Physical: {sizeToUse.Width}x{sizeToUse.Height})");
@@ -92,18 +90,17 @@ public class WindowStateManager : IDisposable
                 sizeToUse = physicalDefaultSize;
             }
 
-            // Validate position (convert saved logical to physical)
             var savedLogicalPosition = new PointInt32(state.X, state.Y);
             var savedPhysicalPosition = LogicalToPhysical(savedLogicalPosition);
 
-            if (IsPositionOnValidDisplay(savedPhysicalPosition, sizeToUse))
+            if (IsPositionOnActiveMonitor(savedPhysicalPosition, sizeToUse))
             {
                 positionToUse = savedPhysicalPosition;
                 Log($"Using saved position: ({state.X},{state.Y}) (Physical: {positionToUse.Value.X},{positionToUse.Value.Y})");
             }
             else
             {
-                Log($"Saved position invalid ({state.X},{state.Y}), will center window");
+                Log($"Saved position ({state.X},{state.Y}) not on active monitor, will center window");
             }
         }
         else
@@ -113,11 +110,9 @@ public class WindowStateManager : IDisposable
 
         try
         {
-            // Apply size first
             _appWindow.Resize(sizeToUse);
             Log($"Applied size: {sizeToUse.Width}x{sizeToUse.Height}");
 
-            // Then apply position
             if (positionToUse.HasValue)
             {
                 _appWindow.Move(positionToUse.Value);
@@ -137,7 +132,6 @@ public class WindowStateManager : IDisposable
         catch (Exception ex)
         {
             Log($"Failed to apply window state: {ex.Message}");
-            // Fallback to safe defaults
             try
             {
                 _appWindow.Resize(physicalDefaultSize);
@@ -209,65 +203,109 @@ public class WindowStateManager : IDisposable
     }
 
     [DllImport("user32.dll")]
-    private static extern uint GetDpiForWindow(nint hWnd);
+    private static extern uint GetDpiForWindow(IntPtr hWnd);
 
-    private bool IsPositionOnValidDisplay(PointInt32 position, SizeInt32 size)
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetCursorPos(out POINT lpPoint);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MONITORINFO
+    {
+        public uint cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public uint dwFlags;
+    }
+
+    private const uint MONITOR_DEFAULTTONULL = 0x00000000;
+    private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+
+    /// <summary>
+    /// Only restore position if it's on the SAME monitor where the mouse currently is
+    /// Otherwise center on active monitor. This handles all edge cases perfectly.
+    /// </summary>
+    private bool IsPositionOnActiveMonitor(PointInt32 position, SizeInt32 size)
     {
         try
         {
-            var displayAreas = DisplayArea.FindAll();
-            Log($"Checking position against {displayAreas.Count} displays");
-
-            foreach (var displayArea in displayAreas)
+            // Get the monitor where the mouse cursor currently is (this is the ACTIVE monitor)
+            POINT cursorPos;
+            if (!GetCursorPos(out cursorPos))
             {
-                var bounds = displayArea.OuterBounds;
-
-                // Check if window would be reasonably visible on this display
-                var minVisibleWidth = Math.Min(100, size.Width / 2);
-                var minVisibleHeight = Math.Min(50, size.Height / 2);
-
-                var windowRight = position.X + size.Width;
-                var windowBottom = position.Y + size.Height;
-                var displayRight = bounds.X + bounds.Width;
-                var displayBottom = bounds.Y + bounds.Height;
-
-                var horizontalOverlap = windowRight > bounds.X + minVisibleWidth &&
-                                       position.X < displayRight - minVisibleWidth;
-                var verticalOverlap = windowBottom > bounds.Y + minVisibleHeight &&
-                                     position.Y < displayBottom - minVisibleHeight;
-
-                if (horizontalOverlap && verticalOverlap)
-                {
-                    Log($"Position valid on display: {bounds.X},{bounds.Y} {bounds.Width}x{bounds.Height}");
-                    return true;
-                }
+                Log("Failed to get cursor position");
+                return false;
             }
 
-            Log("Position not valid on any display");
-            return false;
+            var activeMonitor = MonitorFromPoint(cursorPos, MONITOR_DEFAULTTONEAREST);
+            if (activeMonitor == IntPtr.Zero)
+            {
+                Log("Failed to get active monitor from cursor");
+                return false;
+            }
+
+            // Get info about the active monitor
+            var activeMonitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+            if (!GetMonitorInfo(activeMonitor, ref activeMonitorInfo))
+            {
+                Log("Failed to get active monitor info");
+                return false;
+            }
+
+            // Check if the saved window position is on the same monitor
+            var windowCenter = new POINT
+            {
+                X = position.X + size.Width / 2,
+                Y = position.Y + size.Height / 2
+            };
+
+            var savedMonitor = MonitorFromPoint(windowCenter, MONITOR_DEFAULTTONULL);
+
+            if (savedMonitor == IntPtr.Zero)
+            {
+                Log($"Saved position ({position.X},{position.Y}) is not on any monitor");
+                return false;
+            }
+
+            // is the saved position's monitor the same as the active monitor?
+            if (savedMonitor == activeMonitor)
+            {
+                Log($"✓ Saved position is on active monitor (cursor at {cursorPos.X},{cursorPos.Y})");
+                return true;
+            }
+            else
+            {
+                Log($"✗ Saved position is on a DIFFERENT monitor than active (cursor at {cursorPos.X},{cursorPos.Y})");
+                return false;
+            }
         }
         catch (Exception ex)
         {
-            Log($"Display validation failed: {ex.Message}");
-            return IsPositionValidFallback(position);
+            Log($"Monitor validation failed: {ex.Message}");
+            return false;
         }
     }
-
-    private bool IsPositionValidFallback(PointInt32 position)
-    {
-        // Temp
-        const int minX = -51200;
-        const int maxX = 15360;
-        const int minY = -14400;
-        const int maxY = 4320;
-
-        var isValid = position.X >= minX && position.X <= maxX &&
-                      position.Y >= minY && position.Y <= maxY;
-
-        Log($"Fallback validation: ({position.X},{position.Y}) -> {isValid}");
-        return isValid;
-    }
-
     private void CenterWindow(SizeInt32 windowSize)
     {
         try
@@ -353,16 +391,16 @@ public class WindowStateManager : IDisposable
             var logicalSize = PhysicalToLogical(currentSize);
             var logicalPosition = PhysicalToLogical(currentPosition);
 
-            // Validation checks
             if (logicalSize.Width < MIN_WINDOW_WIDTH || logicalSize.Height < MIN_WINDOW_HEIGHT)
             {
                 Log($"Not saving - size too small: {logicalSize.Width}x{logicalSize.Height}");
                 return;
             }
 
-            if (!IsPositionValidFallback(currentPosition))
+            // Only save if on active monitor (where mouse is)
+            if (!IsPositionOnActiveMonitor(currentPosition, currentSize))
             {
-                Log($"Not saving - invalid position: {logicalPosition.X},{logicalPosition.Y}");
+                Log($"Not saving - position ({logicalPosition.X},{logicalPosition.Y}) not on active monitor");
                 return;
             }
 
@@ -405,7 +443,6 @@ public class WindowStateManager : IDisposable
         _cachedDpiScale = null;
     }
 
-    // utility methods
     public void SaveCurrentState() => SaveWindowState();
 
     public bool HasSavedState() => LoadWindowState().HasValue;
