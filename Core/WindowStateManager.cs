@@ -92,6 +92,7 @@ public class WindowStateManager : IDisposable
 
             var savedLogicalPosition = new PointInt32(state.X, state.Y);
             var savedPhysicalPosition = LogicalToPhysical(savedLogicalPosition);
+       
 
             if (IsPositionOnActiveMonitor(savedPhysicalPosition, sizeToUse))
             {
@@ -265,7 +266,7 @@ public class WindowStateManager : IDisposable
                 return false;
             }
 
-            // Get info about the active monitor
+            // Get bounds of the active monitor
             var activeMonitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
             if (!GetMonitorInfo(activeMonitor, ref activeMonitorInfo))
             {
@@ -274,29 +275,44 @@ public class WindowStateManager : IDisposable
             }
 
             // Check if the saved window position is on the same monitor
+            // We check the center point of the window
             var windowCenter = new POINT
             {
                 X = position.X + size.Width / 2,
                 Y = position.Y + size.Height / 2
             };
 
-            var savedMonitor = MonitorFromPoint(windowCenter, MONITOR_DEFAULTTONULL);
+            var savedMonitor = MonitorFromPoint(windowCenter, MONITOR_DEFAULTTONEAREST);
 
             if (savedMonitor == IntPtr.Zero)
             {
-                Log($"Saved position ({position.X},{position.Y}) is not on any monitor");
+                Log($"Saved position ({position.X},{position.Y}) - failed to get monitor");
                 return false;
             }
 
-            // is the saved position's monitor the same as the active monitor?
-            if (savedMonitor == activeMonitor)
+            // Get bounds of the saved monitor
+            var savedMonitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+            if (!GetMonitorInfo(savedMonitor, ref savedMonitorInfo))
             {
-                Log($"✓ Saved position is on active monitor (cursor at {cursorPos.X},{cursorPos.Y})");
+                Log("Failed to get saved position monitor info");
+                return false;
+            }
+
+            // Compare the monitor bounds to see if they're the same physical monitor
+            bool isSameMonitor =
+                activeMonitorInfo.rcMonitor.Left == savedMonitorInfo.rcMonitor.Left &&
+                activeMonitorInfo.rcMonitor.Top == savedMonitorInfo.rcMonitor.Top &&
+                activeMonitorInfo.rcMonitor.Right == savedMonitorInfo.rcMonitor.Right &&
+                activeMonitorInfo.rcMonitor.Bottom == savedMonitorInfo.rcMonitor.Bottom;
+
+            if (isSameMonitor)
+            {
+                Log($"✅ Saved position IS on active monitor (cursor at {cursorPos.X},{cursorPos.Y}, monitor bounds {activeMonitorInfo.rcMonitor.Left},{activeMonitorInfo.rcMonitor.Top} to {activeMonitorInfo.rcMonitor.Right},{activeMonitorInfo.rcMonitor.Bottom})");
                 return true;
             }
             else
             {
-                Log($"✗ Saved position is on a DIFFERENT monitor than active (cursor at {cursorPos.X},{cursorPos.Y})");
+                Log($"❌ Saved position is on DIFFERENT monitor. Active: ({activeMonitorInfo.rcMonitor.Left},{activeMonitorInfo.rcMonitor.Top} {activeMonitorInfo.rcMonitor.Right - activeMonitorInfo.rcMonitor.Left}x{activeMonitorInfo.rcMonitor.Bottom - activeMonitorInfo.rcMonitor.Top}), Saved: ({savedMonitorInfo.rcMonitor.Left},{savedMonitorInfo.rcMonitor.Top} {savedMonitorInfo.rcMonitor.Right - savedMonitorInfo.rcMonitor.Left}x{savedMonitorInfo.rcMonitor.Bottom - savedMonitorInfo.rcMonitor.Top})");
                 return false;
             }
         }
@@ -306,6 +322,7 @@ public class WindowStateManager : IDisposable
             return false;
         }
     }
+
     private void CenterWindow(SizeInt32 windowSize)
     {
         try
