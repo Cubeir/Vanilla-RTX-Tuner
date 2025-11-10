@@ -42,9 +42,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 - Add a convenient way to clear ALL caches + temp files they reference, e.g. all potential file paths, as well as windows storage entries
 This is for more advanced users who want to do a full reset of the app without reinstalling
 A way to invalidate ALL caches
-IDEA: Do it by double clicking "Reset" button? (Hard reset)
-
-Or hold for 3 seconds to WIPE ALL app storage keys, potential download cache locations
+IDEA:hold for 3 seconds to WIPE ALL app storage keys, potential download cache locations
 Have something to log all the keys that get wiped, examine, ensure this doesn't cause unexpected issues and is reliable that way
 you use windows storage lots so, check exactly what, would like to know everything/where it is used and why and for what
 
@@ -260,7 +258,8 @@ public sealed partial class MainWindow : Window
             UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
         }
 
-        // Lazy PSA retrieval, shows whenever or if ready
+        // lazy credits and PSA retriever, credits are saved for donate hover event, PSA is shown when ready
+        _ = CreditsUpdater.GetCredits(false);
         _ = Task.Run(async () =>
         {
             var psa = await PSAUpdater.GetPSAAsync();
@@ -269,10 +268,6 @@ public sealed partial class MainWindow : Window
                 Log(psa, LogLevel.Informational);
             }
         });
-
-        // Silent background credits retriever, false = don't show, just tries to get it for the hover event of donate button later
-        _ = CreditsUpdater.GetCredits(false);
-
         // Warning if MC is running
         if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
         {
@@ -280,15 +275,15 @@ public sealed partial class MainWindow : Window
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
 
-        // Slower UI update for a smoother startup
-        UpdateUI(0.31415926535);
+        // Brief delay to ensure everything is fully rendered, then fade out splash screen
+        // ================ Do all UI updates you DON'T want to be seen BEFORE here ======================= and what you want seen after splash
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        await FadeOutSplash();
 
         // Locate packs, also triggers a lamp flash
         LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
-
-        // Brief delay to ensure everything is fully rendered, then fade out splash screen
-        await Task.Delay(TimeSpan.FromSeconds(1.5));
-        await FadeOutSplash();
+        // Slower UI update for a smoother startup
+        UpdateUI(0.5);
 
         async Task FadeOutSplash()
         {

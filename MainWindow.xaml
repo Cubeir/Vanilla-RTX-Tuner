@@ -455,7 +455,7 @@
                         <TextBox x:Name="FogMultiplierBox"
                                  Grid.Column="2"
                                  Width="60"
-                                 Text="1.0"
+                                 Text="1.00"
                                  LostFocus="FogMultiplierBox_LostFocus"
                                  BeforeTextChanging="DoubleTextBox_BeforeTextChanging" />
                     </Grid>
@@ -487,7 +487,7 @@
                         <TextBox x:Name="EmissivityMultiplierBox"
                                  Grid.Column="2"
                                  Width="60"
-                                 Text="1.0"
+                                 Text="1.00"
                                  LostFocus="EmissivityMultiplierBox_LostFocus"
                                  BeforeTextChanging="DoubleTextBox_BeforeTextChanging" />
                     </Grid>
@@ -775,30 +775,15 @@
 
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center">
-                <!-- Stack 3 images on top of each other -->
-                <Image x:Name="SplashLayer1"
-                       Source="ms-appx:///Assets/icons/SplashScreen.png"
-                       Width="Auto"
-                       Height="Auto"
-                       MaxWidth="512"
-                       MaxHeight="512"
-                       Stretch="Uniform" />
+                <!-- 3 images, animated startup! -->
+                <Image x:Name="SplashLamp"
+                       Source="ms-appx:///Assets/icons/SplashScreen.png"/>
 
-                <Image x:Name="SplashLayer2"
-                       Source="ms-appx:///Assets/icons/SplashScreen.png"
-                       Width="Auto"
-                       Height="Auto"
-                       MaxWidth="512"
-                       MaxHeight="512"
-                       Stretch="Uniform" />
+                <Image x:Name="SplashLampSuper"
+                       Source="ms-appx:///Assets/icons/SplashScreen.png"/>
 
-                <Image x:Name="SplashLayer3"
-                       Source="ms-appx:///Assets/icons/SplashScreen.png"
-                       Width="Auto"
-                       Height="Auto"
-                       MaxWidth="512"
-                       MaxHeight="512"
-                       Stretch="Uniform" />
+                <Image x:Name="SplashLampHalo"
+                       Source="ms-appx:///Assets/icons/SplashScreen.png"/>
             </Grid>
         </Grid>
 
