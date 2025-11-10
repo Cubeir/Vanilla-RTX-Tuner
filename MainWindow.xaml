@@ -765,6 +765,43 @@
               IsHitTestVisible="True"
               Canvas.ZIndex="99999" />
 
-    <!-- End of Main Grid-->
+        <!-- Splash Blocker -->
+        <Grid x:Name="SplashOverlay"
+              Grid.ColumnSpan="2"
+              Canvas.ZIndex="100000">
+            <Grid.Background>
+                <SolidColorBrush Color="{ThemeResource SplashBackgroundColor}" />
+            </Grid.Background>
+
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <!-- Stack 3 images on top of each other -->
+                <Image x:Name="SplashLayer1"
+                       Source="ms-appx:///Assets/icons/SplashScreen.png"
+                       Width="Auto"
+                       Height="Auto"
+                       MaxWidth="512"
+                       MaxHeight="512"
+                       Stretch="Uniform" />
+
+                <Image x:Name="SplashLayer2"
+                       Source="ms-appx:///Assets/icons/SplashScreen.png"
+                       Width="Auto"
+                       Height="Auto"
+                       MaxWidth="512"
+                       MaxHeight="512"
+                       Stretch="Uniform" />
+
+                <Image x:Name="SplashLayer3"
+                       Source="ms-appx:///Assets/icons/SplashScreen.png"
+                       Width="Auto"
+                       Height="Auto"
+                       MaxWidth="512"
+                       MaxHeight="512"
+                       Stretch="Uniform" />
+            </Grid>
+        </Grid>
+
+        <!-- End of Main Grid-->
     </Grid>
 </Window>
