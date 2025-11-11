@@ -1550,8 +1550,10 @@ public sealed partial class MainWindow : Window
         var shiftState = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
         if (shiftState.HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
         {   
-            ToggleControls(this, false, ["LogCopyButton"]);
+            ToggleControls(this, false, true, ["LogCopyButton"]);
+            _progressManager.ShowProgress();
             _ = BlinkingLamp(true, true, 0.0);
+
             _ = WipeAllStorageData();
             return;
         }

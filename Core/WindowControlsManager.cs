@@ -29,14 +29,27 @@ public class WindowControlsManager
     /// </summary>
     /// <param name="window">The window containing controls to toggle</param>
     /// <param name="enable">True to restore original states, false to disable all</param>
+    ///<param name="overrideExclusions">True to override the global ones with the manual exclusion list, otherwise they get compounded
     /// <param name="excludeNames">Optional list of control names to exclude from toggling</param>
-    public static void ToggleControls(Window window, bool enable, params string[] excludeNames)
+    public static void ToggleControls(Window window, bool enable, bool overrideGlobalExclusions = false, params string[] excludeNames)
     {
         if (window?.Content == null) return;
 
         EnsureWindowStateExists(window);
         var states = _windowStates[window];
-        var exclusions = new HashSet<string>(_globalExclusions);
+
+        HashSet<string> exclusions;
+
+        if (overrideGlobalExclusions)
+        {
+            // Use only the provided excludeNames, ignore global exclusions
+            exclusions = new HashSet<string>();
+        }
+        else
+        {
+            // Start with global exclusions (default behavior)
+            exclusions = new HashSet<string>(_globalExclusions);
+        }
 
         // Add any additional exclusions
         if (excludeNames != null)
@@ -57,6 +70,7 @@ public class WindowControlsManager
             StoreAndDisableControls(window, states, exclusions);
         }
     }
+
 
     /// <summary>
     /// Adds a control name to the global exclusion list
@@ -195,19 +209,18 @@ public static class WindowControlsManagerExtensions
     /// <param name="window">The window to toggle controls for</param>
     /// <param name="enable">True to restore, false to disable</param>
     /// <param name="excludeNames">Optional list of control names to exclude</param>
-    public static void ToggleControls(this Window window, bool enable, params string[] excludeNames)
+    public static void DisableAllControls(this Window window, bool overrideGlobalExclusions = false, params string[] excludeNames)
     {
-        WindowControlsManager.ToggleControls(window, enable, excludeNames);
+        WindowControlsManager.ToggleControls(window, false, overrideGlobalExclusions, excludeNames);
     }
-
     /// <summary>
     /// Disables all controls in this window
     /// </summary>
     /// <param name="window">The window to disable controls for</param>
     /// <param name="excludeNames">Optional list of control names to exclude</param>
-    public static void DisableAllControls(this Window window, params string[] excludeNames)
+    public static void EnableAllControls(this Window window, bool overrideGlobalExclusions = false, params string[] excludeNames)
     {
-        WindowControlsManager.ToggleControls(window, false, excludeNames);
+        WindowControlsManager.ToggleControls(window, true, overrideGlobalExclusions, excludeNames);
     }
 
     /// <summary>
