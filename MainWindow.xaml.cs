@@ -849,21 +849,37 @@ public sealed partial class MainWindow : Window
         const double minFlashDuration = 300;
         const double maxFlashDuration = 700;
 
-        // Calculate flash timing based on splash duration
-        // Flash should start after a brief delay and complete before fadeout
-        double availableTime = splashDurationMs - 400; // Reserve 400ms for final fadeout
-        double flashStart = Math.Max(200, availableTime * 0.3); // Start at 30% of available time
+        // 50% chance for "off" flash vs "super" flash
+        var random = new Random();
+        bool isOffFlash = random.NextDouble() < 0.256;
+
+        // Set the appropriate image and target opacities
+        if (isOffFlash)
+        {
+            SplashLampSuper.Source = new BitmapImage(new Uri("ms-appx:///Assets/icons/SplashScreen.Off.png"));
+        }
+        else
+        {
+            // Keep Default SplashLampSuper.Source = new BitmapImage(new Uri("ms-appx:///Assets/icons/SplashScreen.Super.png"));
+        }
+
+        double targetSuperOpacity = isOffFlash ? 1.0 : 1.0;  // Both fade to full opacity
+        double targetHaloOpacity = isOffFlash ? 0.01 : 0.75; // Off = dim, Super = bright
+
+        // Calculate flash timing
+        double availableTime = splashDurationMs - 400;
+        double flashStart = Math.Max(200, availableTime * 0.3);
         double flashDuration = Math.Clamp(availableTime * 0.4, minFlashDuration, maxFlashDuration);
 
         // Wait for flash start
         await Task.Delay((int)flashStart);
 
-        // Superflash: fade in super overlay and boost halo
-        var superFadeIn = AnimateOpacitySplash(SplashLampSuper, 1.0, fadeAnimationMs);
-        var haloBoost = AnimateOpacitySplash(SplashLampHalo, 0.75, fadeAnimationMs);
-        await Task.WhenAll(superFadeIn, haloBoost);
+        // Flash in
+        var superFadeIn = AnimateOpacitySplash(SplashLampSuper, targetSuperOpacity, fadeAnimationMs);
+        var haloChange = AnimateOpacitySplash(SplashLampHalo, targetHaloOpacity, fadeAnimationMs);
+        await Task.WhenAll(superFadeIn, haloChange);
 
-        // Hold the superflash
+        // Hold the flash
         await Task.Delay((int)flashDuration);
 
         // Fade back to normal
@@ -880,14 +896,11 @@ public sealed partial class MainWindow : Window
                 Duration = TimeSpan.FromMilliseconds(durationMs),
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
-
             Storyboard.SetTarget(animation, element);
             Storyboard.SetTargetProperty(animation, "Opacity");
             storyboard.Children.Add(animation);
-
             var tcs = new TaskCompletionSource<bool>();
             storyboard.Completed += (s, e) => tcs.SetResult(true);
-
             storyboard.Begin();
             await tcs.Task;
         }
@@ -1546,7 +1559,7 @@ public sealed partial class MainWindow : Window
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
-        // HARD RESET 
+        // ----- HARD RESET 
         var shiftState = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
         if (shiftState.HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
         {   
@@ -1557,7 +1570,7 @@ public sealed partial class MainWindow : Window
             _ = WipeAllStorageData();
             return;
         }
-        // HARD RESET 
+        // ----- HARD RESET 
 
         // Defaults
         FogMultiplier = Defaults.FogMultiplier;
