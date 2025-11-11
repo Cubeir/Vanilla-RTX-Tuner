@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageMagick;
+using Windows.ApplicationModel;
 using static Vanilla_RTX_Tuner_WinUI.MainWindow;
 
 namespace Vanilla_RTX_Tuner_WinUI.Modules;
@@ -220,19 +221,16 @@ public static class Helpers
                 string? savingLocation = null;
                 var fallbackLocations = new Func<string>[]
                 {
-                    () => Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner_cache", fileName),
-
-                    () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                        "Downloads", "vanilla_rtx_tuner_cache", fileName),
-
-                    () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "vanilla_rtx_tuner_cache", fileName),
-
-                    () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner_cache", fileName),
-
-                    () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                        "vanilla_rtx_tuner_cache", fileName)
+                () => Path.Combine(Path.GetTempPath(), TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", TunerVariables.CacheFolderName, fileName),
+                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), TunerVariables.CacheFolderName, fileName)
                 };
+
 
                 foreach (var getPath in fallbackLocations)
                 {
@@ -344,7 +342,25 @@ public static class Helpers
         Log("Download failed after multiple attempts.", LogLevel.Error);
         return (false, null);
     }
+    public static string GetCacheFolderName()
+    {
+        try
+        {
+            var family = Windows.ApplicationModel.Package.Current.Id.FamilyName;
+            var idx = family.LastIndexOf('_');
+            var suffix = (idx >= 0 && idx < family.Length - 1)
+                ? family[(idx + 1)..]
+                : family;
+            return $"tuner_{suffix}";
+        }
+        catch
+        {
+            return "vanilla_rtx_tuner_cache";
+        }
+    }
+
 }
+
 
 
 /// <summary>

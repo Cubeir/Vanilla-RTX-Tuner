@@ -37,6 +37,10 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Follow cache location names (and in reset) or whereever "vanilla_rtx_tuner_cache" is hardcoded in
+add a _[appid] suffix just in case... in fact shorten in, tuner_[appid]
+that way potential forks of the app won't interefer with each other by default!
+
 - Implement a way for current custom pack selection be visible even outside of logs
 
 - Fog slider development:
@@ -77,6 +81,8 @@ MC data folder, whatever and whatever they are cleanly expose them so if you lea
 public static class TunerVariables
 {
     public static string? appVersion = null;
+
+    public static string CacheFolderName = Helpers.GetCacheFolderName();
 
     public static string VanillaRTXLocation = string.Empty;
     public static string VanillaRTXNormalsLocation = string.Empty;
@@ -1634,14 +1640,19 @@ public sealed partial class MainWindow : Window
 
             // Temp folder locations, TODO: This must be updated IF Helpers' Download method fallbacks are updated!
             Log("Checking for temporary cache folders...", LogLevel.Informational);
+
             var cacheFolderChecks = new[]
             {
-            Path.Combine(Path.GetTempPath(), "vanilla_rtx_tuner_cache"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "vanilla_rtx_tuner_cache"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "vanilla_rtx_tuner_cache"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vanilla_rtx_tuner_cache"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "vanilla_rtx_tuner_cache")
+            Path.Combine(Path.GetTempPath(), CacheFolderName),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CacheFolderName),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), CacheFolderName),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), CacheFolderName),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CacheFolderName),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), CacheFolderName),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", CacheFolderName),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), CacheFolderName)
             };
+
 
             int deletedFolders = 0;
             foreach (var cacheFolder in cacheFolderChecks)
@@ -1682,6 +1693,8 @@ public sealed partial class MainWindow : Window
             Log($"Error during hard reset: {ex.Message}", LogLevel.Error);
         }
     }
+
+
 
     private async void ExportButton_Click(object sender, RoutedEventArgs e)
     {
