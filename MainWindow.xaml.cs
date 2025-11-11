@@ -37,15 +37,13 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Follow cache location names (and in reset) or whereever "vanilla_rtx_tuner_cache" is hardcoded in
-add a _[appid] suffix just in case... in fact shorten in, tuner_[appid]
-that way potential forks of the app won't interefer with each other by default!
-
 - Implement a way for current custom pack selection be visible even outside of logs
 
 - Fog slider development:
 
 Make fog multiplier partially impact water scattering (& absorbtion?)
+Or add a whole new slider, water fog multiplier...?
+
 Here's a couple of things to consider:
 official fog docs say there is a density param for water fog, Vanilla RTX doesn't use it, because it still doesn't work after many years
 If it one day does work, use that param
@@ -55,6 +53,14 @@ Get rid of the overly bloated stupid dampening nonsense come up with something b
 No need to spill excess density to scattering or otherwise -- too complicated and unpredictable with Vanilla RTX's current fog implementation which heavily relies on absorbtion
 
 Or come up with something better.
+
+
+This concludes the development of Tuner, it may evolve if new ideas come along, or if Minecraft changes/with new features, etc...
+but for now, this is it.
+Potential edge case fixes and refactoring is all that can be done, but the app, as it is, it is perfect.
+
+
+End of Development/Unimportant ideas:
 
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
 It is too integerated, previewer class has some funky behavior tied to it, circumvented by it, 3am brainfart
@@ -202,7 +208,8 @@ public sealed partial class MainWindow : Window
         // Version, title and initial logs
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        TitleBarText.Text = "Vanilla RTX Tuner " + versionString;
+        var versionStringShort = $"{version.Major}.{version.Minor}";
+        TitleBarText.Text = "Vanilla RTX Tuner " + versionStringShort;
         appVersion = versionString;
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
@@ -914,7 +921,8 @@ public sealed partial class MainWindow : Window
 
 
     // ISSUE: Background Preview vessel remains visible after tuning for some reason, maybe this isn't the culprit, because UpdateUI after being called by Reset button works
-    public async void UpdateUI(double animationDurationSeconds = 0.12)
+    // Gotta see what gets triggered after tuning completes...
+    public async void UpdateUI(double animationDurationSeconds = 0.15)
     {
         // Hide and unhide preview vessels while they update to avoid flickering as slider values update
         HidePreviewVessels();
