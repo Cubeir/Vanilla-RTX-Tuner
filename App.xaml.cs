@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Microsoft.UI.Xaml;
+using Vanilla_RTX_Tuner_WinUI.Modules;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -31,7 +32,7 @@ public partial class App : Application
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         bool isNewInstance;
-        _mutex = new Mutex(true, "VanillaRTXTuner_SingleInstance", out isNewInstance);
+        _mutex = new Mutex(true, $"VanillaRTXTuner{Helpers.GetCacheFolderName()}", out isNewInstance);
 
         if (!isNewInstance)
         {
