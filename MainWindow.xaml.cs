@@ -1425,7 +1425,7 @@ public sealed partial class MainWindow : Window
     {
         if (double.TryParse(FogMultiplierBox.Text, out double val))
         {
-            val = Math.Clamp(val, 0.0, 7.5);
+            val = Math.Clamp(val, 0.0, 10.0);
             double roundedVal = Math.Round(val, 2);
             FogMultiplier = roundedVal;
             FogMultiplierSlider.Value = roundedVal;
@@ -1470,7 +1470,7 @@ public sealed partial class MainWindow : Window
     {
         if (int.TryParse(NormalIntensityBox.Text, out int val))
         {
-            val = Math.Clamp(val, 0, 700);
+            val = Math.Clamp(val, 0, 900);
             NormalIntensity = val;
             NormalIntensitySlider.Value = val;
             NormalIntensityBox.Text = val.ToString();
