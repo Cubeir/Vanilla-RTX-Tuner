@@ -849,9 +849,9 @@ public sealed partial class MainWindow : Window
         const double minFlashDuration = 300;
         const double maxFlashDuration = 700;
 
-        // 50% chance for "off" flash vs "super" flash
+        // A chance for "off" flash vs "super" flash
         var random = new Random();
-        bool isOffFlash = random.NextDouble() < 0.256;
+        bool isOffFlash = random.NextDouble() < 0.25;
 
         // Set the appropriate image and target opacities
         if (isOffFlash)

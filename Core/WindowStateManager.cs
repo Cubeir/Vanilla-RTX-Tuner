@@ -20,7 +20,7 @@ public class WindowStateManager : IDisposable
     private const int MIN_WINDOW_HEIGHT = 300;
     private const int DEFAULT_WINDOW_WIDTH = 1000;
     private const int DEFAULT_WINDOW_HEIGHT = 650;
-
+    // Use 1175 and 625 for taking the screenshot for cover/render
 
     private double? _cachedDpiScale;
     private const double DEFAULT_DPI = 96.0;
