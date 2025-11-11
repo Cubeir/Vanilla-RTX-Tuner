@@ -711,7 +711,7 @@ public class PackUpdater
 
     private async Task<bool> DeployPackage(string packagePath)
     {
-        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             LogMessage("⚠️ Minecraft is running. Please close the game while using Tuner.");
         }

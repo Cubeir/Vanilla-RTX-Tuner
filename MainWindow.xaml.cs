@@ -249,7 +249,7 @@ public sealed partial class MainWindow : Window
             }
         });
         // Warning if MC is running
-        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             var buttonName = LaunchButtonText.Text;
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
@@ -921,7 +921,7 @@ public sealed partial class MainWindow : Window
         // Animate sliders (intentionally put here, don't move up or down)
         await AnimateSliders(sliderConfigs, animationDurationSeconds);
 
-        if (RanOnceFlag.Set("Initialize_UI_Previews_Only_With_The_First_Call"))
+        if (RuntimeFlags.Set("Initialize_UI_Previews_Only_With_The_First_Call"))
         {
             // UpdateUI is called once at the start. we want previews to initialize only once. Thus this flag, which allows this code block
             // To run once and then never again.
@@ -1073,7 +1073,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits) && RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
+        if (!string.IsNullOrEmpty(credits) && RuntimeFlags.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -1084,7 +1084,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB52";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits) && RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
+        if (!string.IsNullOrEmpty(credits) && RuntimeFlags.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -1093,7 +1093,7 @@ public sealed partial class MainWindow : Window
     {
         DonateButton.Content = "\uEB51";
         var credits = CreditsUpdater.GetCredits(true);
-        if (!string.IsNullOrEmpty(credits) && RanOnceFlag.Set("Wrote_Supporter_Shoutout"))
+        if (!string.IsNullOrEmpty(credits) && RuntimeFlags.Set("Wrote_Supporter_Shoutout"))
         {
             Log(credits);
         }
@@ -1552,7 +1552,7 @@ public sealed partial class MainWindow : Window
         {   
             ToggleControls(this, false, true, ["LogCopyButton"]);
             _progressManager.ShowProgress();
-            _ = BlinkingLamp(true, true, 0.0);
+            _ = BlinkingLamp(true);
 
             _ = WipeAllStorageData();
             return;
@@ -1584,14 +1584,9 @@ public sealed partial class MainWindow : Window
         // Lamp single off flash
         _ = BlinkingLamp(true, true, 0.0);
 
-        // Ignore the run-once flag for now, let the warning be said every time since we empty the log
-        if (true || RanOnceFlag.Set("Said_Reset_Warning"))
-        {
-            RanOnceFlag.Unset("Wrote_Supporter_Shoutout");
-            var text = UpdateVanillaRTXButtonText.Text;
-            Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you must reimport them. You can quickly reinstall the latest version of Vanilla RTX using the '{text as string}' button.", LogLevel.Informational);
-            Log("Tuner variables and pack selections were reset.", LogLevel.Success);
-        }
+        RuntimeFlags.Unset("Wrote_Supporter_Shoutout");
+        Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you must reimport them. You can quickly reinstall the latest version of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button.", LogLevel.Informational);
+        Log("Tuner variables and pack selections were reset.", LogLevel.Success);
 
     }
     private async Task WipeAllStorageData()
@@ -1665,7 +1660,6 @@ public sealed partial class MainWindow : Window
             }
 
             await Task.Delay(500);
-            _ = BlinkingLamp(true, true, 0.5);
             Log("Hard reset complete! Restarting in a moment...", LogLevel.Success);
             await Task.Delay(3000);
             var restartResult = Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Empty);
@@ -1754,7 +1748,7 @@ public sealed partial class MainWindow : Window
 
     private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
-        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
             Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
 
         try
@@ -1796,7 +1790,7 @@ public sealed partial class MainWindow : Window
 
     private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
-        if (PackUpdater.IsMinecraftRunning() && RanOnceFlag.Set("Has_Told_User_To_Close_The_Game"))
+        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
         }

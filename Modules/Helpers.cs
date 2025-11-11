@@ -350,7 +350,7 @@ public static class Helpers
 /// <summary>
 /// Additional helper to do a thing only once per runtime, use RanOnceFlag.Set("key") to set a flag with a unique key.
 /// </summary>
-public static class RanOnceFlag
+public static class RuntimeFlags
 {
     private static readonly HashSet<string> _flags = new();
 
