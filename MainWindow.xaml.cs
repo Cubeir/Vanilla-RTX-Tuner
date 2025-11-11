@@ -274,10 +274,13 @@ public sealed partial class MainWindow : Window
         // ================ Do all UI updates you DON'T want to be seen BEFORE here, and what you want seen AFTER ======================= 
         await FadeOutSplash();
 
-        // Locate packs, always triggers a lamp flash btw, cool!
-        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+        
         // Slower UI update override for a smoother startup
         UpdateUI(0.31415926535);
+
+        // Locate packs, always triggers a lamp flash btw, cool!
+        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+
 
         async Task FadeOutSplash()
         {
