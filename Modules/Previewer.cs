@@ -11,9 +11,9 @@ public class Previewer
     private static Previewer? _instance;
     private static readonly object _lock = new();
 
-    private Image _topVessel;
-    private Image _bottomVessel;
-    private Image _bg;
+    private readonly Image _topVessel;
+    private readonly Image _bottomVessel;
+    private readonly Image _bg;
     private bool _mouseDown = false;
     private FrameworkElement? _activeControl = null;
 

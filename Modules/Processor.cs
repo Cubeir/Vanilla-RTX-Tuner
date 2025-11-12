@@ -26,6 +26,8 @@ public static class ProcessorVariables
 // constantly loading and saving, but the tuning already happens quite fast (with the files being raw tgas) so it may not be worth
 // the added complexity of defining which textures will be needed to be retrieved and all that
 // Still, if a kind soul out there wants to take a stab at it, be my guest.
+// The issue is that, you'd have to load everything in memory regardless for that to happen
+// Right now the processors, if called, GET WHAT THEY WANT, the mutliple individual passes can be beneficial
 
 public class Processor
 {
@@ -124,6 +126,12 @@ public class Processor
     // this is got to become a part of the larger logging overhaul down the line (gradual logger thing from public string)
     // Also make them log any unexpected oddities in Vanilla RTX (whether it be size, opacity, etc...) as warnings
     #region ------------------- Processors
+
+    // Improved the logic but, it can give scientific notations, very bad!
+    // also, the idea of dampening the Multiplier based on its distance from default is great, apply it elsewhere, namely, emissivity multiplier
+    // if we dampen 10.0, it should be dampened TOWARDS 1.0, not be multiplied by a small number that can make it smllaer than the default
+    // this way it always remains larger than 1.0 as intended, and for smaller than 1.0 values it holds the same, it gets damepned TOWARDS 1.0
+    // ANY other damepning logic must follow this, its the right way...
     private static void ProcessFog(PackInfo pack, bool processWaterOnly = false)
     {
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
@@ -1268,6 +1276,8 @@ public class Processor
     // This one is a copy of the above with something extra to keep the same noise pattern across texture variants
     // e.g. on/off etc... but I'm not sure about it yet, or if it is even worth it.
     // The whole idea is that we got a bunch of words, we detect variations based on texture names
+
+    // IT'S OUTDATED BUT THE CONCEPT IS GOING TO WORK!
     private static void ProcessMaterialGrain(PackInfo pack)
     {
         double CalculateEffectiveness(int colorValue)

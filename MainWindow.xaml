@@ -696,7 +696,7 @@
                 <!-- Reinstall Button -->
                 <Button x:Name="UpdateVanillaRTXButton"
                         Click="UpdateVanillaRTXButton_Click"
-                        Grid.Row="0"
+                        Grid.Row="2"
                         Grid.Column="2"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
@@ -741,7 +741,7 @@
                 <!-- Export Button -->
                 <Button x:Name="ExportButton"
                         Click="ExportButton_Click"
-                        Grid.Row="2"
+                        Grid.Row="0"
                         Grid.Column="2"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"

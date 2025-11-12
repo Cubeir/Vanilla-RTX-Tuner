@@ -55,9 +55,10 @@ No need to spill excess density to scattering or otherwise -- too complicated an
 Or come up with something better.
 
 
-This concludes the development of Tuner, it may evolve if new ideas come along, or if Minecraft changes/with new features, etc...
+This concludes the development of Tuner, it may evolve if new ideas for tuning options come along, or if Minecraft changes/with new features, etc...
 but for now, this is it.
-Potential edge case fixes and refactoring is all that can be done, but the app, as it is, it is perfect.
+Potential edge case fixes and refactoring is all that can be done.
+The app, and all of its aspects, are now functionally perfect, further feature development is blissful.
 
 
 End of Development/Unimportant ideas:
@@ -925,6 +926,7 @@ public sealed partial class MainWindow : Window
 
     // ISSUE: Background Preview vessel remains visible after tuning for some reason, maybe this isn't the culprit, because UpdateUI after being called by Reset button works
     // Gotta see what gets triggered after tuning completes...
+    // Clue: maybe its because the clear previews button doesn't actually clear BG vessel! TEST
     public async void UpdateUI(double animationDurationSeconds = 0.15)
     {
         // Hide and unhide preview vessels while they update to avoid flickering as slider values update
@@ -1302,7 +1304,7 @@ public sealed partial class MainWindow : Window
     }
 
 
-
+    // TODO: make it return status and values some specific controls as well for easier debugging where you should've used bindings
     private void LogCopyButton_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         if (!string.IsNullOrEmpty(SidebarLog.Text))
@@ -1771,7 +1773,7 @@ public sealed partial class MainWindow : Window
                 (string.IsNullOrEmpty(CustomPackLocation) || string.IsNullOrEmpty(CustomPackDisplayName))
                 )
             {
-                Log("Queue was empty. Locate or select at least one package to export.", LogLevel.Warning);
+                Log("Locate or select at least one package to export.", LogLevel.Warning);
             }
             else
             {
@@ -1794,7 +1796,7 @@ public sealed partial class MainWindow : Window
                 (string.IsNullOrEmpty(CustomPackLocation) || string.IsNullOrEmpty(CustomPackDisplayName))
                 )
             {
-                Log("Locate and select at least one package to tune.", LogLevel.Warning);
+                Log("Locate or select at least one package to tune.", LogLevel.Warning);
                 return;
             }
             else
