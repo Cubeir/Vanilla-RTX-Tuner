@@ -23,16 +23,19 @@ public static class MojankMessages
         "Strange things happen to those who click too much.",
         "This is where the curious usually turn back.",
         "Go on then... see what happens.",
-        "Wanna take ze red pill!??",
-        "I have a greeeaaaat feeling about this!",
-        "The cake was a lie, this isn't.",
+        "🟥💊?!!??!!??!?!?!!?!?!?!?!?!??!?!?!!?!??!?!",
+        "I have a greeeeaaaaaaat feeling about this!",
+        "The might've been a lie, this isn't.",
         "I can't let you do that, [Steve].",
         "I can't let you do that, [Alex].",
         "Time to wake Mojang up, Samurai. We've got a game to fix.",
         "Toss a coin into your sense of judgment.",
         "You were warned not to push that button, Dovahkiin.",
         "Some of these lines are cheesy at best, BUT",
-        "War never changes. Neither does Mojang's non-existent QA."
+        "War never changes. Neither does Mojang's non-existent QA.",
+        "Predatory practices are their creed. Continue and find out who.",
+        "Mojank Studios! Where elevating slop takes a backseat to game's development.",
+        "I love Minecraft! guess who doesn't?"
     };
 }
 
@@ -67,7 +70,7 @@ public static class MojankEasterEgg
         }
         catch
         {
-            // Silently ignore all errors (fire-and-forget)
+            // Silently ignore all errors
         }
         finally
         {
