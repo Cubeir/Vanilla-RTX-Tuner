@@ -1292,18 +1292,16 @@ public sealed partial class MainWindow : Window
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = true;
-        Log("Targeting Minecraft Preview.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
-
         LocatePacksButton_Click();
+        Log("Targeting Minecraft Preview.", LogLevel.Informational);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = false;
-        Log("Targeting regular Minecraft.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
-
         LocatePacksButton_Click();
+        Log("Targeting Minecraft Release.", LogLevel.Informational);
     }
 
 
