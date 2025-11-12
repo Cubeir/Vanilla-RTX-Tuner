@@ -290,7 +290,7 @@ public sealed partial class MainWindow : Window
         if (!IsTargetingPreview)
         {
             // To avoid double-triggering this, because preview toggle, if enabled again via the persistent settings, triggers below again
-            LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+            LocatePacksButton_Click();
         }
 
 
@@ -429,11 +429,11 @@ public sealed partial class MainWindow : Window
         );
 
         Previewer.Instance.InitializeSlider(MaterialNoiseSlider,
-                    "ms-appx:///Assets/previews/roughenup.default.png",
-                    "ms-appx:///Assets/previews/roughenup.default.png",
-                    "ms-appx:///Assets/previews/materials.grainy.png",
-                    Defaults.MaterialNoiseOffset
-                );
+             "ms-appx:///Assets/previews/roughenup.default.png",
+             "ms-appx:///Assets/previews/roughenup.default.png",
+             "ms-appx:///Assets/previews/materials.grainy.png",
+             Defaults.MaterialNoiseOffset
+        );
 
         Previewer.Instance.InitializeSlider(ButcherHeightmapsSlider,
             "ms-appx:///Assets/previews/heightmaps.default.png",
@@ -450,10 +450,6 @@ public sealed partial class MainWindow : Window
         Previewer.Instance.InitializeToggleButton(TargetPreviewToggle,
             "ms-appx:///Assets/previews/preview.overlay.png",
             "ms-appx:///Assets/previews/preview.png"
-        );
-
-        Previewer.Instance.InitializeButton(LocatePacksButton,
-            "ms-appx:///Assets/previews/locate.png"
         );
 
         Previewer.Instance.InitializeButton(BrowsePacksButton,
@@ -1064,8 +1060,7 @@ public sealed partial class MainWindow : Window
             OpusCheckBox.IsChecked = false;
             IsOpusEnabled = false;
 
-            OptionsAllCheckBox.IsEnabled = false;
-            OptionsAllCheckBox.IsChecked = false;
+            UpdateSelectAllState();
         }
         if (FlushPackVersions)
         {
@@ -1232,7 +1227,7 @@ public sealed partial class MainWindow : Window
 
 
 
-    private void LocatePacksButton_Click(object sender, RoutedEventArgs e)
+    private void LocatePacksButton_Click()
     {
         _ = BlinkingLamp(true, true, 1.0);
         FlushTheseVariables(true, true, true);
@@ -1244,37 +1239,25 @@ public sealed partial class MainWindow : Window
 
         Log(statusMessage);
 
-        UpdateCheckboxStates();
-
-        // Update checkboxes depending on which packs were found
-        void UpdateCheckboxStates()
+        if (!string.IsNullOrEmpty(VanillaRTXLocation))
         {
-            if (!string.IsNullOrEmpty(VanillaRTXLocation))
-            {
-                VanillaRTXCheckBox.IsEnabled = true;
-                VanillaRTXCheckBox.IsChecked = true;
-                IsVanillaRTXEnabled = true;
-            }
+            VanillaRTXCheckBox.IsEnabled = true;
+        }
 
-            if (!string.IsNullOrEmpty(VanillaRTXNormalsLocation))
-            {
-                NormalsCheckBox.IsEnabled = true;
-                NormalsCheckBox.IsChecked = true;
-                IsNormalsEnabled = true;
-            }
+        if (!string.IsNullOrEmpty(VanillaRTXNormalsLocation))
+        {
+            NormalsCheckBox.IsEnabled = true;
+        }
 
-            if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
-            {
-                OpusCheckBox.IsEnabled = true;
-                OpusCheckBox.IsChecked = true;
-                IsOpusEnabled = true;
-            }
+        if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
+        {
+            OpusCheckBox.IsEnabled = true;
+        }
 
-            if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
-            {
-                OptionsAllCheckBox.IsEnabled = true;
-                UpdateSelectAllState();
-            }
+        if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
+        {
+            OptionsAllCheckBox.IsEnabled = true;
+            UpdateSelectAllState();
         }
     }
 
@@ -1312,7 +1295,7 @@ public sealed partial class MainWindow : Window
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
 
-        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+        LocatePacksButton_Click();
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
@@ -1320,7 +1303,7 @@ public sealed partial class MainWindow : Window
         Log("Targeting regular Minecraft.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
 
-        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+        LocatePacksButton_Click();
     }
 
 
@@ -1630,9 +1613,10 @@ public sealed partial class MainWindow : Window
         _ = BlinkingLamp(true, true, 0.0);
 
         RuntimeFlags.Unset("Wrote_Supporter_Shoutout");
-        Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you must reimport them. You can quickly reinstall the latest version of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button.", LogLevel.Informational);
-        Log("Tuner variables and pack selections were reset.", LogLevel.Success);
 
+        Log("To perform a full reset of app's data if necessery, hold SHIFT key while pressing Clear Selection.", LogLevel.Informational);
+        Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you can quickly reinstall the latest versions of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button. Other packs will require manual reinstallation. Use Export Selection button to back them up.", LogLevel.Informational);
+        Log("Tuner variables were reset.", LogLevel.Success);
     }
     private void ClearButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1918,8 +1902,8 @@ public sealed partial class MainWindow : Window
                 UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
             }
 
-            // Trigger an automatic pack location check after update
-            LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+            // Trigger an automatic pack location check after update (fail or not)
+            LocatePacksButton_Click();
         }
     }
 

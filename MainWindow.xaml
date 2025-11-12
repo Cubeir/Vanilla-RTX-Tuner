@@ -196,7 +196,6 @@
         <!-- LEFT COLUMN CONTENT AREA -->
         <Grid Grid.Column="0"
               x:Name="LeftContentGrid">
-
             <!-- Buttons above sidebar log -->
             <Grid Margin="16,47,8,0"
                   VerticalAlignment="Top"
@@ -207,46 +206,48 @@
                     <ColumnDefinition Width="1.425*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Locate Pack Button (Main) -->
-                <Button x:Name="LocatePacksButton"
-                        Grid.Column="0"
-                        Click="LocatePacksButton_Click"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        FontWeight="SemiBold"
-                        ToolTipService.ToolTip="Locates all currently-installed Vanilla RTX packages in Minecraft or Minecraft Preview (Optional: Enable Target Preview)">
-                    <TextBlock Text="Locate Vanilla RTX"
-                               VerticalAlignment="Center"
-                               Margin="34,0,0,0" />
-                </Button>
+                <!-- Browse Packs / Preview Split Button -->
+                <Grid Grid.Column="0"
+                      Grid.ColumnSpan="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-                <!-- Magnifying Glass Button Overlay (Split Button) -->
-                <Button x:Name="BrowsePacksButton"
-                        Grid.Column="0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Stretch"
-                        Width="42"
-                        Background="#20101010"
-                        BorderBrush="#20646464"
-                        BorderThickness="1.25"
-                        Opacity="1.0"
-                        Click="BrowsePacksButton_Click"
-                        ToolTipService.ToolTip="Browse existing PBR-enabled resource packs and select one.">
-                    <FontIcon Glyph="&#xF78B;"
-                              FontSize="18"
-                              Opacity="1.0" />
-                </Button>
+                    <Button x:Name="BrowsePacksButton"
+                            BorderBrush="#40808080"
+                            Grid.Column="0"
+                            Click="BrowsePacksButton_Click"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            FontWeight="SemiBold"
+                            CornerRadius="4,0,0,4"
+                            ToolTipService.ToolTip="Browse existing PBR-enabled resource packs and select one.">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xF78B;"
+                                      FontSize="18"
+                                      Margin="0,0,8,0"
+                                      VerticalAlignment="Center" />
+                            <TextBlock Text="Browse Installed Packs"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
-                <!-- Target Preview Button -->
-                <ToggleButton x:Name="TargetPreviewToggle"
-                              Grid.Column="2"
-                              Content="Preview"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch"
-                              FontWeight="SemiBold"
-                              Checked="TargetPreviewToggle_Checked"
-                              Unchecked="TargetPreviewToggle_Unchecked"
-                              ToolTipService.ToolTip="If enabled, all of app's functionality targets Minecraft Preview instead of regular Minecraft." />
+                    <ToggleButton x:Name="TargetPreviewToggle"
+                                  BorderBrush="#40808080"
+                                  Grid.Column="1"
+                                  Content="Preview"
+                                  Width="100"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  FontWeight="SemiBold"
+                                  CornerRadius="0,4,4,0"
+                                  BorderThickness="1,1,1,1"
+                                  Checked="TargetPreviewToggle_Checked"
+                                  Unchecked="TargetPreviewToggle_Unchecked"
+                                  ToolTipService.ToolTip="If enabled, all of app's functionality targets Minecraft Preview instead of regular Minecraft." />
+                </Grid>
             </Grid>
 
             <!-- Sidebar Log Box -->
@@ -419,6 +420,7 @@
                         <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
                     <Button x:Name="ClearButton"
+                            BorderBrush="#40808080"
                             Grid.Column="0"
                             Click="ClearButton_Click"
                             HorizontalAlignment="Stretch"
@@ -437,6 +439,7 @@
                         </StackPanel>
                     </Button>
                     <Button x:Name="ResetButton"
+                            BorderBrush="#40808080"
                             Grid.Column="1"
                             Content="Reset Settings"
                             Click="ResetButton_Click"
