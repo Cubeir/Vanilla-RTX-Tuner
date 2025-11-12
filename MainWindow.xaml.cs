@@ -37,6 +37,13 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Remove Locate Vanilla RTX button, it's redundant now, auto triggered wherever needed
+Vanilla RTX pack checkboxes remain available as needed
+
+- Add DPI-aware preferred minimum width and height
+
+
+
 - Implement a way for current custom pack selection be visible even outside of logs
 
 - Fog slider development:
@@ -280,7 +287,11 @@ public sealed partial class MainWindow : Window
         UpdateUI(0.31415926535);
 
         // Locate packs, always triggers a lamp flash btw, cool!
-        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+        if (!IsTargetingPreview)
+        {
+            // To avoid double-triggering this, because preview toggle, if enabled again via the persistent settings, triggers below again
+            LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
+        }
 
 
         async Task FadeOutSplash()
@@ -476,11 +487,15 @@ public sealed partial class MainWindow : Window
         Previewer.Instance.InitializeButton(HelpButton,
             "ms-appx:///Assets/previews/cubeir.help.png"
         );
-        
+
         Previewer.Instance.InitializeButton(ResetButton,
             "ms-appx:///Assets/previews/table.reset.png"
         );
-        
+
+        Previewer.Instance.InitializeButton(ClearButton,
+            "ms-appx:///Assets/previews/table.reset.png"
+        );
+
     }
 
 
@@ -549,8 +564,8 @@ public sealed partial class MainWindow : Window
     }
     catch (Exception ex)
     {
-        Log("Failed to open URL. Make sure you have a browser installed and associated with web links.", LogLevel.Warning);
         Log($"Details: {ex.Message}", LogLevel.Informational);
+        Log("Failed to open URL. Make sure you have a browser installed and associated with web links.", LogLevel.Warning); 
     }
 #endif
     }
@@ -1096,9 +1111,10 @@ public sealed partial class MainWindow : Window
         {
             _mojankClickCount = 0;
             await MojankEasterEgg.TriggerAsync();
-            Log("Your Minecraft startup splash texts may have been updated to Mojank.", LogLevel.Informational);
+            Log("Your Minecraft startup splash texts may have been slightly updated to Mojank.", LogLevel.Informational);
         }
     }
+
 
 
     private void DonateButton_Click(object sender, RoutedEventArgs e)
@@ -1295,12 +1311,16 @@ public sealed partial class MainWindow : Window
         IsTargetingPreview = true;
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
+
+        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = false;
         Log("Targeting regular Minecraft.", LogLevel.Informational);
         FlushTheseVariables(true, true, true);
+
+        LocatePacksButton_Click(LocatePacksButton, new RoutedEventArgs());
     }
 
 
@@ -1600,13 +1620,6 @@ public sealed partial class MainWindow : Window
         ButcheredHeightmapAlpha = Defaults.ButcheredHeightmapAlpha;
         AddEmissivityAmbientLight = Defaults.AddEmissivityAmbientLight;
 
-        CustomPackDisplayName = string.Empty;
-        CustomPackLocation = string.Empty;
-
-        IsVanillaRTXEnabled = false;
-        IsNormalsEnabled = false;
-        IsOpusEnabled = false;
-
         // Manually updates UI based on new values
         UpdateUI();
 
@@ -1619,6 +1632,25 @@ public sealed partial class MainWindow : Window
         RuntimeFlags.Unset("Wrote_Supporter_Shoutout");
         Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you must reimport them. You can quickly reinstall the latest version of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button.", LogLevel.Informational);
         Log("Tuner variables and pack selections were reset.", LogLevel.Success);
+
+    }
+    private void ClearButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Vanilla RTX
+        IsVanillaRTXEnabled = false;
+        IsNormalsEnabled = false;
+        IsOpusEnabled = false;
+
+        // The custom one
+        CustomPackDisplayName = string.Empty;
+        CustomPackLocation = string.Empty;
+
+        // Manually updates UI based on new values
+        UpdateUI();
+
+        // Lamp single off flash
+        _ = BlinkingLamp(true, true, 0.0);
+        Log("Cleared All Pack Selections.", LogLevel.Success);
 
     }
     private async Task WipeAllStorageData()

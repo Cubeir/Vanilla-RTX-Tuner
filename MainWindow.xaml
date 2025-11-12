@@ -231,7 +231,7 @@
                         BorderThickness="1.25"
                         Opacity="1.0"
                         Click="BrowsePacksButton_Click"
-                        ToolTipService.ToolTip="Browse for and select other PBR-enabled resource packs">
+                        ToolTipService.ToolTip="Browse existing PBR-enabled resource packs and select one.">
                     <FontIcon Glyph="&#xF78B;"
                               FontSize="18"
                               Opacity="1.0" />
@@ -383,28 +383,6 @@
                           FontWeight="SemiBold" />
             </StackPanel>
 
-            <!-- Reset Sliders Button -->
-            <Button x:Name="ResetButton"
-                    Click="ResetButton_Click"
-                    Width="92"
-                    Height="40"
-                    Padding="7"
-                    Margin="8,129,16,16"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    FontWeight="SemiBold"
-                    ToolTipService.ToolTip="Resets tuning options back to their default values and clears pack selections. Hold SHIFT to perform a hard reset.">
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center">
-                    <FontIcon Glyph="&#xE72C;"
-                              FontSize="16"
-                              Margin="0,0,8,0"
-                              VerticalAlignment="Center" />
-                    <TextBlock Text="Reset"
-                               VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
-
             <!-- Sliders Grid -->
             <Grid x:Name="SlidersGrid"
                   Margin="8,200,16,0"
@@ -414,25 +392,67 @@
                 <!-- Grid Proportion Definitions -->
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="18" />
                     <!-- 16px spacing between columns -->
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="13" />
+                    <RowDefinition Height="18" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="13" />
+                    <RowDefinition Height="18" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="13" />
+                    <RowDefinition Height="10" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+
+                <!-- (Special) Grid 2 Reset Button -->
+                <Grid Grid.Column="2"
+                      Grid.Row="0"
+                      Grid.RowSpan="7"
+                      Height="40"
+                      Margin="0,15,0,0"
+                      VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.25*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="ClearButton"
+                            Grid.Column="0"
+                            Click="ClearButton_Click"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            FontWeight="SemiBold"
+                            CornerRadius="4,0,0,4"
+                            ToolTipService.ToolTip="Clears">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xEA99;"
+                                      FontSize="18"
+                                      Margin="0,0,8,0"
+                                      VerticalAlignment="Center" />
+                            <TextBlock Text="Clear Selection"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ResetButton"
+                            Grid.Column="1"
+                            Content="Reset Settings"
+                            Click="ResetButton_Click"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            FontWeight="SemiBold"
+                            CornerRadius="0,4,4,0"
+                            BorderThickness="1,1,1,1"
+                            ToolTipService.ToolTip="Resets tuning options back to their default values. Hold SHIFT to perform a hard reset of app's data.">
+                    </Button>
+                </Grid>
 
                 <!-- Fog Multiplier -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="0"
-                            Spacing="0">
+                            Spacing="2">
                     <TextBlock Text="Fog Multiplier (0.0-10.0)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.2–0.8 for lighter fog, 1.5-3.0 for dense fog. 0 to disable air fog." />
@@ -467,7 +487,7 @@
                 <!-- Emissivity Multiplier -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="2"
-                            Spacing="0">
+                            Spacing="2">
                     <TextBlock Text="Emissivity Multiplier (0.5-10.0)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales emissivity of all emissive blocks. 1 = default, 0.5 = half brightness, higher values = stronger glow." />
@@ -499,7 +519,7 @@
                 <!-- Emissivity Ambient Light Toggle -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="4"
-                            Spacing="0">
+                            Spacing="2">
                     <TextBlock Text="Increase Ambient Lighting"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted, higher emissive multipliers strengthen the effect." />
@@ -529,7 +549,7 @@
                 <!-- Normal Intensity -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="6"
-                            Spacing="0">
+                            Spacing="2">
                     <TextBlock Text="Normal Intensity (0-900%)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks." />
@@ -560,8 +580,8 @@
 
                 <!-- Material Grain Offset -->
                 <StackPanel Grid.Column="2"
-                            Grid.Row="0"
-                            Spacing="0">
+                            Grid.Row="2"
+                            Spacing="2">
                     <TextBlock Text="Material Grain Offset (0-25)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Creates grainy materials by adding a layer of noise in a manner that keeps the pack's intended look intact, your input determines the maximum deviation.." />
@@ -592,8 +612,8 @@
 
                 <!-- Roughen Up -->
                 <StackPanel Grid.Column="2"
-                            Grid.Row="2"
-                            Spacing="0">
+                            Grid.Row="4"
+                            Spacing="2">
                     <TextBlock Text="Roughen Up (0-25)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact glossy surfaces the most.." />
@@ -624,8 +644,8 @@
 
                 <!-- Butcher Heightmaps -->
                 <StackPanel Grid.Column="2"
-                            Grid.Row="4"
-                            Spacing="0">
+                            Grid.Row="6"
+                            Spacing="2">
                     <TextBlock Text="Butcher Heightmaps (0-255)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Butchers heightmaps and reduces refinedness, 0 = no change, 255 = fully lazy heightmaps." />
@@ -686,7 +706,7 @@
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xF4A5;"
                                   FontSize="18"
-                                  Margin="0,0,8,0"
+                                  Margin="0,1,6,0"
                                   VerticalAlignment="Center" />
                         <TextBlock Text="Tune Selection"
                                    VerticalAlignment="Center" />
