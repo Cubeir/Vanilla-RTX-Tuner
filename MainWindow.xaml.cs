@@ -1061,8 +1061,6 @@ public sealed partial class MainWindow : Window
             OpusCheckBox.IsEnabled = false;
             OpusCheckBox.IsChecked = false;
             IsOpusEnabled = false;
-
-            UpdateSelectAllState();
         }
         if (FlushPackVersions)
         {
@@ -1255,16 +1253,11 @@ public sealed partial class MainWindow : Window
         {
             OpusCheckBox.IsEnabled = true;
         }
-
-        if (VanillaRTXCheckBox.IsEnabled || NormalsCheckBox.IsEnabled || OpusCheckBox.IsEnabled)
-        {
-            OptionsAllCheckBox.IsEnabled = true;
-            UpdateSelectAllState();
-        }
     }
-
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
+        LocatePacksButton_Click();
+
         ModalBlocker.Visibility = Visibility.Visible;
 
         var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
@@ -1345,22 +1338,6 @@ public sealed partial class MainWindow : Window
 
 
 
-    private void SelectAll_Checked(object sender, RoutedEventArgs e)
-    {
-        if (VanillaRTXCheckBox.IsEnabled) VanillaRTXCheckBox.IsChecked = true;
-        if (NormalsCheckBox.IsEnabled) NormalsCheckBox.IsChecked = true;
-        if (OpusCheckBox.IsEnabled) OpusCheckBox.IsChecked = true;
-    }
-    private void SelectAll_Unchecked(object sender, RoutedEventArgs e)
-    {
-        if (VanillaRTXCheckBox.IsEnabled) VanillaRTXCheckBox.IsChecked = false;
-        if (NormalsCheckBox.IsEnabled) NormalsCheckBox.IsChecked = false;
-        if (OpusCheckBox.IsEnabled) OpusCheckBox.IsChecked = false;
-    }
-    private void SelectAll_Indeterminate(object sender, RoutedEventArgs e)
-    {
-        // Do nothing, as this state is handled by the UpdateSelectAllState method (Intellisense wrote this, boo scary!)
-    }
     private void Option_Checked(object sender, RoutedEventArgs e)
     {
         if (sender is CheckBox checkbox)
@@ -1378,7 +1355,6 @@ public sealed partial class MainWindow : Window
                     break;
             }
         }
-        UpdateSelectAllState();
     }
     private void Option_Unchecked(object sender, RoutedEventArgs e)
     {
@@ -1397,25 +1373,6 @@ public sealed partial class MainWindow : Window
                     break;
             }
         }
-        // _ = BlinkingLamp(true, true, 0.0);
-        UpdateSelectAllState();
-    }
-    private void UpdateSelectAllState()
-    {
-        int checkedCount = new[] {
-        VanillaRTXCheckBox.IsChecked == true,
-        NormalsCheckBox.IsChecked == true,
-        OpusCheckBox.IsChecked == true,
-    }.Count(x => x);
-
-        OptionsAllCheckBox.IsThreeState = true;
-
-        if (checkedCount == 4)
-            OptionsAllCheckBox.IsChecked = true;
-        else if (checkedCount == 0)
-            OptionsAllCheckBox.IsChecked = false;
-        else
-            OptionsAllCheckBox.IsChecked = null;
     }
 
 
@@ -1615,7 +1572,7 @@ public sealed partial class MainWindow : Window
         RuntimeFlags.Unset("Wrote_Supporter_Shoutout");
 
         Log("To perform a full reset of app's data if necessery, hold SHIFT key while pressing Clear Selection.", LogLevel.Informational);
-        Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you can quickly reinstall the latest versions of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button. Other packs will require manual reinstallation. Use Export Selection button to back them up.", LogLevel.Informational);
+        Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you can quickly reinstall the latest versions of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button. Other packs will require manual reinstallation.\nUse Export button to back them up!", LogLevel.Informational);
         Log("Tuner variables were reset.", LogLevel.Success);
     }
     private void ClearButton_Click(object sender, RoutedEventArgs e)

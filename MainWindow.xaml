@@ -340,47 +340,57 @@
         <!-- RIGHT COLUMN CONTENT AREA -->
         <Grid Grid.Column="1">
             <!-- Pack Selection Options -->
-            <StackPanel x:Name="PackOptionsPanel"
-                        Orientation="Vertical"
-                        Margin="8,51,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
-
-                <CheckBox x:Name="OptionsAllCheckBox"
-                          Content="Select Packs"
-                          IsThreeState="True"
-                          IsEnabled="False"
-                          IsChecked="False"
-                          Checked="SelectAll_Checked"
-                          Unchecked="SelectAll_Unchecked"
-                          Indeterminate="SelectAll_Indeterminate"
-                          FontWeight="SemiBold" />
+            <Grid x:Name="PackOptionsPanel"
+                  Margin="8,51,0,0"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Top"
+                  ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
                 <CheckBox x:Name="VanillaRTXCheckBox"
+                          Grid.Column="0"
                           Content="Vanilla RTX"
-                          Margin="20,0,0,0"
-                          IsEnabled="False"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsEnabled="True"
                           Checked="Option_Checked"
                           Unchecked="Option_Unchecked"
                           FontWeight="SemiBold" />
+
+                <AppBarSeparator Grid.Column="1"
+                                 VerticalAlignment="Stretch"
+                                 Margin="8,0" />
 
                 <CheckBox x:Name="NormalsCheckBox"
+                          Grid.Column="2"
                           Content="Vanilla RTX Normals"
-                          Margin="20,0,0,0"
-                          IsEnabled="False"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsEnabled="True"
                           Checked="Option_Checked"
                           Unchecked="Option_Unchecked"
                           FontWeight="SemiBold" />
 
+                <AppBarSeparator Grid.Column="3"
+                                 VerticalAlignment="Stretch"
+                                 Margin="8,0" />
+
                 <CheckBox x:Name="OpusCheckBox"
+                          Grid.Column="4"
                           Content="Vanilla RTX Opus"
-                          Margin="20,0,0,0"
-                          IsEnabled="False"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsEnabled="True"
                           Checked="Option_Checked"
                           Unchecked="Option_Unchecked"
                           FontWeight="SemiBold" />
-            </StackPanel>
+            </Grid>
 
             <!-- Sliders Grid -->
             <Grid x:Name="SlidersGrid"
