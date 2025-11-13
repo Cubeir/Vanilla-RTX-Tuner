@@ -53,7 +53,7 @@
             <Rectangle.Fill>
                 <ImageBrush x:Name="LightThemeImageBrush"
                             ImageSource="ms-appx:///Assets/lighttheme.background.png"
-                            Opacity="0.2"
+                            Opacity="0.1"
                             Stretch="Fill"
                             AlignmentX="Left"
                             AlignmentY="Top" />
@@ -111,7 +111,7 @@
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
-                ToolTipService.ToolTip="Check for update"
+                ToolTipService.ToolTip="Check for app update"
                 IsTextScaleFactorEnabled="False"/>
 
 
@@ -225,14 +225,14 @@
                             VerticalAlignment="Stretch"
                             FontWeight="SemiBold"
                             CornerRadius="4,0,0,4"
-                            ToolTipService.ToolTip="Select from a list of your installed PBR-enabled resource packs for tuning or export.">
+                            ToolTipService.ToolTip="Select a pack from your local PBR-enabled resource packs for tuning or export.">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xF78B;"
                                       FontSize="18"
                                       Margin="0,0,8,0"
                                       VerticalAlignment="Center" />
-                            <TextBlock Text="Browse Installed Packs"
+                            <TextBlock Text="Select from local packs"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -501,7 +501,7 @@
                                       FontSize="16"
                                       Margin="0,0,8,0"
                                       VerticalAlignment="Center" />
-                            <TextBlock Text="Clear Selection"
+                            <TextBlock Text="Clear selection"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -509,7 +509,7 @@
                             BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
                             BorderThickness="2,0,0,0"
                             Grid.Column="1"
-                            Content="Reset Settings"
+                            Content="Reset settings"
                             Click="ResetButton_Click"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
@@ -524,7 +524,7 @@
                             Grid.Row="0"
                             Spacing="2"
                             VerticalAlignment="Bottom">
-                    <TextBlock Text="Fog Multiplier (0.0-10.0)"
+                    <TextBlock Text="Fog multiplier (0.0-10.0)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.2–0.8 for lighter fog, 1.5-3.0 for dense fog. 0 to disable air fog." />
                     <Grid>
@@ -569,7 +569,7 @@
                             Grid.Row="2"
                             Spacing="2"
                             VerticalAlignment="Bottom">
-                    <TextBlock Text="Emissivity Multiplier (0.5-10.0)"
+                    <TextBlock Text="Emissivity multiplier (0.5-10.0)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales emissivity of all emissive blocks. 1 = default, 0.5 = half brightness, higher values = stronger glow." />
                     <Grid>
@@ -611,7 +611,7 @@
                             Grid.Row="4"
                             Spacing="2"
                             VerticalAlignment="Center">
-                    <TextBlock Text="Increase Ambient Lighting"
+                    <TextBlock Text="Increase ambient lighting"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted, higher emissive multipliers strengthen the effect." />
                     <Grid>
@@ -643,7 +643,7 @@
                             Grid.Row="6"
                             Spacing="2"
                             VerticalAlignment="Bottom">
-                    <TextBlock Text="Normal Intensity (0-900%)"
+                    <TextBlock Text="Normal intensity (0-900%)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks." />
                     <Grid>
@@ -688,7 +688,7 @@
                             Grid.Row="2"
                             Spacing="2"
                             VerticalAlignment="Bottom">
-                    <TextBlock Text="Material Grain Offset (0-25)"
+                    <TextBlock Text="Material grain offset (0-25)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Creates grainy materials by adding a layer of noise in a manner that keeps the pack's intended look intact, your input determines the maximum deviation.." />
                     <Grid>
@@ -734,7 +734,7 @@
                             Grid.Row="4"
                             Spacing="2"
                             VerticalAlignment="Center">
-                    <TextBlock Text="Roughen Up (0-25)"
+                    <TextBlock Text="Roughen up (0-25)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact glossy surfaces the most.." />
                     <Grid>
@@ -779,7 +779,7 @@
                             Grid.Row="6"
                             Spacing="2"
                             VerticalAlignment="Bottom">
-                    <TextBlock Text="Butcher Heightmaps (0-255)"
+                    <TextBlock Text="Butcher heightmaps (0-255)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Lazifies heightmaps and reduces refinedness (0 = no change, 255 = fully lazy heightmaps)." />
                     <Grid>
@@ -857,7 +857,7 @@
                         VerticalAlignment="Stretch"
                         CornerRadius="4,0,0,0"
                         BorderThickness="0,0,2,2"
-                        ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is finished.">
+                        ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is complete.">
                     <Button.BorderBrush>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="1,1">
@@ -873,7 +873,7 @@
                                   FontSize="18"
                                   Margin="0,1,6,0"
                                   VerticalAlignment="Center" />
-                        <TextBlock Text="Tune Selection"
+                        <TextBlock Text="Tune selection"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
@@ -906,7 +906,7 @@
                                   VerticalAlignment="Center"
                                   x:Name="UpdateVanillaRTXGlyph"
                                   x:FieldModifier="public" />
-                        <TextBlock Text="Reinstall Latest Packs"
+                        <TextBlock Text="Reinstall latest packs"
                                    VerticalAlignment="Center"
                                    x:Name="UpdateVanillaRTXButtonText"
                                    x:FieldModifier="public" />
@@ -971,7 +971,7 @@
                                   FontSize="18"
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center" />
-                        <TextBlock Text="Export Selection"
+                        <TextBlock Text="Export selection"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>

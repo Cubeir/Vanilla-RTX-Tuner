@@ -250,12 +250,12 @@ public sealed partial class MainWindow : Window
         if (_updater.HasDeployableCache())
         {
             UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Syncfolder icon
-            UpdateVanillaRTXButtonText.Text = "Reinstall Latest Packs";
+            UpdateVanillaRTXButtonText.Text = "Reinstall latest Packs";
         }
         else
         {
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default cloud icon
-            UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
+            UpdateVanillaRTXButtonText.Text = "Install latest Packs";
         }
 
         // lazy credits and PSA retriever, credits are saved for donate hover event, PSA is shown when ready
@@ -1853,12 +1853,12 @@ public sealed partial class MainWindow : Window
             if (_updater.HasDeployableCache())
             {
                 UpdateVanillaRTXGlyph.Glyph = "\uE8F7";
-                UpdateVanillaRTXButtonText.Text = "Reinstall Latest Packs";
+                UpdateVanillaRTXButtonText.Text = "Reinstall latest packs";
             }
             else
             {
                 UpdateVanillaRTXGlyph.Glyph = "\uEBD3";
-                UpdateVanillaRTXButtonText.Text = "Install Latest Packs";
+                UpdateVanillaRTXButtonText.Text = "Install latest packs";
             }
 
             // Trigger an automatic pack location check after update (fail or not)
