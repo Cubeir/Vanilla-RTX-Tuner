@@ -42,11 +42,6 @@ You already had the tools and decided not to use them?!
 
 - Perfect the appearance of 2x2 button grid
 
-- Make sidebar log text copiable?
-Even if not, reduce the size of the invisible copy log button to the previewer area?
-or a secret corner? this isn't somethign users use daily
-but to take scrolling away for it is just dumb!
-
 - Add DPI-aware preferred minimum width and height
 
 - Disable increasing font size on the ENTIRE app
@@ -1279,7 +1274,7 @@ public sealed partial class MainWindow : Window
     }
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        ModalBlocker.Visibility = Visibility.Visible;
+        ToggleControls(this, false, true, []);
 
         var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
         var mainAppWindow = this.AppWindow;
@@ -1291,7 +1286,7 @@ public sealed partial class MainWindow : Window
 
         packBrowserWindow.Closed += (s, args) =>
         {
-            ModalBlocker.Visibility = Visibility.Collapsed;
+            ToggleControls(this, true, true, []);
 
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
@@ -1305,10 +1300,6 @@ public sealed partial class MainWindow : Window
         };
 
         packBrowserWindow.Activate();
-    }
-    private void ModalBlocker_PointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        Log("Main Window is blocked while selecting a resource pack, close the pack selection window or select a pack to return.", LogLevel.Warning);
     }
 
 
