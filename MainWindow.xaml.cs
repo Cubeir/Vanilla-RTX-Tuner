@@ -342,7 +342,7 @@ public sealed partial class MainWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 960;
+            presenter.PreferredMinimumWidth = 950;
             presenter.PreferredMinimumHeight = 600;
         }
 
@@ -1058,42 +1058,6 @@ public sealed partial class MainWindow : Window
         double Lerp(double start, double end, double t) => start + (end - start) * t;
     }
 
-
-
-    public void FlushTheseVariables(bool FlushLocations = false, bool FlushCheckBoxes = false, bool FlushPackVersions = false)
-    {
-        // TODO: Review this method, most of the time everything is flushed, so the overloads are not necessery, except where it isn't, and why?
-        if (FlushLocations)
-        {
-            VanillaRTXLocation = string.Empty;
-            VanillaRTXNormalsLocation = string.Empty;
-            VanillaRTXOpusLocation = string.Empty;
-            CustomPackLocation = string.Empty;
-        }
-        if (FlushCheckBoxes)
-        {
-            VanillaRTXCheckBox.IsEnabled = false;
-            VanillaRTXCheckBox.IsChecked = false;
-            IsVanillaRTXEnabled = false;
-
-            NormalsCheckBox.IsEnabled = false;
-            NormalsCheckBox.IsChecked = false;
-            IsNormalsEnabled = false;
-
-            OpusCheckBox.IsEnabled = false;
-            OpusCheckBox.IsChecked = false;
-            IsOpusEnabled = false;
-        }
-        if (FlushPackVersions)
-        {
-            VanillaRTXVersion = string.Empty;
-            VanillaRTXNormalsVersion = string.Empty;
-            VanillaRTXOpusVersion = string.Empty;
-            CustomPackDisplayName = string.Empty;
-        }
-        // lasang🍝 
-    }
-
     #endregion -------------------------------
 
 
@@ -1252,26 +1216,46 @@ public sealed partial class MainWindow : Window
     private void LocatePacksButton_Click()
     {
         _ = BlinkingLamp(true, true, 1.0);
-        FlushTheseVariables(true, true, true);
+
+        // Reset these variables
+        VanillaRTXLocation = string.Empty;
+        VanillaRTXNormalsLocation = string.Empty;
+        VanillaRTXOpusLocation = string.Empty;
+        CustomPackLocation = string.Empty;
+
+        VanillaRTXCheckBox.IsEnabled = false;
+        VanillaRTXCheckBox.IsChecked = false;
+        IsVanillaRTXEnabled = false;
+        NormalsCheckBox.IsEnabled = false;
+        NormalsCheckBox.IsChecked = false;
+        IsNormalsEnabled = false;
+        OpusCheckBox.IsEnabled = false;
+        OpusCheckBox.IsChecked = false;
+        IsOpusEnabled = false;
+
+        VanillaRTXVersion = string.Empty;
+        VanillaRTXNormalsVersion = string.Empty;
+        VanillaRTXOpusVersion = string.Empty;
+        CustomPackDisplayName = string.Empty;
 
         var statusMessage = PackLocator.LocatePacks(IsTargetingPreview,
             out VanillaRTXLocation, out VanillaRTXVersion,
             out VanillaRTXNormalsLocation, out VanillaRTXNormalsVersion,
             out VanillaRTXOpusLocation, out VanillaRTXOpusVersion);
 
-        Log(statusMessage);
+        // Log(statusMessage);
 
-        if (!string.IsNullOrEmpty(VanillaRTXLocation))
+        if (!string.IsNullOrEmpty(VanillaRTXLocation) && Directory.Exists(VanillaRTXLocation))
         {
             VanillaRTXCheckBox.IsEnabled = true;
         }
 
-        if (!string.IsNullOrEmpty(VanillaRTXNormalsLocation))
+        if (!string.IsNullOrEmpty(VanillaRTXNormalsLocation) && Directory.Exists(VanillaRTXNormalsLocation))
         {
             NormalsCheckBox.IsEnabled = true;
         }
 
-        if (!string.IsNullOrEmpty(VanillaRTXOpusLocation))
+        if (!string.IsNullOrEmpty(VanillaRTXOpusLocation) && Directory.Exists(VanillaRTXOpusLocation))
         {
             OpusCheckBox.IsEnabled = true;
         }
@@ -1281,6 +1265,7 @@ public sealed partial class MainWindow : Window
         LocatePacksButton_Click();
 
         ModalBlocker.Visibility = Visibility.Visible;
+        _ = BlinkingLamp(true);
 
         var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
         var mainAppWindow = this.AppWindow;
@@ -1293,11 +1278,11 @@ public sealed partial class MainWindow : Window
         packBrowserWindow.Closed += (s, args) =>
         {
             ModalBlocker.Visibility = Visibility.Collapsed;
+            _ = BlinkingLamp(false);
 
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
                 Log($"Selected: {TunerVariables.CustomPackDisplayName}", LogLevel.Success);
-                _ = BlinkingLamp(true, true, 1.0);
             }
         };
 
@@ -1309,14 +1294,12 @@ public sealed partial class MainWindow : Window
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = true;
-        FlushTheseVariables(true, true, true);
         LocatePacksButton_Click();
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = false;
-        FlushTheseVariables(true, true, true);
         LocatePacksButton_Click();
         Log("Targeting Minecraft Release.", LogLevel.Informational);
     }
@@ -1867,7 +1850,6 @@ public sealed partial class MainWindow : Window
             _ = BlinkingLamp(false);
             ToggleControls(this, true);
             _progressManager.HideProgress();
-            FlushTheseVariables(true, true);
 
             // Set reinstall latest packs button visuals based on cache status
             if (_updater.HasDeployableCache())

@@ -224,7 +224,7 @@
                             VerticalAlignment="Stretch"
                             FontWeight="SemiBold"
                             CornerRadius="4,0,0,4"
-                            ToolTipService.ToolTip="Browse existing PBR-enabled resource packs and select one.">
+                            ToolTipService.ToolTip="Select from a list of your installed PBR-enabled resource packs for tuning or export.">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xF78B;"
@@ -279,7 +279,7 @@
 
                 <!-- Invisible overlay button -->
                 <Button x:Name="LogCopyButton"
-                        Margin="16,100,24,16"
+                        Margin="16,107,8,16"
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         Background="Transparent"
