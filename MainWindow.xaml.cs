@@ -37,12 +37,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Remove modal blocker and instead disable all UI elements while packbrowser is open
-You already had the tools and decided not to use them?!
-
 - Perfect the appearance of 2x2 button grid
-
-- Add DPI-aware preferred minimum width and height
 
 - Disable increasing font size on the ENTIRE app
 
@@ -200,8 +195,12 @@ public sealed partial class MainWindow : Window
     private static CancellationTokenSource? _lampBlinkCts;
     private static readonly Dictionary<string, BitmapImage> _imageCache = new();
 
+    [DllImport("user32.dll")]
+    public static extern uint GetDpiForWindow(IntPtr hWnd);
+
     private int _mojankClickCount = 0;
     private DateTime _mojankLastClick = DateTime.MinValue;
+
 
     public MainWindow()
     {
@@ -346,14 +345,17 @@ public sealed partial class MainWindow : Window
         var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-
         appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
+
         if (appWindow.Presenter is OverlappedPresenter presenter)
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 925;
-            presenter.PreferredMinimumHeight = 525;
+
+            var dpi = GetDpiForWindow(hWnd);
+            var scaleFactor = dpi / 96.0;
+            presenter.PreferredMinimumWidth = (int)(925 * scaleFactor);
+            presenter.PreferredMinimumHeight = (int)(525 * scaleFactor);
         }
 
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");

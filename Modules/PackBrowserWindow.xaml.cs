@@ -36,8 +36,10 @@ public sealed partial class PackBrowserWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 925; // INFO: SAME AS MAIN WINDOW
-            presenter.PreferredMinimumHeight = 525;
+            var dpi = MainWindow.GetDpiForWindow(hWnd);
+            var scaleFactor = dpi / 96.0;
+            presenter.PreferredMinimumWidth = (int)(925 * scaleFactor);
+            presenter.PreferredMinimumHeight = (int)(525 * scaleFactor);
         }
 
         if (_appWindow.TitleBar != null)
