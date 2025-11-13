@@ -31,11 +31,21 @@ public sealed partial class PackBrowserWindow : Window
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         _appWindow = AppWindow.GetFromWindowId(windowId);
 
+        _appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
+        if (_appWindow.Presenter is OverlappedPresenter presenter)
+        {
+            presenter.IsResizable = true;
+            presenter.IsMaximizable = true;
+            presenter.PreferredMinimumWidth = 925; // INFO: SAME AS MAIN WINDOW
+            presenter.PreferredMinimumHeight = 525;
+        }
+
         if (_appWindow.TitleBar != null)
         {
             _appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
             _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
             _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         }
 
         this.Activated += PackBrowserWindow_Activated;
@@ -56,6 +66,8 @@ public sealed partial class PackBrowserWindow : Window
 
         if (args.WindowActivationState != WindowActivationState.Deactivated)
         {
+
+            // Unsub
             this.Activated -= PackBrowserWindow_Activated;
 
             // Delay drag region setup until UI is fully loaded
@@ -132,7 +144,7 @@ public sealed partial class PackBrowserWindow : Window
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
-            Padding = new Thickness(20),
+            Padding = new Thickness(16, 20, 16, 20),
             Margin = new Thickness(0, 5, 0, 5),
             CornerRadius = new CornerRadius(5),
             Tag = pack,

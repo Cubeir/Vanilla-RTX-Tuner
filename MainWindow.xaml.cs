@@ -1283,10 +1283,7 @@ public sealed partial class MainWindow : Window
 
         packBrowserWindow.Activate();
     }
-    private void ModalBlocker_PointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        Log("Select a resource pack from or close the 'Select Another Resource Pack' menu to return.", LogLevel.Warning);
-    }
+
 
 
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)

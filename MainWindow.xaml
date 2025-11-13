@@ -984,7 +984,6 @@
               Background="#40000000"
               Visibility="Collapsed"
               IsHitTestVisible="True"
-              PointerPressed="ModalBlocker_PointerPressed"
               Canvas.ZIndex="9998" />
 
         <!-- Splash Blocker -->

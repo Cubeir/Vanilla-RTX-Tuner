@@ -58,12 +58,36 @@
                 <!-- Centered Title -->
                 <Grid HorizontalAlignment="Center"
                       VerticalAlignment="Center">
-                    <TextBlock Text="Select Another Resource Pack"
+                    <TextBlock Text="Select from your local RTX or Vibrant Visuals resource packs."
                                Margin="0,6,0,5"
                                VerticalAlignment="Center"
                                IsTextScaleFactorEnabled="False"
                                IsHitTestVisible="False" />
                 </Grid>
+
+                <!-- Close Button -->
+                <Button x:Name="CloseButton"
+                        Width="64"
+                        Height="36"
+                        Margin="20,1,0,0"
+                        Padding="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        CornerRadius="0, 0, 6, 6"
+                        Click="CloseButton_Click"
+                        ToolTipService.ToolTip="Close"
+                        Translation="0,0,24"
+                        IsTextScaleFactorEnabled="False">
+                    <Button.Shadow>
+                        <ThemeShadow />
+                    </Button.Shadow>
+                    <FontIcon Glyph="&#xEF2C;"
+                              FontSize="16"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" 
+                              Margin="0, -3, 0, 0"
+                              IsTextScaleFactorEnabled="False"/>
+                </Button>
             </Grid>
 
             <!-- Pack List -->
@@ -72,7 +96,7 @@
                 <Grid x:Name="ShadowReceiverGrid" />
 
                 <ScrollViewer Padding="20"
-                              Margin="0,8,0,0"
+                              Margin="0, -4,0,0"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
                     <StackPanel x:Name="PackListContainer"
