@@ -375,11 +375,11 @@
                 </Border.Shadow>
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="0.9*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="1.15*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="1.075*" />
                     </Grid.ColumnDefinitions>
 
                     <CheckBox x:Name="VanillaRTXCheckBox"
@@ -391,7 +391,7 @@
                               Unchecked="Option_Unchecked">
                         <TextBlock Text="Vanilla RTX"
                                    FontWeight="SemiBold"
-                                   Margin="0,0.5,0,0" />
+                                   Margin="2,1,0,0" />
                     </CheckBox>
 
                     <AppBarSeparator Grid.Column="1"
@@ -407,7 +407,7 @@
                               Unchecked="Option_Unchecked">
                         <TextBlock Text="Vanilla RTX Normals"
                                    FontWeight="SemiBold"
-                                   Margin="0,0.5,0,0" />
+                                   Margin="2,1,0,0" />
                     </CheckBox>
 
                     <AppBarSeparator Grid.Column="3"
@@ -423,7 +423,7 @@
                               Unchecked="Option_Unchecked">
                         <TextBlock Text="Vanilla RTX Opus"
                                    FontWeight="SemiBold"
-                                   Margin="0,0.5,0,0" />
+                                   Margin="2,1,0,0" />
                     </CheckBox>
                 </Grid>
             </Border>

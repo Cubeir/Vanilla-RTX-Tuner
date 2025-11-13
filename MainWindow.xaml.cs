@@ -63,6 +63,11 @@ Potential edge case fixes and refactoring is all that can be done.
 The app, and all of its aspects, are now functionally perfect, further feature development is blissful.
 
 
+- Search development resource packs for locating Vanilla RTX as well -- packbrowser does it already, this is the only other places
+If you solidify these hardcoded paths into a class it would be good, make it easy to change...
+pack updater, pack locators, launcher, they deal with hardcoded paths, what else?
+
+
 End of Development/Unimportant ideas:
 
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...

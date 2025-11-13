@@ -58,7 +58,7 @@
                 <!-- Centered Title -->
                 <Grid HorizontalAlignment="Center"
                       VerticalAlignment="Center">
-                    <TextBlock Text="Select from your local RTX or Vibrant Visuals resource packs."
+                    <TextBlock Text="Select from your local RTX or Vibrant Visuals resource packs"
                                Margin="0,6,0,5"
                                VerticalAlignment="Center"
                                IsTextScaleFactorEnabled="False"
@@ -67,7 +67,7 @@
 
                 <!-- Close Button -->
                 <Button x:Name="CloseButton"
-                        Width="64"
+                        Width="52"
                         Height="36"
                         Margin="20,1,0,0"
                         Padding="0"
@@ -81,7 +81,7 @@
                     <Button.Shadow>
                         <ThemeShadow />
                     </Button.Shadow>
-                    <FontIcon Glyph="&#xEF2C;"
+                    <FontIcon Glyph="&#xF78A;"
                               FontSize="16"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center" 
@@ -95,7 +95,7 @@
                 <!-- Shadow receiver grid, should be behind the scrollviewer -->
                 <Grid x:Name="ShadowReceiverGrid" />
 
-                <ScrollViewer Padding="20"
+                <ScrollViewer Padding="20, 20, 20, 0"
                               Margin="0, -4,0,0"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
