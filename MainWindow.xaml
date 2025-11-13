@@ -339,58 +339,72 @@
         
         <!-- RIGHT COLUMN CONTENT AREA -->
         <Grid Grid.Column="1">
+
+
             <!-- Pack Selection Options -->
-            <Grid x:Name="PackOptionsPanel"
-                  Margin="0,55,0,0"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Top"
-                  ToolTipService.ToolTip="Select from the list of installed Vanilla RTX resource packs for tuning or export.">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
+            <Border x:Name="PackOptionsPanel"
+                    Margin="8, 50, 16, 0"
+                    Padding="16,10"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    ToolTipService.ToolTip="Select from the list of installed Vanilla RTX resource packs for tuning or export.">
+                <Grid HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                <CheckBox x:Name="VanillaRTXCheckBox"
-                          Grid.Column="0"
-                          Content="Vanilla RTX"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          IsEnabled="True"
-                          Checked="Option_Checked"
-                          Unchecked="Option_Unchecked"
-                          FontWeight="SemiBold" />
+                    <CheckBox x:Name="VanillaRTXCheckBox"
+                              Grid.Column="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="8,0"
+                              Checked="Option_Checked"
+                              Unchecked="Option_Unchecked">
+                        <TextBlock Text="Vanilla RTX"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0.5,0,0" />
+                    </CheckBox>
 
-                <AppBarSeparator Grid.Column="1"
-                                 VerticalAlignment="Stretch"        
-                                 Margin="0,0" />
+                    <AppBarSeparator Grid.Column="1"
+                                     VerticalAlignment="Stretch"
+                                     Margin="0" />
 
-                <CheckBox x:Name="NormalsCheckBox"
-                          Grid.Column="2"
-                          Content="Vanilla RTX Normals"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          IsEnabled="True"
-                          Checked="Option_Checked"
-                          Unchecked="Option_Unchecked"
-                          FontWeight="SemiBold" />
+                    <CheckBox x:Name="NormalsCheckBox"
+                              Grid.Column="2"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="8,0"
+                              Checked="Option_Checked"
+                              Unchecked="Option_Unchecked">
+                        <TextBlock Text="Vanilla RTX Normals"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0.5,0,0" />
+                    </CheckBox>
 
-                <AppBarSeparator Grid.Column="3"
-                                 VerticalAlignment="Stretch"
-                                 Margin="0,0" />
+                    <AppBarSeparator Grid.Column="3"
+                                     VerticalAlignment="Stretch"
+                                     Margin="0" />
 
-                <CheckBox x:Name="OpusCheckBox"
-                          Grid.Column="4"
-                          Content="Vanilla RTX Opus"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          IsEnabled="True"
-                          Checked="Option_Checked"
-                          Unchecked="Option_Unchecked"
-                          FontWeight="SemiBold" />
-            </Grid>
+                    <CheckBox x:Name="OpusCheckBox"
+                              Grid.Column="4"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="8,0"
+                              Checked="Option_Checked"
+                              Unchecked="Option_Unchecked">
+                        <TextBlock Text="Vanilla RTX Opus"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0.5,0,0" />
+                    </CheckBox>
+                </Grid>
+            </Border>
 
 
 
@@ -679,7 +693,7 @@
                             VerticalAlignment="Bottom">
                     <TextBlock Text="Butcher Heightmaps (0-255)"
                                FontWeight="Bold"
-                               ToolTipService.ToolTip="Butchers heightmaps and reduces refinedness, 0 = no change, 255 = fully lazy heightmaps." />
+                               ToolTipService.ToolTip="Lazifies heightmaps and reduces refinedness (0 = no change, 255 = fully lazy heightmaps)." />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"

@@ -908,6 +908,8 @@ public class Processor
 
 
     // TODO: Do additions unbound, then scale back to RGB range?
+    // The way they combine is already flawless
+    // Just be mindful of what you put in alpha channel of textures in Vanilla RTX -- they get reused for generating the lazy heightmap
     private static void ProcessHeightmaps(PackInfo pack)
     {
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
