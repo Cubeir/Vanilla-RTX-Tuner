@@ -719,9 +719,9 @@
                     <Button.BorderBrush>
                         <LinearGradientBrush StartPoint="0,0"
                                              EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="0" />
                             <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
                                           Offset="1" />
                         </LinearGradientBrush>
                     </Button.BorderBrush>
@@ -736,9 +736,9 @@
                     </StackPanel>
                 </Button>
 
-                <!-- Export Button (Top-Right) -->
-                <Button x:Name="ExportButton"
-                        Click="ExportButton_Click"
+                <!-- Reinstall Button (Top-Right) -->
+                <Button x:Name="UpdateVanillaRTXButton"
+                        Click="UpdateVanillaRTXButton_Click"
                         Grid.Row="0"
                         Grid.Column="1"
                         FontWeight="SemiBold"
@@ -746,69 +746,6 @@
                         VerticalAlignment="Stretch"
                         CornerRadius="0,4,0,0"
                         BorderThickness="2,0,0,2"
-                        ToolTipService.ToolTip="Exports selected packages.">
-                    <Button.BorderBrush>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="0" />
-                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                          Offset="1" />
-                        </LinearGradientBrush>
-                    </Button.BorderBrush>
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xEDE2;"
-                                  FontSize="18"
-                                  Margin="0,0,8,0"
-                                  VerticalAlignment="Center" />
-                        <TextBlock Text="Export Selection"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
-
-                <!-- Launch Button (Bottom-Left) -->
-                <Button x:Name="LaunchButton"
-                        Click="LaunchButton_Click"
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        CornerRadius="0,0,0,4"
-                        BorderThickness="0,2,2,0"
-                        ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Additionally disables VSync for better performanc and enables in-game graphics mode switching.">
-                    <Button.BorderBrush>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                          Offset="0" />
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="1" />
-                        </LinearGradientBrush>
-                    </Button.BorderBrush>
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xE78B;"
-                                  FontSize="18"
-                                  Margin="0,0,8,0"
-                                  VerticalAlignment="Center" />
-                        <TextBlock Text="Launch Minecraft RTX"
-                                   VerticalAlignment="Center"
-                                   x:Name="LaunchButtonText" />
-                    </StackPanel>
-                </Button>
-
-                <!-- Reinstall Button (Bottom-Right) -->
-                <Button x:Name="UpdateVanillaRTXButton"
-                        Click="UpdateVanillaRTXButton_Click"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        CornerRadius="0,0,4,0"
-                        BorderThickness="2,2,0,0"
                         ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are always redeployed from cache unless a new Vanilla RTX update is available.">
                     <Button.BorderBrush>
                         <LinearGradientBrush StartPoint="0,0"
@@ -831,6 +768,69 @@
                                    VerticalAlignment="Center"
                                    x:Name="UpdateVanillaRTXButtonText"
                                    x:FieldModifier="public" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Launch Button (Bottom-Left) -->
+                <Button x:Name="LaunchButton"
+                        Click="LaunchButton_Click"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        CornerRadius="0,0,0,4"
+                        BorderThickness="0,2,2,0"
+                        ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Additionally disables VSync for better performanc and enables in-game graphics mode switching.">
+                    <Button.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.BorderBrush>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xE78B;"
+                                  FontSize="18"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="Launch Minecraft RTX"
+                                   VerticalAlignment="Center"
+                                   x:Name="LaunchButtonText" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Export Button (Bottom-Right) -->
+                <Button x:Name="ExportButton"
+                        Click="ExportButton_Click"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        CornerRadius="0,0,4,0"
+                        BorderThickness="2,2,0,0"
+                        ToolTipService.ToolTip="Exports selected packages.">
+                    <Button.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.BorderBrush>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xEDE2;"
+                                  FontSize="18"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="Export Selection"
+                                   VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </Grid>
