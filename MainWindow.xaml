@@ -76,7 +76,7 @@
                 BorderBrush="Transparent"
                 Click="HelpButton_Click"
                 ToolTipService.ToolTip="Help"
-                IsTextScaleFactorEnabled="False" />
+                IsTextScaleFactorEnabled="False"/>
 
         <Button x:Name="DonateButton"
                 Style="{StaticResource ButtonSegIcons}"
@@ -95,7 +95,7 @@
                 PointerEntered="DonateButton_PointerEntered"
                 PointerExited="DonateButton_PointerExited"
                 ToolTipService.ToolTip="Support the developer"
-                IsTextScaleFactorEnabled="False" />
+                IsTextScaleFactorEnabled="False"/>
 
         <Button x:Name="AppUpdaterButton"
                 Style="{StaticResource ButtonSegIcons}"
@@ -112,7 +112,7 @@
                 BorderBrush="Transparent"
                 Click="AppUpdaterButton_Click"
                 ToolTipService.ToolTip="Check for update"
-                IsTextScaleFactorEnabled="False" />
+                IsTextScaleFactorEnabled="False"/>
 
 
         <!-- Titlebar Center Content -->
@@ -178,7 +178,7 @@
                         Width="20"
                         Canvas.ZIndex="5"
                         CornerRadius="0"
-                        Click="MojankEasterEggButton_Click" />
+                        Click="MojankEasterEggButton_Click"/>
             </Canvas>
 
             <TextBlock x:Name="TitleBarText"
@@ -198,6 +198,7 @@
               x:Name="LeftContentGrid">
             <!-- Shadow receiver for left column -->
             <Grid x:Name="LeftShadowReceiver"
+                  IsHitTestVisible="False"
                   Background="Transparent" />
 
             <!-- Buttons above sidebar log with shadow -->
@@ -279,7 +280,7 @@
 
                 <!-- Invisible overlay button -->
                 <Button x:Name="LogCopyButton"
-                        Margin="16,107,8,16"
+                        Margin="16,107,24,16"
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         Background="Transparent"
@@ -355,6 +356,7 @@
         <Grid Grid.Column="1">
             <!-- Shadow receiver for right column -->
             <Grid x:Name="RightShadowReceiver"
+                  IsHitTestVisible="False"
                   Background="Transparent" />
 
             <!-- Pack Selection Options with shadow -->
