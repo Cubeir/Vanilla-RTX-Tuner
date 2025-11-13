@@ -37,12 +37,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Add shadows to UI elements
-
-
 - Add DPI-aware preferred minimum width and height
-
-
 
 - Implement a way for current custom pack selection be visible even outside of logs
 
@@ -96,6 +91,7 @@ public static class TunerVariables
 {
     public static string? appVersion = null;
 
+    // Used for unique name generation (Mutex, Downloads + Hard Reset Cleaner)
     public static string CacheFolderName = Helpers.GetCacheFolderName();
 
     public static string VanillaRTXLocation = string.Empty;
@@ -210,7 +206,7 @@ public sealed partial class MainWindow : Window
 
         Instance = this;
 
-        var defaultSize = new SizeInt32(1000, 650);
+        var defaultSize = new SizeInt32(900, 600);
         _windowStateManager.ApplySavedStateOrDefaults();
 
         // Version, title and initial logs
@@ -342,8 +338,8 @@ public sealed partial class MainWindow : Window
         {
             presenter.IsResizable = true;
             presenter.IsMaximizable = true;
-            presenter.PreferredMinimumWidth = 950;
-            presenter.PreferredMinimumHeight = 600;
+            presenter.PreferredMinimumWidth = 925;
+            presenter.PreferredMinimumHeight = 525;
         }
 
         var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
@@ -1265,7 +1261,6 @@ public sealed partial class MainWindow : Window
         LocatePacksButton_Click();
 
         ModalBlocker.Visibility = Visibility.Visible;
-        _ = BlinkingLamp(true);
 
         var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
         var mainAppWindow = this.AppWindow;
@@ -1278,17 +1273,20 @@ public sealed partial class MainWindow : Window
         packBrowserWindow.Closed += (s, args) =>
         {
             ModalBlocker.Visibility = Visibility.Collapsed;
-            _ = BlinkingLamp(false);
 
             if (!string.IsNullOrEmpty(TunerVariables.CustomPackLocation))
             {
                 Log($"Selected: {TunerVariables.CustomPackDisplayName}", LogLevel.Success);
+                _ = BlinkingLamp(true, true, 1.0);
             }
         };
 
         packBrowserWindow.Activate();
     }
-
+    private void ModalBlocker_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        Log("Select a resource pack from or close the 'Select Another Resource Pack' menu to return.", LogLevel.Warning);
+    }
 
 
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)

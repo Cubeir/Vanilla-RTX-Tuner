@@ -67,14 +67,18 @@
             </Grid>
 
             <!-- Pack List -->
-            <ScrollViewer Grid.Row="1"
-                          Padding="20"
-                          Margin="0,8,0,0"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Auto">
-                <StackPanel x:Name="PackListContainer"
-                            Spacing="8" />
-            </ScrollViewer>
+            <Grid Grid.Row="1">
+                <!-- Shadow receiver grid, should be behind the scrollviewer -->
+                <Grid x:Name="ShadowReceiverGrid" />
+
+                <ScrollViewer Padding="20"
+                              Margin="0,8,0,0"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="PackListContainer"
+                                Spacing="8" />
+                </ScrollViewer>
+            </Grid>
 
             <!-- Empty State -->
             <StackPanel x:Name="EmptyStatePanel"

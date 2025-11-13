@@ -8,6 +8,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanilla_RTX_Tuner_WinUI.Core;
 using Windows.Storage;
@@ -131,25 +132,51 @@ public sealed partial class PackBrowserWindow : Window
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
-            Padding = new Thickness(12),
-            Tag = pack
+            Padding = new Thickness(20),
+            Margin = new Thickness(0, 5, 0, 5),
+            CornerRadius = new CornerRadius(5),
+            Tag = pack,
+            Translation = new System.Numerics.Vector3(0, 0, 16) // Elevation yeah
+        };
+
+        // Add shadow to button
+        var buttonShadow = new ThemeShadow();
+        button.Shadow = buttonShadow;
+        button.Loaded += (s, e) =>
+        {
+            if (ShadowReceiverGrid != null)
+            {
+                buttonShadow.Receivers.Add(ShadowReceiverGrid);
+            }
         };
 
         var grid = new Grid();
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(56) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(12) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(75) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(15) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(12) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(15) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
         // Icon
         var iconBorder = new Border
         {
-            Width = 56,
-            Height = 56,
-            CornerRadius = new CornerRadius(6),
+            Width = 75,
+            Height = 75,
+            CornerRadius = new CornerRadius(4),
             Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                Microsoft.UI.Colors.Gray)
+                Microsoft.UI.Colors.Gray),
+            Translation = new System.Numerics.Vector3(0, 0, 60) // Icon elevation
+        };
+
+        // Shadow for teh icon
+        var iconShadow = new ThemeShadow();
+        iconBorder.Shadow = iconShadow;
+        iconBorder.Loaded += (s, e) =>
+        {
+            if (ShadowReceiverGrid != null)
+            {
+                iconShadow.Receivers.Add(ShadowReceiverGrid);
+            }
         };
 
         if (pack.Icon != null)
@@ -162,14 +189,26 @@ public sealed partial class PackBrowserWindow : Window
         }
         else
         {
-            iconBorder.Child = new FontIcon
+            try
             {
-                Glyph = "\uE8B7",
-                FontSize = 32,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
+                iconBorder.Child = new Image
+                {
+                    Source = new BitmapImage(new Uri("ms-appx:///Assets/missing.png")),
+                    Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill
+                };
+            }
+            catch
+            {
+                iconBorder.Child = new FontIcon
+                {
+                    Glyph = "\uE7B8",
+                    FontSize = 32,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+            }
         }
+
 
         Grid.SetColumn(iconBorder, 0);
         grid.Children.Add(iconBorder);
@@ -217,7 +256,7 @@ public sealed partial class PackBrowserWindow : Window
             var tagBorder = new Border
             {
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(105, 35, 35, 35)), // Dim grey
+                    Microsoft.UI.ColorHelper.FromArgb(105, 35, 35, 35)),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 4, 8, 4)
             };
@@ -228,7 +267,7 @@ public sealed partial class PackBrowserWindow : Window
                 FontSize = 12,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Microsoft.UI.ColorHelper.FromArgb(255, 250, 240, 240)) // Light grey text
+                    Microsoft.UI.ColorHelper.FromArgb(255, 250, 240, 240))
             };
 
             tagBorder.Child = tagText;
