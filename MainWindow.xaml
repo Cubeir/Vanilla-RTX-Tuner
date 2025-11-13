@@ -278,17 +278,20 @@
                          IsReadOnly="True"
                          AllowFocusOnInteraction="True"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         Padding="12,12,12,138" />
+                         Padding="12,12,12,138"
+                         ToolTipService.ToolTip="Relevant logs appear here to guide, warn, or inform the user while using the app." />
 
                 <!-- Invisible overlay button -->
                 <Button x:Name="LogCopyButton"
-                        Margin="16,107,24,16"
-                        VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
+                        Margin="17,0,0,17"
+                        Width="250"
+                        Height="100"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Center"
                         Background="Transparent"
                         BorderThickness="0"
                         IsTabStop="False"
-                        ToolTipService.ToolTip="All relevant logs appear here. Double tap to copy."
+                        ToolTipService.ToolTip="Double-tap to copy all logs to clipboard."
                         DoubleTapped="LogCopyButton_DoubleTapped">
                     <Button.Resources>
                         <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
