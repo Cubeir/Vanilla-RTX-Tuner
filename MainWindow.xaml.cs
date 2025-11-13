@@ -37,11 +37,23 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Remove modal blocker and instead disable all UI elements while packbrowser is open
+You already had the tools and decided not to use them?!
+
+- Perfect the appearance of 2x2 button grid
+
+- Make sidebar log text copiable?
+Even if not, reduce the size of the invisible copy log button to the previewer area?
+or a secret corner? this isn't somethign users use daily
+but to take scrolling away for it is just dumb!
+
 - Add DPI-aware preferred minimum width and height
 
 - Disable increasing font size on the ENTIRE app
 
 - Implement a way for current custom pack selection be visible even outside of logs
+
+- Improve preview arts as you go
 
 - Fog slider development:
 

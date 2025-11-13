@@ -10,18 +10,25 @@
 
     <Grid>
 
-        <Rectangle Fill="#24202020"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Stretch"
-                   IsHitTestVisible="False" />
+        <Border x:Name="LightThemeOverlay"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False"
+                Visibility="{ThemeResource LightThemeBackgroundVisibility}"
+                Canvas.ZIndex="-1">
+            <Border.Background>
+                <SolidColorBrush Color="#17373737" />
+            </Border.Background>
+        </Border>
 
         <!-- Loading Screen -->
         <Grid x:Name="LoadingPanel"
               Visibility="Visible"
               Background="Transparent">
             <ProgressRing IsActive="True"
-                          Width="60"
-                          Height="60" />
+                          Width="100"
+                          Height="100" />
         </Grid>
 
         <!-- Pack Selection UI -->

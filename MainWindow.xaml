@@ -57,7 +57,7 @@
                 Visibility="{ThemeResource LightThemeBackgroundVisibility}"
                 Canvas.ZIndex="-1">
             <Border.Background>
-                <SolidColorBrush Color="#19373737" />
+                <SolidColorBrush Color="#17373737" />
             </Border.Background>
         </Border>
 
@@ -301,7 +301,7 @@
 
             <!-- Progress Bar -->
             <ProgressBar x:Name="ProgressBar"
-                         Margin="16,100,8,0"
+                         Margin="16,107,8,0"
                          VerticalAlignment="Top"
                          HorizontalAlignment="Stretch"
                          IsIndeterminate="False"
