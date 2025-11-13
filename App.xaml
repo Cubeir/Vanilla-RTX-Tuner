@@ -37,7 +37,6 @@
                     <Color x:Key="SplashBackgroundColor">#FF202020</Color>
                     <Color x:Key="FakeSplitButtonDarkBorderColor">#40404040</Color>
                     <Color x:Key="FakeSplitButtonBrightBorderColor">#40808080</Color>
-                    <x:Double x:Key="TitleBarImageBrushOpacity">0.3</x:Double>
                     <Visibility x:Key="LightThemeBackgroundVisibility">Collapsed</Visibility>
                 </ResourceDictionary>
 
@@ -46,7 +45,6 @@
                     <Color x:Key="SplashBackgroundColor">#FFE3E3E3</Color>
                     <Color x:Key="FakeSplitButtonDarkBorderColor">#20FFFFFF</Color>
                     <Color x:Key="FakeSplitButtonBrightBorderColor">#FFFFFFFF</Color>
-                    <x:Double x:Key="TitleBarImageBrushOpacity">0.15</x:Double>
                     <Visibility x:Key="LightThemeBackgroundVisibility">Visible</Visibility>
                 </ResourceDictionary>
 

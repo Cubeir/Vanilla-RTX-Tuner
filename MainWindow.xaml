@@ -22,43 +22,44 @@
             <!-- Right section -->
         </Grid.ColumnDefinitions>
 
-        <!-- Static bitmap for titlebar -->
-        <Rectangle x:Name="TitleBarBackground"
-                   Grid.ColumnSpan="2"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Top"
-                   Height="35"
-                   IsHitTestVisible="False"
-                   Visibility="Visible"
-                   CacheMode="BitmapCache">
-            <Rectangle.Fill>
-                <ImageBrush x:Name="TitleBarImageBrush"
-                            ImageSource="ms-appx:///Assets/titlebar.background.png"
-                            Opacity="{ThemeResource TitleBarImageBrushOpacity}"
-                            Stretch="Fill"
-                            AlignmentX="Left"
-                            AlignmentY="Top" />
-            </Rectangle.Fill>
-        </Rectangle>
+        <!-- Titlebar background -->
+        <Grid Grid.ColumnSpan="2"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Top"
+              Height="35">
 
-        <!-- Static bitmap for white theme -->
-        <Rectangle x:Name="LightThemeBackground"
-                   Grid.ColumnSpan="2"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Stretch"
-                   IsHitTestVisible="False"
-                   Visibility="{ThemeResource LightThemeBackgroundVisibility}"
-                   CacheMode="BitmapCache"
-                   Canvas.ZIndex="-1">
-            <Rectangle.Fill>
-                <ImageBrush x:Name="LightThemeImageBrush"
-                            ImageSource="ms-appx:///Assets/lighttheme.background.png"
-                            Opacity="0.1"
-                            Stretch="Fill"
-                            AlignmentX="Left"
-                            AlignmentY="Top" />
-            </Rectangle.Fill>
-        </Rectangle>
+            <!-- Shadow receiver (sits behind the titlebar) -->
+            <Grid x:Name="TitleBarShadowReceiver" />
+
+            <!-- Actual titlebar -->
+            <Border x:Name="TitleBarBackground"
+                    Height="35"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,0,3"
+                    CornerRadius="0"
+                    Translation="0,0,24"
+                    IsHitTestVisible="False">
+                <Border.Shadow>
+                    <ThemeShadow x:Name="TitleBarShadow" />
+                </Border.Shadow>
+            </Border>
+        </Grid>
+
+        <!-- Light theme tint overlay -->
+        <Border x:Name="LightThemeOverlay"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False"
+                Visibility="{ThemeResource LightThemeBackgroundVisibility}"
+                Canvas.ZIndex="-1">
+            <Border.Background>
+                <SolidColorBrush Color="#19373737" />
+            </Border.Background>
+        </Border>
 
         <!-- Titlebar Buttons -->
         <Button x:Name="HelpButton"
@@ -215,7 +216,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*" />
-                        <ColumnDefinition Width="1.4*" />
+                        <ColumnDefinition Width="1.33*" />
                     </Grid.ColumnDefinitions>
                     <Button x:Name="BrowsePacksButton"
                             BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
@@ -985,6 +986,7 @@
               Background="#40000000"
               Visibility="Collapsed"
               IsHitTestVisible="True"
+              PointerPressed="ModalBlocker_PointerPressed"
               Canvas.ZIndex="9998" />
 
         <!-- Splash Blocker -->

@@ -39,6 +39,8 @@ namespace Vanilla_RTX_Tuner_WinUI;
 
 - Add DPI-aware preferred minimum width and height
 
+- Disable increasing font size on the ENTIRE app
+
 - Implement a way for current custom pack selection be visible even outside of logs
 
 - Fog slider development:
@@ -408,7 +410,7 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/previews/fog.default.png",
             "ms-appx:///Assets/previews/fog.min.png",
             "ms-appx:///Assets/previews/fog.max.png",
-            Defaults.FogMultiplier // default value
+            Defaults.FogMultiplier
         );
 
         Previewer.Instance.InitializeSlider(EmissivityMultiplierSlider,
@@ -501,6 +503,8 @@ public sealed partial class MainWindow : Window
 
     private void InitializeShadows()
     {
+        TitleBarShadow.Receivers.Add(TitleBarShadowReceiver);
+
         // Left column shadows
         BrowsePacksShadow.Receivers.Add(LeftShadowReceiver);
         SidebarLogShadow.Receivers.Add(LeftShadowReceiver);
@@ -1263,8 +1267,6 @@ public sealed partial class MainWindow : Window
     }
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        LocatePacksButton_Click();
-
         ModalBlocker.Visibility = Visibility.Visible;
 
         var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
@@ -1284,11 +1286,18 @@ public sealed partial class MainWindow : Window
                 Log($"Selected: {TunerVariables.CustomPackDisplayName}", LogLevel.Success);
                 _ = BlinkingLamp(true, true, 1.0);
             }
+            else
+            {
+                _ = BlinkingLamp(true, true, 0.0);
+            }
         };
 
         packBrowserWindow.Activate();
     }
-
+    private void ModalBlocker_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        Log("Main Window is blocked while selecting a resource pack, close the pack selection window or select a pack to return.", LogLevel.Warning);
+    }
 
 
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)

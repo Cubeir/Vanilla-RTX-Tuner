@@ -32,24 +32,6 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Title Bar Background -->
-            <Rectangle x:Name="TitleBarBackground"
-                       Grid.Row="0"
-                       HorizontalAlignment="Stretch"
-                       VerticalAlignment="Stretch"
-                       IsHitTestVisible="False"
-                       Visibility="Visible"
-                       CacheMode="BitmapCache">
-                <Rectangle.Fill>
-                    <ImageBrush x:Name="TitleBarImageBrush"
-                                ImageSource="ms-appx:///Assets/titlebar.background.png"
-                                Opacity="0.0"
-                                Stretch="Fill"
-                                AlignmentX="Left"
-                                AlignmentY="Top" />
-                </Rectangle.Fill>
-            </Rectangle>
-
             <!-- Title Bar Area -->
             <Grid Grid.Row="0"
                   x:Name="TitleBarArea"
@@ -58,11 +40,12 @@
                 <!-- Centered Title -->
                 <Grid HorizontalAlignment="Center"
                       VerticalAlignment="Center">
-                    <TextBlock Text="Select from your local RTX or Vibrant Visuals resource packs"
+                    <TextBlock Text=""
                                Margin="0,6,0,5"
                                VerticalAlignment="Center"
                                IsTextScaleFactorEnabled="False"
-                               IsHitTestVisible="False" />
+                               IsHitTestVisible="False"
+                               x:Name="WindowTitle"/>
                 </Grid>
 
                 <!-- Close Button -->

@@ -76,6 +76,9 @@ public sealed partial class PackBrowserWindow : Window
                 SetTitleBarDragRegion();
             });
 
+            var text = TunerVariables.Persistent.IsTargetingPreview ? "Minecraft Preview" : "Minecraft";
+            WindowTitle.Text = $"Select from your local {text} resource packs";
+
             await LoadPacksAsync();
         }
     }
