@@ -53,7 +53,7 @@
             <Rectangle.Fill>
                 <ImageBrush x:Name="LightThemeImageBrush"
                             ImageSource="ms-appx:///Assets/lighttheme.background.png"
-                            Opacity="0.25"
+                            Opacity="0.2"
                             Stretch="Fill"
                             AlignmentX="Left"
                             AlignmentY="Top" />
@@ -213,7 +213,7 @@
                         <ColumnDefinition Width="1.4*" />
                     </Grid.ColumnDefinitions>
                     <Button x:Name="BrowsePacksButton"
-                            BorderBrush="{ThemeResource FakeSplitButtonLeftBorderColor}"
+                            BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
                             BorderThickness="0,0,2,0"
                             Grid.Column="0"
                             Click="BrowsePacksButton_Click"
@@ -233,7 +233,7 @@
                         </StackPanel>
                     </Button>
                     <ToggleButton x:Name="TargetPreviewToggle"
-                                  BorderBrush="{ThemeResource FakeSplitButtonRightBorderColor}"
+                                  BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
                                   BorderThickness="2,0,0,0"
                                   Grid.Column="1"
                                   Content="Preview"
@@ -418,7 +418,7 @@
                         <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
                     <Button x:Name="ClearButton"
-                            BorderBrush="{ThemeResource FakeSplitButtonLeftBorderColor}"
+                            BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
                             BorderThickness="0,0,2,0"
                             Grid.Column="0"
                             Click="ClearButton_Click"
@@ -438,7 +438,7 @@
                         </StackPanel>
                     </Button>
                     <Button x:Name="ResetButton"
-                            BorderBrush="{ThemeResource FakeSplitButtonRightBorderColor}"
+                            BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
                             BorderThickness="2,0,0,0"
                             Grid.Column="1"
                             Content="Reset Settings"
@@ -564,6 +564,9 @@
                         </Grid.ColumnDefinitions>
 
                         <Slider x:Name="NormalIntensitySlider"
+                                TickFrequency="25"
+                                TickPlacement="Inline"
+                                SnapsTo="Ticks"
                                 Grid.Column="0"
                                 Minimum="0"
                                 Maximum="900"
@@ -596,6 +599,9 @@
                         </Grid.ColumnDefinitions>
 
                         <Slider x:Name="MaterialNoiseSlider"
+                                TickFrequency="5"
+                                TickPlacement="BottomRight"
+                                SnapsTo="StepValues"
                                 Grid.Column="0"
                                 Minimum="0"
                                 Maximum="25"
@@ -628,6 +634,9 @@
                         </Grid.ColumnDefinitions>
 
                         <Slider x:Name="RoughenUpSlider"
+                                TickFrequency="5"
+                                TickPlacement="BottomRight"
+                                SnapsTo="StepValues"
                                 Grid.Column="0"
                                 Minimum="0"
                                 Maximum="25"
@@ -660,6 +669,9 @@
                         </Grid.ColumnDefinitions>
 
                         <Slider x:Name="ButcherHeightmapsSlider"
+                                TickFrequency="25"
+                                TickPlacement="Inline"
+                                SnapsTo="StepValues"
                                 Grid.Column="0"
                                 Minimum="0"
                                 Maximum="255"
@@ -677,7 +689,7 @@
                 </StackPanel>
             </Grid>
             <!-- End of Sliders Grid-->
-            
+
 
             <!-- Bottom Buttons Grid 2x2 -->
             <Grid Margin="8,16,16,16"
@@ -686,16 +698,14 @@
                   Height="90">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="10" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Tune Button -->
+                <!-- Tune Button (Top-Left) -->
                 <Button x:Name="TuneSelectionButton"
                         Click="TuneSelectionButton_Click"
                         Grid.Row="0"
@@ -703,7 +713,18 @@
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
+                        CornerRadius="4,0,0,0"
+                        BorderThickness="0,0,2,2"
                         ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is finished.">
+                    <Button.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.BorderBrush>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xF4A5;"
@@ -715,15 +736,89 @@
                     </StackPanel>
                 </Button>
 
-                <!-- Reinstall Button -->
-                <Button x:Name="UpdateVanillaRTXButton"
-                        Click="UpdateVanillaRTXButton_Click"
-                        Grid.Row="2"
-                        Grid.Column="2"
+                <!-- Export Button (Top-Right) -->
+                <Button x:Name="ExportButton"
+                        Click="ExportButton_Click"
+                        Grid.Row="0"
+                        Grid.Column="1"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
+                        CornerRadius="0,4,0,0"
+                        BorderThickness="2,0,0,2"
+                        ToolTipService.ToolTip="Exports selected packages.">
+                    <Button.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.BorderBrush>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xEDE2;"
+                                  FontSize="18"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="Export Selection"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Launch Button (Bottom-Left) -->
+                <Button x:Name="LaunchButton"
+                        Click="LaunchButton_Click"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        CornerRadius="0,0,0,4"
+                        BorderThickness="0,2,2,0"
+                        ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Additionally disables VSync for better performanc and enables in-game graphics mode switching.">
+                    <Button.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.BorderBrush>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center">
+                        <FontIcon Glyph="&#xE78B;"
+                                  FontSize="18"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Text="Launch Minecraft RTX"
+                                   VerticalAlignment="Center"
+                                   x:Name="LaunchButtonText" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Reinstall Button (Bottom-Right) -->
+                <Button x:Name="UpdateVanillaRTXButton"
+                        Click="UpdateVanillaRTXButton_Click"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        CornerRadius="0,0,4,0"
+                        BorderThickness="2,2,0,0"
                         ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are always redeployed from cache unless a new Vanilla RTX update is available.">
+                    <Button.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="1,1">
+                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                          Offset="0" />
+                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                          Offset="1" />
+                        </LinearGradientBrush>
+                    </Button.BorderBrush>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xEBD3;"
@@ -738,47 +833,6 @@
                                    x:FieldModifier="public" />
                     </StackPanel>
                 </Button>
-
-                <!-- Launch Button -->
-                <Button x:Name="LaunchButton"
-                        Click="LaunchButton_Click"
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Additionally disables VSync for better performanc and enables in-game graphics mode switching.">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xE78B;"
-                                  FontSize="18"
-                                  Margin="0,0,8,0"
-                                  VerticalAlignment="Center" />
-                        <TextBlock Text="Launch Minecraft RTX"
-                                   VerticalAlignment="Center"
-                                   x:Name="LaunchButtonText"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- Export Button -->
-                <Button x:Name="ExportButton"
-                        Click="ExportButton_Click"
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        ToolTipService.ToolTip="Exports selected packages.">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-                        <FontIcon Glyph="&#xEDE2;"
-                                  FontSize="18"
-                                  Margin="0,0,8,0"
-                                  VerticalAlignment="Center" />
-                        <TextBlock Text="Export Selection"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
             </Grid>
         </Grid>
 
@@ -788,12 +842,12 @@
               Background="#40000000"
               Visibility="Collapsed"
               IsHitTestVisible="True"
-              Canvas.ZIndex="99999" />
+              Canvas.ZIndex="9998" />
 
         <!-- Splash Blocker -->
         <Grid x:Name="SplashOverlay"
               Grid.ColumnSpan="2"
-              Canvas.ZIndex="100000">
+              Canvas.ZIndex="9999">
             <Grid.Background>
                 <SolidColorBrush Color="{ThemeResource SplashBackgroundColor}" />
             </Grid.Background>

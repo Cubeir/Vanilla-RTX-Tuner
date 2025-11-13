@@ -37,8 +37,10 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Remove Locate Vanilla RTX button, it's redundant now, auto triggered wherever needed
-Vanilla RTX pack checkboxes remain available as needed
+- Add shadows to UI elements
+
+- Use APPBAR seperator at app bar, and in the new future Selection menu of Vanilla RTX packs that are horizntal instead of vertical
+winui has it all apparently
 
 - Add DPI-aware preferred minimum width and height
 

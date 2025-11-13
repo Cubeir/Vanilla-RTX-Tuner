@@ -907,7 +907,7 @@ public class Processor
     }
 
 
-
+    // TODO: Do additions unbound, then scale back to RGB range?
     private static void ProcessHeightmaps(PackInfo pack)
     {
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))

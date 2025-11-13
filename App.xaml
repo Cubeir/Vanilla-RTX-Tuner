@@ -35,8 +35,8 @@
                 <!-- Dark theme -->
                 <ResourceDictionary x:Key="Dark">
                     <Color x:Key="SplashBackgroundColor">#FF202020</Color>
-                    <Color x:Key="FakeSplitButtonLeftBorderColor">#40404040</Color>
-                    <Color x:Key="FakeSplitButtonRightBorderColor">#40808080</Color>
+                    <Color x:Key="FakeSplitButtonDarkBorderColor">#40404040</Color>
+                    <Color x:Key="FakeSplitButtonBrightBorderColor">#40808080</Color>
                     <x:Double x:Key="TitleBarImageBrushOpacity">0.3</x:Double>
                     <Visibility x:Key="LightThemeBackgroundVisibility">Collapsed</Visibility>
                 </ResourceDictionary>
@@ -44,9 +44,9 @@
                 <!-- Light theme -->
                 <ResourceDictionary x:Key="Light">
                     <Color x:Key="SplashBackgroundColor">#FFE3E3E3</Color>
-                    <Color x:Key="FakeSplitButtonLeftBorderColor">#20FFFFFF</Color>
-                    <Color x:Key="FakeSplitButtonRightBorderColor">#FFFFFFFF</Color>
-                    <x:Double x:Key="TitleBarImageBrushOpacity">0.1</x:Double>
+                    <Color x:Key="FakeSplitButtonDarkBorderColor">#20FFFFFF</Color>
+                    <Color x:Key="FakeSplitButtonBrightBorderColor">#FFFFFFFF</Color>
+                    <x:Double x:Key="TitleBarImageBrushOpacity">0.15</x:Double>
                     <Visibility x:Key="LightThemeBackgroundVisibility">Visible</Visibility>
                 </ResourceDictionary>
 
