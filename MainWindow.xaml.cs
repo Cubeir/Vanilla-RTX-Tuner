@@ -241,6 +241,7 @@ public sealed partial class MainWindow : Window
         // Give the window time to render for the first time
         await Task.Delay(50);
 
+        // RTX shaders omg
         InitializeShadows();
 
         // Splash Blinking Animation
@@ -508,6 +509,14 @@ public sealed partial class MainWindow : Window
         SlidersGridShadow.Receivers.Add(RightShadowReceiver);
         ClearResetShadow.Receivers.Add(RightShadowReceiver);
         BottomButtonsShadow.Receivers.Add(RightShadowReceiver);
+
+        // Individual textbox shadows
+        FogMultiplierBoxShadow.Receivers.Add(RightShadowReceiver);
+        EmissivityMultiplierBoxShadow.Receivers.Add(RightShadowReceiver);
+        NormalIntensityBoxShadow.Receivers.Add(RightShadowReceiver);
+        MaterialNoiseBoxShadow.Receivers.Add(RightShadowReceiver);
+        RoughenUpBoxShadow.Receivers.Add(RightShadowReceiver);
+        ButcherHeightmapsBoxShadow.Receivers.Add(RightShadowReceiver);
     }
 
 

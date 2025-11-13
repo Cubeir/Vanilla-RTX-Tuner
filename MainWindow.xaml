@@ -542,6 +542,15 @@
                                 SmallChange="0.01"
                                 Value="1"
                                 ValueChanged="FogMultiplierSlider_ValueChanged" />
+
+                        <Border Grid.Column="2"
+                                Translation="0,0,24"
+                                CornerRadius="4">
+                            <Border.Shadow>
+                                <ThemeShadow x:Name="FogMultiplierBoxShadow" />
+                            </Border.Shadow>
+                        </Border>
+
                         <TextBox x:Name="FogMultiplierBox"
                                  Grid.Column="2"
                                  Width="60"
@@ -575,6 +584,15 @@
                                 SmallChange="0.1"
                                 Value="1"
                                 ValueChanged="EmissivityMultiplierSlider_ValueChanged" />
+
+                        <Border Grid.Column="2"
+                                Translation="0,0,24"
+                                CornerRadius="4">
+                            <Border.Shadow>
+                                <ThemeShadow x:Name="EmissivityMultiplierBoxShadow" />
+                            </Border.Shadow>
+                        </Border>
+
                         <TextBox x:Name="EmissivityMultiplierBox"
                                  Grid.Column="2"
                                  Width="60"
@@ -643,6 +661,15 @@
                                 SmallChange="1"
                                 Value="100"
                                 ValueChanged="NormalIntensity_ValueChanged" />
+
+                        <Border Grid.Column="2"
+                                Translation="0,0,24"
+                                CornerRadius="4">
+                            <Border.Shadow>
+                                <ThemeShadow x:Name="NormalIntensityBoxShadow" />
+                            </Border.Shadow>
+                        </Border>
+
                         <TextBox x:Name="NormalIntensityBox"
                                  Grid.Column="2"
                                  Width="60"
@@ -679,6 +706,15 @@
                                 SmallChange="1"
                                 Value="0"
                                 ValueChanged="MaterialNoise_ValueChanged" />
+
+                        <Border Grid.Column="2"
+                                Translation="0,0,24"
+                                CornerRadius="4">
+                            <Border.Shadow>
+                                <ThemeShadow x:Name="MaterialNoiseBoxShadow" />
+                            </Border.Shadow>
+                        </Border>
+
                         <TextBox x:Name="MaterialNoiseBox"
                                  Grid.Column="2"
                                  Width="60"
@@ -687,6 +723,7 @@
                                  BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
+
 
                 <!-- Roughen Up -->
                 <StackPanel Grid.Column="2"
@@ -715,6 +752,15 @@
                                 SmallChange="1"
                                 Value="0"
                                 ValueChanged="RoughenUp_ValueChanged" />
+
+                        <Border Grid.Column="2"
+                                Translation="0,0,24"
+                                CornerRadius="4">
+                            <Border.Shadow>
+                                <ThemeShadow x:Name="RoughenUpBoxShadow" />
+                            </Border.Shadow>
+                        </Border>
+
                         <TextBox x:Name="RoughenUpBox"
                                  Grid.Column="2"
                                  Width="60"
@@ -751,6 +797,15 @@
                                 SmallChange="1"
                                 Value="0"
                                 ValueChanged="ButcherHeightmaps_ValueChanged" />
+
+                        <Border Grid.Column="2"
+                                Translation="0,0,24"
+                                CornerRadius="4">
+                            <Border.Shadow>
+                                <ThemeShadow x:Name="ButcherHeightmapsBoxShadow" />
+                            </Border.Shadow>
+                        </Border>
+
                         <TextBox x:Name="ButcherHeightmapsBox"
                                  Grid.Column="2"
                                  Width="60"
