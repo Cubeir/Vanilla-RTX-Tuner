@@ -482,7 +482,7 @@ public class PackUpdater
 
     // For cooldown of checking for update to avoid spamming github
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
-    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(3);
+    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(15);
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
