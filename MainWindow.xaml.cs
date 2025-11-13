@@ -60,17 +60,16 @@ No need to spill excess density to scattering or otherwise -- too complicated an
 
 Or come up with something better.
 
+- Search development resource packs for locating Vanilla RTX as well -- packbrowser does it already, this is the only other places
+If you solidify these hardcoded paths into a class it would be good, make it easy to change...
+pack updater, pack locators, launcher, they deal with hardcoded paths, what else?
+
+
 
 This concludes the development of Tuner, it may evolve if new ideas for tuning options come along, or if Minecraft changes/with new features, etc...
 but for now, this is it.
 Potential edge case fixes and refactoring is all that can be done.
 The app, and all of its aspects, are now functionally perfect, further feature development is blissful.
-
-
-- Search development resource packs for locating Vanilla RTX as well -- packbrowser does it already, this is the only other places
-If you solidify these hardcoded paths into a class it would be good, make it easy to change...
-pack updater, pack locators, launcher, they deal with hardcoded paths, what else?
-
 
 End of Development/Unimportant ideas:
 
@@ -94,6 +93,10 @@ A variable is getting constantly updated with new logs, a worker in main UI thre
 - Once reaching the end of development, expose as many params as you can
 Most importantly, the hardcoded Minecraft paths, expose those, paths to search in and go to and whatever class that deals with
 MC data folder, whatever and whatever they are cleanly expose them so if you leave the app people can easily change it
+
+- Account for different font scalings, windows accessibility settings, etc...
+gonna need lots of painstakingly redoing xamls but if one day you have an abundance of time sure why not
+
 */
 
 public static class TunerVariables
