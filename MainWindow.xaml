@@ -197,7 +197,7 @@
         <Grid Grid.Column="0"
               x:Name="LeftContentGrid">
             <!-- Buttons above sidebar log -->
-            <Grid Margin="16,47,8,0"
+            <Grid Margin="16,51,8,0"
                   VerticalAlignment="Top"
                   Height="40">
                 <Grid.ColumnDefinitions>
@@ -252,7 +252,7 @@
             <Grid>
                 <!-- Textbox -->
                 <TextBox x:Name="SidebarLog"
-                         Margin="16,100,8,16"
+                         Margin="16,107,8,16"
                          VerticalAlignment="Stretch"
                          HorizontalAlignment="Stretch"
                          TextWrapping="Wrap"
@@ -341,16 +341,16 @@
         <Grid Grid.Column="1">
             <!-- Pack Selection Options -->
             <Grid x:Name="PackOptionsPanel"
-                  Margin="8,51,0,0"
+                  Margin="0,55,0,0"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
-                  ToolTipService.ToolTip="From the list of installed packages select which packs to Tune or Export">
+                  ToolTipService.ToolTip="Select from the list of installed Vanilla RTX resource packs for tuning or export.">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
                 <CheckBox x:Name="VanillaRTXCheckBox"
@@ -364,8 +364,8 @@
                           FontWeight="SemiBold" />
 
                 <AppBarSeparator Grid.Column="1"
-                                 VerticalAlignment="Stretch"
-                                 Margin="8,0" />
+                                 VerticalAlignment="Stretch"        
+                                 Margin="0,0" />
 
                 <CheckBox x:Name="NormalsCheckBox"
                           Grid.Column="2"
@@ -379,7 +379,7 @@
 
                 <AppBarSeparator Grid.Column="3"
                                  VerticalAlignment="Stretch"
-                                 Margin="8,0" />
+                                 Margin="0,0" />
 
                 <CheckBox x:Name="OpusCheckBox"
                           Grid.Column="4"
@@ -392,37 +392,39 @@
                           FontWeight="SemiBold" />
             </Grid>
 
+
+
+
             <!-- Sliders Grid -->
             <Grid x:Name="SlidersGrid"
-                  Margin="8,200,16,0"
+                  Margin="8,125,16,90"
                   HorizontalAlignment="Stretch"
-                  VerticalAlignment="Top">
+                  VerticalAlignment="Stretch">
 
                 <!-- Grid Proportion Definitions -->
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="20" />
                     <!-- 16px spacing between columns -->
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="18" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="18" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="10" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <!-- (Special) Grid 2 Reset Button -->
                 <Grid Grid.Column="2"
                       Grid.Row="0"
-                      Grid.RowSpan="7"
                       Height="40"
-                      Margin="0,15,0,0"
-                      VerticalAlignment="Top">
+                      VerticalAlignment="Bottom">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.25*" />
                         <ColumnDefinition Width="1*" />
@@ -464,7 +466,8 @@
                 <!-- Fog Multiplier -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="0"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Bottom">
                     <TextBlock Text="Fog Multiplier (0.0-10.0)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.2–0.8 for lighter fog, 1.5-3.0 for dense fog. 0 to disable air fog." />
@@ -499,7 +502,8 @@
                 <!-- Emissivity Multiplier -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="2"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Bottom">
                     <TextBlock Text="Emissivity Multiplier (0.5-10.0)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Scales emissivity of all emissive blocks. 1 = default, 0.5 = half brightness, higher values = stronger glow." />
@@ -531,7 +535,8 @@
                 <!-- Emissivity Ambient Light Toggle -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="4"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Center">
                     <TextBlock Text="Increase Ambient Lighting"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted, higher emissive multipliers strengthen the effect." />
@@ -544,13 +549,14 @@
                         <ToggleSwitch x:Name="EmissivityAmbientLightToggle"
                                       Grid.Column="0"
                                       AutomationProperties.Name="Emissivity Ambient Light Toggle"
-                                      Toggled="EmissivityAmbientLightToggle_Toggled" />
+                                      Toggled="EmissivityAmbientLightToggle_Toggled"
+                                      VerticalAlignment="Top" />
                         <TextBlock x:Name="EmissivityWarningIcon"
                                    Style="{StaticResource TextBlockSegIcons}"
                                    Grid.Column="1"
                                    Text="&#xE814;"
                                    FontSize="35"
-                                   VerticalAlignment="Center"
+                                   VerticalAlignment="Top"
                                    HorizontalAlignment="Right"
                                    Margin="0,0,13.5,0"
                                    Visibility="Collapsed"
@@ -561,7 +567,8 @@
                 <!-- Normal Intensity -->
                 <StackPanel Grid.Column="0"
                             Grid.Row="6"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Bottom">
                     <TextBlock Text="Normal Intensity (0-900%)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks." />
@@ -596,7 +603,8 @@
                 <!-- Material Grain Offset -->
                 <StackPanel Grid.Column="2"
                             Grid.Row="2"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Bottom">
                     <TextBlock Text="Material Grain Offset (0-25)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Creates grainy materials by adding a layer of noise in a manner that keeps the pack's intended look intact, your input determines the maximum deviation.." />
@@ -631,7 +639,8 @@
                 <!-- Roughen Up -->
                 <StackPanel Grid.Column="2"
                             Grid.Row="4"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Center">
                     <TextBlock Text="Roughen Up (0-25)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact glossy surfaces the most.." />
@@ -666,7 +675,8 @@
                 <!-- Butcher Heightmaps -->
                 <StackPanel Grid.Column="2"
                             Grid.Row="6"
-                            Spacing="2">
+                            Spacing="2"
+                            VerticalAlignment="Bottom">
                     <TextBlock Text="Butcher Heightmaps (0-255)"
                                FontWeight="Bold"
                                ToolTipService.ToolTip="Butchers heightmaps and reduces refinedness, 0 = no change, 255 = fully lazy heightmaps." />
@@ -699,6 +709,8 @@
                 </StackPanel>
             </Grid>
             <!-- End of Sliders Grid-->
+
+
 
 
             <!-- Bottom Buttons Grid 2x2 -->
