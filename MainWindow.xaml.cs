@@ -241,6 +241,8 @@ public sealed partial class MainWindow : Window
         // Give the window time to render for the first time
         await Task.Delay(50);
 
+        InitializeShadows();
+
         // Splash Blinking Animation
         _ = AnimateSplash(450);
 
@@ -494,6 +496,19 @@ public sealed partial class MainWindow : Window
 
     }
 
+
+    private void InitializeShadows()
+    {
+        // Left column shadows
+        BrowsePacksShadow.Receivers.Add(LeftShadowReceiver);
+        SidebarLogShadow.Receivers.Add(LeftShadowReceiver);
+
+        // Right column shadows
+        PackOptionsShadow.Receivers.Add(RightShadowReceiver);
+        SlidersGridShadow.Receivers.Add(RightShadowReceiver);
+        ClearResetShadow.Receivers.Add(RightShadowReceiver);
+        BottomButtonsShadow.Receivers.Add(RightShadowReceiver);
+    }
 
 
     public enum LogLevel

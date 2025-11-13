@@ -143,7 +143,7 @@
                        Opacity="0.25"
                        Canvas.ZIndex="2"
                        IsHitTestVisible="False"
-                       CacheMode="BitmapCache"/>
+                       CacheMode="BitmapCache" />
 
                 <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
@@ -154,7 +154,7 @@
                        Opacity="1.0"
                        Canvas.ZIndex="3"
                        IsHitTestVisible="False"
-                       CacheMode="BitmapCache"/>
+                       CacheMode="BitmapCache" />
 
                 <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
@@ -165,7 +165,7 @@
                        Opacity="0.0"
                        Canvas.ZIndex="4"
                        IsHitTestVisible="False"
-                       CacheMode="BitmapCache"/>
+                       CacheMode="BitmapCache" />
 
                 <!-- Button to make lamp interactive + Mojank easter egg -->
                 <Button x:Name="MojankEasterEggButton"
@@ -196,18 +196,21 @@
         <!-- LEFT COLUMN CONTENT AREA -->
         <Grid Grid.Column="0"
               x:Name="LeftContentGrid">
-            <!-- Buttons above sidebar log -->
-            <Grid Margin="16,51,8,0"
-                  VerticalAlignment="Top"
-                  Height="40">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="1.425*" />
-                </Grid.ColumnDefinitions>
-                <!-- Browse Packs / Preview Split Button -->
-                <Grid Grid.Column="0"
-                      Grid.ColumnSpan="3">
+            <!-- Shadow receiver for left column -->
+            <Grid x:Name="LeftShadowReceiver"
+                  Background="Transparent" />
+
+            <!-- Buttons above sidebar log with shadow -->
+            <Border x:Name="BrowsePacksButtonShadowHost"
+                    Margin="16,51,8,0"
+                    VerticalAlignment="Top"
+                    Height="40"
+                    Translation="0,0,32"
+                    CornerRadius="4">
+                <Border.Shadow>
+                    <ThemeShadow x:Name="BrowsePacksShadow" />
+                </Border.Shadow>
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*" />
                         <ColumnDefinition Width="1.4*" />
@@ -245,11 +248,22 @@
                                   Unchecked="TargetPreviewToggle_Unchecked"
                                   ToolTipService.ToolTip="If enabled, all of app's functionality targets Minecraft Preview instead of regular Minecraft." />
                 </Grid>
-            </Grid>
-            
+            </Border>
 
-            <!-- Sidebar Log Box -->
+
+            <!-- Sidebar Log Box with shadow -->
             <Grid>
+                <Border x:Name="SidebarLogShadowHost"
+                        Margin="16,107,8,16"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        Translation="0,0,64"
+                        CornerRadius="6">
+                    <Border.Shadow>
+                        <ThemeShadow x:Name="SidebarLogShadow" />
+                    </Border.Shadow>
+                </Border>
+
                 <!-- Textbox -->
                 <TextBox x:Name="SidebarLog"
                          Margin="16,107,8,16"
@@ -295,7 +309,7 @@
             <Image x:Name="PreviewVesselTop"
                    Width="Auto"
                    Height="150"
-                   MaxWidth="{Binding ActualWidth, ElementName=SidebarLog}" 
+                   MaxWidth="{Binding ActualWidth, ElementName=SidebarLog}"
                    Margin="8,0,0,17"
                    Stretch="Uniform"
                    VerticalAlignment="Bottom"
@@ -336,13 +350,15 @@
                    CacheMode="BitmapCache" />
         </Grid>
 
-        
+
         <!-- RIGHT COLUMN CONTENT AREA -->
         <Grid Grid.Column="1">
+            <!-- Shadow receiver for right column -->
+            <Grid x:Name="RightShadowReceiver"
+                  Background="Transparent" />
 
-
-            <!-- Pack Selection Options -->
-            <Border x:Name="PackOptionsPanel"
+            <!-- Pack Selection Options with shadow -->
+            <Border x:Name="PackOptionsShadowHost"
                     Margin="8, 50, 16, 0"
                     Padding="16,10"
                     HorizontalAlignment="Stretch"
@@ -350,7 +366,11 @@
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="6"
+                    Translation="0,0,32"
                     ToolTipService.ToolTip="Select from the list of installed Vanilla RTX resource packs for tuning or export.">
+                <Border.Shadow>
+                    <ThemeShadow x:Name="PackOptionsShadow" />
+                </Border.Shadow>
                 <Grid HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -406,10 +426,16 @@
                 </Grid>
             </Border>
 
+            <!-- Sliders Grid with shadow -->
+            <Border x:Name="SlidersGridShadowHost"
+                    Margin="8,125,16,105"
+                    Translation="0,0,0"
+                    CornerRadius="6">
+                <Border.Shadow>
+                    <ThemeShadow x:Name="SlidersGridShadow" />
+                </Border.Shadow>
+            </Border>
 
-
-
-            <!-- Sliders Grid -->
             <Grid x:Name="SlidersGrid"
                   Margin="8,125,16,90"
                   HorizontalAlignment="Stretch"
@@ -434,7 +460,19 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- (Special) Grid 2 Reset Button -->
+                <!-- (Special) Grid 2 Reset Button with shadow -->
+                <Border x:Name="ClearResetButtonsShadowHost"
+                        Grid.Column="2"
+                        Grid.Row="0"
+                        Height="40"
+                        VerticalAlignment="Bottom"
+                        Translation="0,0,32"
+                        CornerRadius="4">
+                    <Border.Shadow>
+                        <ThemeShadow x:Name="ClearResetShadow" />
+                    </Border.Shadow>
+                </Border>
+
                 <Grid Grid.Column="2"
                       Grid.Row="0"
                       Height="40"
@@ -724,10 +762,19 @@
             </Grid>
             <!-- End of Sliders Grid-->
 
+            <!-- Bottom Buttons Grid 2x2 with shadow -->
+            <Border x:Name="BottomButtonsShadowHost"
+                    Margin="8,16,16,16"
+                    Height="90"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Translation="0,0,48"
+                    CornerRadius="6">
+                <Border.Shadow>
+                    <ThemeShadow x:Name="BottomButtonsShadow" />
+                </Border.Shadow>
+            </Border>
 
-
-
-            <!-- Bottom Buttons Grid 2x2 -->
             <Grid Margin="8,16,16,16"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Bottom"
@@ -901,21 +948,21 @@
                            Margin="-512,-512,-512,-512"
                            Opacity="0.175"
                            Stretch="Uniform"
-                           CacheMode="BitmapCache"/>
+                           CacheMode="BitmapCache" />
                     <Image x:Name="SplashLamp"
                            Source="ms-appx:///Assets/icons/SplashScreen.Regular.png"
                            Width="192"
                            Height="192"
                            Opacity="1.0"
                            Stretch="Uniform"
-                           CacheMode="BitmapCache"/>
+                           CacheMode="BitmapCache" />
                     <Image x:Name="SplashLampSuper"
                            Source="ms-appx:///Assets/icons/SplashScreen.Super.png"
                            Width="192"
                            Height="192"
                            Opacity="0.0"
                            Stretch="Uniform"
-                           CacheMode="BitmapCache"/>
+                           CacheMode="BitmapCache" />
                 </Grid>
             </Viewbox>
         </Grid>
