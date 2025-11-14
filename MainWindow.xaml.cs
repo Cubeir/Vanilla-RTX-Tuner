@@ -1754,12 +1754,7 @@ public sealed partial class MainWindow : Window
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CacheFolderName),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), CacheFolderName),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), CacheFolderName),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CacheFolderName),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), CacheFolderName),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", CacheFolderName),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), CacheFolderName)
             };
-
 
             int deletedFolders = 0;
             foreach (var cacheFolder in cacheFolderChecks)

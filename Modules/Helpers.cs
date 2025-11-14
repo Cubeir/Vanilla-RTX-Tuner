@@ -225,10 +225,6 @@ public static class Helpers
                 () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), TunerVariables.CacheFolderName, fileName),
                 () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), TunerVariables.CacheFolderName, fileName),
                 () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), TunerVariables.CacheFolderName, fileName),
-                () => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, TunerVariables.CacheFolderName, fileName),
-                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), TunerVariables.CacheFolderName, fileName),
-                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", TunerVariables.CacheFolderName, fileName),
-                () => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), TunerVariables.CacheFolderName, fileName)
                 };
 
 
