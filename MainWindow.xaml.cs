@@ -55,6 +55,8 @@ consturct the paths if necessary.
 
 - And ensure titlebar is compatible/nicely configured, including min/max/close colors
 
+- Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
+for whatever the ****** reason
 
 - Settle behavior of BG vessel and its appearance
 Why doesn't text appear beneath it? fix that, make it more transparent?
@@ -405,6 +407,7 @@ public sealed partial class MainWindow : Window
         appWindow.SetTitleBarIcon(iconPath);
 
         // Watches theme changes and adjusts based on theme
+        // use only for stuff that can be altered before mainwindow initlization
         ThemeWatcher(this, theme =>
         {
             var titleBar = appWindow.TitleBar;
@@ -455,8 +458,7 @@ public sealed partial class MainWindow : Window
     }
 
 
-    // TODO: Double clicking this, or any titlebar button for that matter, maximizes window, not good
-    // Think of something
+
     public void CycleThemeButton_Click(object? sender, RoutedEventArgs? e)
     {
         bool invokedByClick = sender is Button;

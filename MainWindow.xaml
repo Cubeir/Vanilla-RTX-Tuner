@@ -48,7 +48,7 @@
                     Height="37"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
-                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    Background="{ThemeResource CardBackgroundFillColorSecondary}"
                     BorderBrush="{ThemeResource HyperlinkButtonBorderThemeBrush}"
                     BorderThickness="0,0,0,6"
                     CornerRadius="0"
@@ -278,17 +278,19 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="4" />
+                        <!-- 4px gap between buttons -->
                         <ColumnDefinition Width="1.33*" />
                     </Grid.ColumnDefinitions>
+
                     <Button x:Name="BrowsePacksButton"
-                            BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                            BorderThickness="0,0,2,0"
                             Grid.Column="0"
                             Click="BrowsePacksButton_Click"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             FontWeight="SemiBold"
                             CornerRadius="4,0,0,4"
+                            BorderThickness="0"
                             ToolTipService.ToolTip="Select a pack from your local PBR-enabled resource packs for tuning or export.">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
@@ -300,18 +302,41 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
+
                     <ToggleButton x:Name="TargetPreviewToggle"
-                                  BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                  BorderThickness="2,0,0,0"
-                                  Grid.Column="1"
+                                  Grid.Column="2"
                                   Content="Preview"
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Stretch"
                                   FontWeight="SemiBold"
                                   CornerRadius="0,4,4,0"
+                                  BorderThickness="0"
                                   Checked="TargetPreviewToggle_Checked"
                                   Unchecked="TargetPreviewToggle_Unchecked"
                                   ToolTipService.ToolTip="If enabled, all of app's functionality targets Minecraft Preview instead of regular Minecraft." />
+
+                    <!-- Overlay borders for the visual split -->
+                    <!-- Dark border on RIGHT edge of left button -->
+                    <Grid Grid.Column="0"
+                          HorizontalAlignment="Right"
+                          Width="2"
+                          Margin="0,0,-2,0"
+                          IsHitTestVisible="False">
+                        <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                        <Border BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                BorderThickness="2,0,0,0" />
+                    </Grid>
+
+                    <!-- Bright border on LEFT edge of right button -->
+                    <Grid Grid.Column="2"
+                          HorizontalAlignment="Left"
+                          Width="2"
+                          Margin="-2,0,0,0"
+                          IsHitTestVisible="False">
+                        <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                        <Border BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                BorderThickness="2,0,0,0" />
+                    </Grid>
                 </Grid>
             </Border>
 
@@ -322,6 +347,7 @@
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         Translation="0,0,64"
+                        BorderThickness="0"
                         CornerRadius="6">
                     <Border.Shadow>
                         <ThemeShadow x:Name="SidebarLogShadow" />
@@ -427,20 +453,20 @@
 
             <!-- Pack Selection Options with shadow -->
             <Border x:Name="PackOptionsShadowHost"
-                    Margin="8, 51, 16, 0"
-                    Padding="16,3.5"
+                    Margin="8, 52, 16, 0"
+                    Padding="16,4"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                    BorderThickness="1"
+                    BorderThickness="0"
                     CornerRadius="5"
                     Translation="0,0,32"
                     ToolTipService.ToolTip="Select from the list of installed Vanilla RTX resource packs for tuning or export.">
                 <Border.Shadow>
                     <ThemeShadow x:Name="PackOptionsShadow" />
                 </Border.Shadow>
-                <Grid HorizontalAlignment="Stretch">
+                <Grid HorizontalAlignment="Stretch"
+                      BorderThickness="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.9*" />
                         <ColumnDefinition Width="Auto" />
@@ -550,7 +576,8 @@
                 <Grid Grid.Column="2"
                       Grid.Row="0"
                       Height="40"
-                      VerticalAlignment="Bottom">
+                      VerticalAlignment="Bottom"
+                      BorderThickness="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.25*" />
                         <ColumnDefinition Width="1*" />
@@ -898,7 +925,8 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Bottom"
                     Translation="0,0,48"
-                    CornerRadius="6">
+                    CornerRadius="6"
+                    BorderThickness="0">
                 <Border.Shadow>
                     <ThemeShadow x:Name="BottomButtonsShadow" />
                 </Border.Shadow>
@@ -907,7 +935,8 @@
             <Grid Margin="8,16,16,16"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Bottom"
-                  Height="90">
+                  Height="90"
+                  BorderThickness="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
