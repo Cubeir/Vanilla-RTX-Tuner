@@ -52,15 +52,30 @@ public class PackLocator
                 versionName = "Minecraft";
             }
 
-            var resolvedPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs");
+            var scanPaths = new[]
+            {
+            Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs"),
+            Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "development_resource_packs")
+        };
 
-            if (!Directory.Exists(resolvedPath))
+            var results = new List<string>();
+            var allManifestFiles = new List<string>();
+
+            // Collect manifest files from all valid directories
+            foreach (var scanPath in scanPaths)
+            {
+                if (Directory.Exists(scanPath))
+                {
+                    allManifestFiles.AddRange(
+                        Directory.GetFiles(scanPath, "manifest.json", SearchOption.AllDirectories)
+                    );
+                }
+            }
+
+            if (allManifestFiles.Count == 0)
             {
                 return $"Resource pack directory not found ❌ is the correct version of {versionName} installed?";
             }
-
-            var manifestFiles = Directory.GetFiles(resolvedPath, "manifest.json", SearchOption.AllDirectories);
-            var results = new List<string>();
 
             // Track latest version for each pack type
             (string path, int[] version)? latestVanillaRTX = null;
@@ -79,7 +94,7 @@ public class PackLocator
                 return 0;
             }
 
-            foreach (var file in manifestFiles)
+            foreach (var file in allManifestFiles)
             {
                 try
                 {
