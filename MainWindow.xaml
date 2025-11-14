@@ -964,10 +964,14 @@
                   BorderThickness="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="4" />
+                    <!-- 4px gap between rows -->
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4" />
+                    <!-- 4px gap between columns -->
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
@@ -980,17 +984,8 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         CornerRadius="4,0,0,0"
-                        BorderThickness="0,0,2,2"
+                        BorderThickness="0"
                         ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is complete.">
-                    <Button.BorderBrush>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                          Offset="0" />
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="1" />
-                        </LinearGradientBrush>
-                    </Button.BorderBrush>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xF4A5;"
@@ -1006,22 +1001,13 @@
                 <Button x:Name="UpdateVanillaRTXButton"
                         Click="UpdateVanillaRTXButton_Click"
                         Grid.Row="0"
-                        Grid.Column="1"
+                        Grid.Column="2"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         CornerRadius="0,4,0,0"
-                        BorderThickness="2,0,0,2"
+                        BorderThickness="0"
                         ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are always redeployed from cache unless a new Vanilla RTX update is available.">
-                    <Button.BorderBrush>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                          Offset="0" />
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="1" />
-                        </LinearGradientBrush>
-                    </Button.BorderBrush>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xEBD3;"
@@ -1040,24 +1026,15 @@
                 <!-- Launch Button (Bottom-Left) -->
                 <Button x:Name="LaunchButton"
                         Click="LaunchButton_Click"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Grid.Row="1"
+                        BorderBrush="#40404040"
+                        BorderThickness="0"
+                        Grid.Row="2"
                         Grid.Column="0"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         CornerRadius="0,0,0,4"
-                        BorderThickness="0,2,2,0"
                         ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Additionally disables VSync for better performanc and enables in-game graphics mode switching.">
-                    <Button.BorderBrush>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="0" />
-                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                          Offset="1" />
-                        </LinearGradientBrush>
-                    </Button.BorderBrush>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xE78B;"
@@ -1073,23 +1050,14 @@
                 <!-- Export Button (Bottom-Right) -->
                 <Button x:Name="ExportButton"
                         Click="ExportButton_Click"
-                        Grid.Row="1"
-                        Grid.Column="1"
+                        Grid.Row="2"
+                        Grid.Column="2"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         CornerRadius="0,0,4,0"
-                        BorderThickness="2,2,0,0"
+                        BorderThickness="0"
                         ToolTipService.ToolTip="Exports selected packages.">
-                    <Button.BorderBrush>
-                        <LinearGradientBrush StartPoint="0,0"
-                                             EndPoint="1,1">
-                            <GradientStop Color="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                                          Offset="0" />
-                            <GradientStop Color="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                          Offset="1" />
-                        </LinearGradientBrush>
-                    </Button.BorderBrush>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xEDE2;"
@@ -1100,6 +1068,62 @@
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+
+                <!-- ============================================ -->
+                <!-- OVERLAY BORDERS FOR VISUAL SPLITS -->
+                <!-- ============================================ -->
+
+                <!-- TOP HORIZONTAL DIVIDER (dark line under top row) -->
+                <Grid Grid.Row="0"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="3"
+                      VerticalAlignment="Bottom"
+                      Height="2"
+                      Margin="0,0,0,-2"
+                      IsHitTestVisible="False">
+                    <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                    <Border BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                            BorderThickness="0,0,0,2" />
+                </Grid>
+
+                <!-- BOTTOM HORIZONTAL DIVIDER (bright line above bottom row) -->
+                <Grid Grid.Row="2"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="3"
+                      VerticalAlignment="Top"
+                      Height="2"
+                      Margin="0,-2,0,0"
+                      IsHitTestVisible="False">
+                    <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                    <Border BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                            BorderThickness="0,2,0,0" />
+                </Grid>
+
+                <!-- LEFT VERTICAL DIVIDER (dark line on right edge of left column) -->
+                <Grid Grid.Row="0"
+                      Grid.Column="0"
+                      Grid.RowSpan="3"
+                      HorizontalAlignment="Right"
+                      Width="2"
+                      Margin="0,0,-2,0"
+                      IsHitTestVisible="False">
+                    <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                    <Border BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                            BorderThickness="2,0,0,0" />
+                </Grid>
+
+                <!-- RIGHT VERTICAL DIVIDER (bright line on left edge of right column) -->
+                <Grid Grid.Row="0"
+                      Grid.Column="2"
+                      Grid.RowSpan="3"
+                      HorizontalAlignment="Left"
+                      Width="2"
+                      Margin="-2,0,0,0"
+                      IsHitTestVisible="False">
+                    <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                    <Border BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                            BorderThickness="2,0,0,0" />
+                </Grid>
             </Grid>
         </Grid>
 
