@@ -37,6 +37,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+
 - Fix conjoined button appearances/hover apperances
 Separate border from button entirly, distance buttons, and put border between em, claude, given enough detes could help make this painless
 could use alternstive brushes instead of colors too!
