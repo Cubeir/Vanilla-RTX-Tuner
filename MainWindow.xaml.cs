@@ -533,6 +533,7 @@ public sealed partial class MainWindow : Window
         // Left column shadows
         BrowsePacksShadow.Receivers.Add(LeftShadowReceiver);
         SidebarLogShadow.Receivers.Add(LeftShadowReceiver);
+        CommandBarShadow.Receivers.Add(LeftShadowReceiver);
 
         // Right column shadows
         PackOptionsShadow.Receivers.Add(RightShadowReceiver);
@@ -1916,5 +1917,10 @@ public sealed partial class MainWindow : Window
         {
             _ = BlinkingLamp(true, true, 0.0);
         }
+    }
+
+    private void ThemeButton_Click(object sender, RoutedEventArgs e)
+    {
+
     }
 }

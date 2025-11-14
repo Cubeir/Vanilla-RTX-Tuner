@@ -150,9 +150,10 @@
 
             <!-- Titlebar Buttons -->
             <Border x:Name="CommandBarButtonsShadowReceiver"
-                    Margin="16,-2,16,0"
+                    Margin="-2,-2,16,0"
                     VerticalAlignment="Top"
                     Height="34"
+                    Width="Auto"
                     Translation="0,0,0"
                     CornerRadius="4">
                 <Border.Shadow>
@@ -234,6 +235,7 @@
                             FontSize="14"
                             Background="Transparent"
                             BorderBrush="Transparent"
+                            Click="ThemeButton_Click"
                             ToolTipService.ToolTip="Theme: System"
                             IsTextScaleFactorEnabled="False" />
 
