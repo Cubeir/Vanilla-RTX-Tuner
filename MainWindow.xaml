@@ -38,7 +38,7 @@
                     VerticalAlignment="Top"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0,0,0,3"
+                    BorderThickness="0,0,0,4"
                     CornerRadius="0"
                     Translation="0,0,24"
                     IsHitTestVisible="False">
@@ -382,18 +382,19 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.9*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="1.15*" />
+                        <ColumnDefinition Width="1.2*" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="1.075*" />
+                        <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
 
                     <CheckBox x:Name="VanillaRTXCheckBox"
                               Grid.Column="0"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
-                              Margin="8,0"
+                              Margin="8,0,0,0"
                               Checked="Option_Checked"
-                              Unchecked="Option_Unchecked">
+                              Unchecked="Option_Unchecked"
+                              IsEnabled="False">
                         <TextBlock Text="Vanilla RTX"
                                    FontWeight="SemiBold"
                                    Margin="2,1,0,0" />
@@ -407,9 +408,10 @@
                               Grid.Column="2"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
-                              Margin="8,0"
+                              Margin="8,0,0,0"
                               Checked="Option_Checked"
-                              Unchecked="Option_Unchecked">
+                              Unchecked="Option_Unchecked"
+                              IsEnabled="False">
                         <TextBlock Text="Vanilla RTX Normals"
                                    FontWeight="SemiBold"
                                    Margin="2,1,0,0" />
@@ -423,9 +425,10 @@
                               Grid.Column="4"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
-                              Margin="8,0"
+                              Margin="8,0,0,0"
                               Checked="Option_Checked"
-                              Unchecked="Option_Unchecked">
+                              Unchecked="Option_Unchecked"
+                              IsEnabled="False">
                         <TextBlock Text="Vanilla RTX Opus"
                                    FontWeight="SemiBold"
                                    Margin="2,1,0,0" />

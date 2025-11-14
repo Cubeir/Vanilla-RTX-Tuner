@@ -37,7 +37,18 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- titlebar color must match checkboxes background, use the same brush
+
 - Perfect the appearance of 2x2 button grid
+
+- Improve titlebar buttons, they're very outdated-looking, something modern in recommended winui 3.0 style could be done.
+Move them to the space beween tuner lamp and left side
+Like Microsoft word
+They spread out! with bars to separate them
+
+- Settle behavior of BG vessel and its appearance
+Why doesn't text appear beneath it? fix that, make it more transparent?
+the slightly checkerboardy noise idea's cool, play around with it
 
 - Disable increasing font size on the ENTIRE app
 
@@ -64,7 +75,8 @@ Or come up with something better.
 If you solidify these hardcoded paths into a class it would be good, make it easy to change...
 pack updater, pack locators, launcher, they deal with hardcoded paths, what else?
 
-
+- Test idea:
+How would it look if you put an image behind the main container?
 
 This concludes the development of Tuner, it may evolve if new ideas for tuning options come along, or if Minecraft changes/with new features, etc...
 but for now, this is it.
@@ -72,6 +84,13 @@ Potential edge case fixes and refactoring is all that can be done.
 The app, and all of its aspects, are now functionally perfect, further feature development is blissful.
 
 End of Development/Unimportant ideas:
+
+- Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
+(Already have, an unused method, certain suffixes are matched up to share their noise pattern)
+
+- Once reaching the end of development, expose as many params as you can
+Most importantly, the hardcoded Minecraft paths, expose those, paths to search in and go to and whatever class that deals with
+MC data folder, whatever and whatever they are cleanly expose them so if you leave the app people can easily change it
 
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
 It is too integerated, previewer class has some funky behavior tied to it, circumvented by it, 3am brainfart
@@ -87,12 +106,6 @@ only concern is performance with large logs
 This idea can be a public static method and it won't ever ever block Ui thread
 A variable is getting constantly updated with new logs, a worker in main UI thread's only job is to write out its content as it comes along
 
-- Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
-(Already have, an unused method, certain suffixes are matched up to share their noise pattern)
-
-- Once reaching the end of development, expose as many params as you can
-Most importantly, the hardcoded Minecraft paths, expose those, paths to search in and go to and whatever class that deals with
-MC data folder, whatever and whatever they are cleanly expose them so if you leave the app people can easily change it
 
 - Account for different font scalings, windows accessibility settings, etc...
 gonna need lots of painstakingly redoing xamls but if one day you have an abundance of time sure why not
@@ -301,11 +314,10 @@ public sealed partial class MainWindow : Window
         // Slower UI update override for a smoother startup
         UpdateUI(0.31415926535);
 
-        // Locate packs, always triggers a lamp flash btw, cool!
+        // Locate packs, if Preview is enabled, TargetPreview triggers another pack location, avoid redundant operation
         if (!IsTargetingPreview)
         {
-            // To avoid double-triggering this, because preview toggle, if enabled again via the persistent settings, triggers below again
-            LocatePacksButton_Click();
+            _ = LocatePacksButton_Click();
         }
 
 
@@ -662,7 +674,7 @@ public sealed partial class MainWindow : Window
         {
             _lampBlinkCts = new CancellationTokenSource();
 
-            if (isSpecial)
+            if (isSpecial && !string.IsNullOrEmpty(specialPath))
             {
                 await SetImageAsync(iconImageBox, specialPath);
                 iconOverlayImageBox.Opacity = 0;
@@ -684,7 +696,7 @@ public sealed partial class MainWindow : Window
             await SetImageAsync(iconImageBox, onPath);
             await SetImageAsync(iconOverlayImageBox, offPath);
 
-            bool doSuperFlash = rng.NextDouble() < singleFlashOnChance; // Most of the time do superflash instead of turning it off
+            bool doSuperFlash = rng.NextDouble() < singleFlashOnChance;
 
             if (doSuperFlash)
             {
@@ -987,20 +999,20 @@ public sealed partial class MainWindow : Window
         // Sliders
         var sliderConfigs = new[]
         {
-        (FogMultiplierSlider, FogMultiplierBox, TunerVariables.Persistent.FogMultiplier, false),
-        (EmissivityMultiplierSlider, EmissivityMultiplierBox, TunerVariables.Persistent.EmissivityMultiplier, false),
-        (NormalIntensitySlider, NormalIntensityBox, (double)TunerVariables.Persistent.NormalIntensity, true),
-        (MaterialNoiseSlider, MaterialNoiseBox, (double)TunerVariables.Persistent.MaterialNoiseOffset, true),
-        (RoughenUpSlider, RoughenUpBox, (double)TunerVariables.Persistent.RoughenUpIntensity, true),
-        (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)TunerVariables.Persistent.ButcheredHeightmapAlpha, true)
+        (FogMultiplierSlider, FogMultiplierBox, Persistent.FogMultiplier, false),
+        (EmissivityMultiplierSlider, EmissivityMultiplierBox, Persistent.EmissivityMultiplier, false),
+        (NormalIntensitySlider, NormalIntensityBox, (double)Persistent.NormalIntensity, true),
+        (MaterialNoiseSlider, MaterialNoiseBox, (double)Persistent.MaterialNoiseOffset, true),
+        (RoughenUpSlider, RoughenUpBox, (double)Persistent.RoughenUpIntensity, true),
+        (ButcherHeightmapsSlider, ButcherHeightmapsBox, (double)Persistent.ButcheredHeightmapAlpha, true)
         };
 
-        // Bools/Checkboxes/Toggles, etc...
+        // Match bool-based UI elements to their current bools
         VanillaRTXCheckBox.IsChecked = TunerVariables.IsVanillaRTXEnabled;
         NormalsCheckBox.IsChecked = TunerVariables.IsNormalsEnabled;
         OpusCheckBox.IsChecked = TunerVariables.IsOpusEnabled;
-        EmissivityAmbientLightToggle.IsOn = TunerVariables.Persistent.AddEmissivityAmbientLight;
-        TargetPreviewToggle.IsChecked = TunerVariables.Persistent.IsTargetingPreview;
+        EmissivityAmbientLightToggle.IsOn = Persistent.AddEmissivityAmbientLight;
+        TargetPreviewToggle.IsChecked = Persistent.IsTargetingPreview;
 
         // Animate sliders (intentionally put here, don't move up or down)
         await AnimateSliders(sliderConfigs, animationDurationSeconds);
@@ -1230,16 +1242,11 @@ public sealed partial class MainWindow : Window
 
 
 
-    private void LocatePacksButton_Click()
+    public async Task LocatePacksButton_Click()
     {
-        _ = BlinkingLamp(true, true, 1.0);
+        await BlinkingLamp(true, true, 1.0);
 
-        // Reset these variables
-        VanillaRTXLocation = string.Empty;
-        VanillaRTXNormalsLocation = string.Empty;
-        VanillaRTXOpusLocation = string.Empty;
-        CustomPackLocation = string.Empty;
-
+        // Reset these variables and controls
         VanillaRTXCheckBox.IsEnabled = false;
         VanillaRTXCheckBox.IsChecked = false;
         IsVanillaRTXEnabled = false;
@@ -1250,6 +1257,11 @@ public sealed partial class MainWindow : Window
         OpusCheckBox.IsChecked = false;
         IsOpusEnabled = false;
 
+        VanillaRTXLocation = string.Empty;
+        VanillaRTXNormalsLocation = string.Empty;
+        VanillaRTXOpusLocation = string.Empty;
+        CustomPackLocation = string.Empty;
+
         VanillaRTXVersion = string.Empty;
         VanillaRTXNormalsVersion = string.Empty;
         VanillaRTXOpusVersion = string.Empty;
@@ -1259,7 +1271,6 @@ public sealed partial class MainWindow : Window
             out VanillaRTXLocation, out VanillaRTXVersion,
             out VanillaRTXNormalsLocation, out VanillaRTXNormalsVersion,
             out VanillaRTXOpusLocation, out VanillaRTXOpusVersion);
-
         // Log(statusMessage);
 
         if (!string.IsNullOrEmpty(VanillaRTXLocation) && Directory.Exists(VanillaRTXLocation))
@@ -1308,16 +1319,17 @@ public sealed partial class MainWindow : Window
     }
 
 
+
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = true;
-        LocatePacksButton_Click();
+        _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
         IsTargetingPreview = false;
-        LocatePacksButton_Click();
+        _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Release.", LogLevel.Informational);
     }
 
@@ -1881,7 +1893,7 @@ public sealed partial class MainWindow : Window
             }
 
             // Trigger an automatic pack location check after update (fail or not)
-            LocatePacksButton_Click();
+            _ = LocatePacksButton_Click();
         }
     }
 

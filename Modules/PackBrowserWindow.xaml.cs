@@ -153,7 +153,7 @@ public sealed partial class PackBrowserWindow : Window
             Margin = new Thickness(0, 5, 0, 5),
             CornerRadius = new CornerRadius(5),
             Tag = pack,
-            Translation = new System.Numerics.Vector3(0, 0, 24) // shadow
+            Translation = new System.Numerics.Vector3(0, 0, 32) // shadow
         };
 
         // Add shadow to button
@@ -182,7 +182,7 @@ public sealed partial class PackBrowserWindow : Window
             CornerRadius = new CornerRadius(5),
             Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                 Microsoft.UI.Colors.Gray),
-            Translation = new System.Numerics.Vector3(0, 0, 52)
+            Translation = new System.Numerics.Vector3(0, 0, 48)
         };
 
         // Shadow for teh icon
