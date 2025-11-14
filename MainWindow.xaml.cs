@@ -1398,20 +1398,19 @@ public sealed partial class MainWindow : Window
 
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
-        // Some visual shit
-        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight1"]);
-
         IsTargetingPreview = true;
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
+
+        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight1"]);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
-        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["FakeSplitButtonBrightBorderColor"]);
-
         IsTargetingPreview = false;
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Release.", LogLevel.Informational);
+
+        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["FakeSplitButtonBrightBorderColor"]);
     }
 
 
