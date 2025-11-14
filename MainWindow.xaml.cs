@@ -37,21 +37,9 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-
-- Fix conjoined button appearances/hover apperances
-Separate border from button entirly, distance buttons, and put border between em, claude, given enough detes could help make this painless
-could use alternstive brushes instead of colors too!
-
-- Perfect the appearance of 2x2 button grid, as well as the fake split buttons this way
-take the buttons, make their spaces zero, given them enough space between them
-then construct fake directional borders between them, each 2px thick, do the math, can brushes or colors ya got
-to make something tremendous
-
 - what if there are more than 1 NUMERICAL FOLDER FOR USERS?
 deploy IN ALL folders there besides shared!
 consturct the paths if necessary.
-
-- Make button clicks not register for clicking on titlebar, which causes unintended maximizing and minimizing
 
 - And ensure titlebar is compatible/nicely configured, including min/max/close colors
 
@@ -62,9 +50,9 @@ for whatever the ****** reason
 Why doesn't text appear beneath it? fix that, make it more transparent?
 the slightly checkerboardy noise idea's cool, play around with it
 
-- Disable increasing font size on the ENTIRE app
+- Disable changing font size on the entire app
 
-- Implement a way for current custom pack selection be visible even outside of logs
+- A way for current custom pack selection be visible even outside of logs
 
 - Improve preview arts as you go
 Add one for theme button?
@@ -74,37 +62,28 @@ Show it with shift and without shift, shift is the more powerful version
 
 clear is just.. it is the broom, but make it more interesting
 
-They all can be improved, previewr can be improved too
+They all can be improved, previewer can be improved too
 it all could be more pleasant/fast
 The arts could also look better, they go a long way in carrying the right messasge to user
-
-
-- Fog slider development:
-
-Make fog multiplier partially impact water scattering (& absorbtion?)
-Or add a whole new slider, water fog multiplier...?
-
-Here's a couple of things to consider:
-official fog docs say there is a density param for water fog, Vanilla RTX doesn't use it, because it still doesn't work after many years
-If it one day does work, use that param
-Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is unpredictable since both are compounded for the final color
-
-Get rid of the overly bloated stupid dampening nonsense come up with something better and cleaner overall
-No need to spill excess density to scattering or otherwise -- too complicated and unpredictable with Vanilla RTX's current fog implementation which heavily relies on absorbtion
-
-Or come up with something better.
 
 - Search development resource packs for locating Vanilla RTX as well -- packbrowser does it already, this is the only other places
 If you solidify these hardcoded paths into a class it would be good, make it easy to change...
 pack updater, pack locators, launcher, they deal with hardcoded paths, what else?
 
-- Test idea:
-How would it look if you put an image behind the main container?
+- Do the TODOs scattered in the code
 
-This concludes the development of Tuner, it may evolve if new ideas for tuning options come along, or if Minecraft changes/with new features, etc...
-but for now, this is it.
-Potential edge case fixes and refactoring is all that can be done.
-The app, and all of its aspects, are now functionally perfect, further feature development is blissful.
+- Finish Material Grain development
+
+- Fog slider development:
+Make fog multiplier partially impact water scattering (& absorbtion?)
+Or add a whole new slider, water fog multiplier...?
+Here's a couple of things to consider:
+official fog docs say there is a density param for water fog, Vanilla RTX doesn't use it, because it still doesn't work after many years
+If it one day does work, use that param
+Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is unpredictable since both are compounded for the final color
+Get rid of the overly bloated stupid dampening nonsense come up with something better and cleaner overall
+No need to spill excess density to scattering or otherwise -- too complicated and unpredictable with Vanilla RTX's current fog implementation which heavily relies on absorbtion
+Or come up with something better.
 
 ============== End of Development/Unimportant ideas: =====================
 
@@ -1406,12 +1385,17 @@ public sealed partial class MainWindow : Window
 
     private void TargetPreviewToggle_Checked(object sender, RoutedEventArgs e)
     {
+        // Some visual shit
+        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight1"]);
+
         IsTargetingPreview = true;
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
+        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["FakeSplitButtonBrightBorderColor"]);
+
         IsTargetingPreview = false;
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Release.", LogLevel.Informational);

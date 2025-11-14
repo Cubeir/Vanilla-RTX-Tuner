@@ -66,7 +66,7 @@
         <Grid Grid.ColumnSpan="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Top"
-              Margin="0, 0">
+              Margin="0, 0, -1, 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -335,7 +335,8 @@
                           IsHitTestVisible="False">
                         <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
                         <Border BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                                BorderThickness="3,0,0,0" />
+                                BorderThickness="3,0,0,0"
+                                x:Name="LeftEdgeOfTargetPreviewButton"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -1124,6 +1125,19 @@
                     <Border BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
                             BorderThickness="3,0,0,0" />
                 </Grid>
+
+                <!-- FUCKY CORRECTION PIXEL -->
+                <Border Grid.Row="1"
+                        Grid.Column="1"
+                        Width="3"
+                        Height="3"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Background="{ThemeResource IntersectionNeutralizerBrush}"
+                        Opacity="0.075"
+                        IsHitTestVisible="False" />
+
+
             </Grid>
         </Grid>
 
