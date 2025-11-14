@@ -165,6 +165,7 @@ public sealed partial class PackBrowserWindow : Window
             Margin = new Thickness(0, 5, 0, 5),
             CornerRadius = new CornerRadius(5),
             Tag = pack,
+            IsTextScaleFactorEnabled = false,
             Translation = new System.Numerics.Vector3(0, 0, 32) // shadow
         };
 

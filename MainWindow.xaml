@@ -291,6 +291,7 @@
                             FontWeight="SemiBold"
                             CornerRadius="4,0,0,4"
                             BorderThickness="0"
+                            IsTextScaleFactorEnabled="False"
                             ToolTipService.ToolTip="Select a pack from your local PBR-enabled resource packs for tuning or export.">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
@@ -313,6 +314,7 @@
                                   BorderThickness="0"
                                   Checked="TargetPreviewToggle_Checked"
                                   Unchecked="TargetPreviewToggle_Unchecked"
+                                  IsTextScaleFactorEnabled="False"
                                   ToolTipService.ToolTip="If enabled, all of app's functionality targets Minecraft Preview instead of regular Minecraft." />
 
                     <!-- Overlay borders for the visual split -->
@@ -367,9 +369,10 @@
                          AllowFocusOnInteraction="True"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          Padding="12,12,12,138"
+                         IsTextScaleFactorEnabled="False"
                          ToolTipService.ToolTip="Relevant logs appear here to guide, warn, or inform the user while using the app." />
 
-                <!-- Invisible overlay button -->
+                <!-- Invisible Log Copy Button -->
                 <Button x:Name="LogCopyButton"
                         Margin="17,0,0,17"
                         Width="250"
@@ -486,7 +489,8 @@
                               IsEnabled="False">
                         <TextBlock Text="Vanilla RTX"
                                    FontWeight="SemiBold"
-                                   Margin="2,1,0,0" />
+                                   Margin="2,1,0,0"
+                                   IsTextScaleFactorEnabled="False" />
                     </CheckBox>
 
                     <AppBarSeparator Grid.Column="1"
@@ -503,7 +507,8 @@
                               IsEnabled="False">
                         <TextBlock Text="Vanilla RTX Normals"
                                    FontWeight="SemiBold"
-                                   Margin="2,1,0,0" />
+                                   Margin="2,1,0,0"
+                                   IsTextScaleFactorEnabled="False" />
                     </CheckBox>
 
                     <AppBarSeparator Grid.Column="3"
@@ -520,7 +525,8 @@
                               IsEnabled="False">
                         <TextBlock Text="Vanilla RTX Opus"
                                    FontWeight="SemiBold"
-                                   Margin="2,1,0,0" />
+                                   Margin="2,1,0,0"
+                                   IsTextScaleFactorEnabled="False" />
                     </CheckBox>
                 </Grid>
             </Border>
@@ -593,6 +599,7 @@
                             VerticalAlignment="Stretch"
                             CornerRadius="4,0,0,4"
                             BorderThickness="0"
+                            IsTextScaleFactorEnabled="False"
                             ToolTipService.ToolTip="Clears">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
@@ -615,6 +622,7 @@
                             VerticalAlignment="Stretch"
                             CornerRadius="0,4,4,0"
                             BorderThickness="0"
+                            IsTextScaleFactorEnabled="False"
                             ToolTipService.ToolTip="Resets tuning options back to their default values. Hold SHIFT to perform a hard reset of app's data.">
                     </Button>
 
@@ -649,6 +657,7 @@
                             VerticalAlignment="Bottom">
                     <TextBlock Text="Fog multiplier (0.0-10.0)"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.2–0.8 for lighter fog, 1.5-3.0 for dense fog. 0 to disable air fog." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -683,6 +692,7 @@
                                  Width="60"
                                  Text="1.00"
                                  LostFocus="FogMultiplierBox_LostFocus"
+                                 IsTextScaleFactorEnabled="False"
                                  BeforeTextChanging="DoubleTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
@@ -694,6 +704,7 @@
                             VerticalAlignment="Bottom">
                     <TextBlock Text="Emissivity multiplier (0.5-10.0)"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Scales emissivity of all emissive blocks. 1 = default, 0.5 = half brightness, higher values = stronger glow." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -724,6 +735,7 @@
                                  Grid.Column="2"
                                  Width="60"
                                  Text="1.00"
+                                 IsTextScaleFactorEnabled="False"
                                  LostFocus="EmissivityMultiplierBox_LostFocus"
                                  BeforeTextChanging="DoubleTextBox_BeforeTextChanging" />
                     </Grid>
@@ -736,6 +748,7 @@
                             VerticalAlignment="Center">
                     <TextBlock Text="Increase ambient lighting"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Modifies ambient lighting when emissivity is adjusted, higher emissive multipliers strengthen the effect." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -747,6 +760,7 @@
                                       Grid.Column="0"
                                       AutomationProperties.Name="Emissivity Ambient Light Toggle"
                                       Toggled="EmissivityAmbientLightToggle_Toggled"
+                                      IsTextScaleFactorEnabled="False"
                                       VerticalAlignment="Top" />
                         <TextBlock x:Name="EmissivityWarningIcon"
                                    Style="{StaticResource TextBlockSegIcons}"
@@ -757,6 +771,7 @@
                                    HorizontalAlignment="Right"
                                    Margin="0,0,13.5,0"
                                    Visibility="Collapsed"
+                                   IsTextScaleFactorEnabled="False"
                                    ToolTipService.ToolTip="Higher emissivity multipliers after tuning more than once with this option can break the pack. Keep Emissive Multiplier at default (1.0) if you've previously tuned the pack with this option enabled." />
                     </Grid>
                 </StackPanel>
@@ -768,6 +783,7 @@
                             VerticalAlignment="Bottom">
                     <TextBlock Text="Normal intensity (0-900%)"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Increases Normal Map Intensity. 0% = flatten, 100% = default, higher values = more pronounced depth on blocks." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -802,6 +818,7 @@
                                  Width="60"
                                  Text="100"
                                  LostFocus="NormalIntensity_LostFocus"
+                                 IsTextScaleFactorEnabled="False"
                                  BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
@@ -813,6 +830,7 @@
                             VerticalAlignment="Bottom">
                     <TextBlock Text="Material grain offset (0-25)"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Creates grainy materials by adding a layer of noise in a manner that keeps the pack's intended look intact, your input determines the maximum deviation.." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -847,6 +865,7 @@
                                  Width="60"
                                  Text="0"
                                  LostFocus="MaterialNoise_LostFocus"
+                                 IsTextScaleFactorEnabled="False"
                                  BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
@@ -859,6 +878,7 @@
                             VerticalAlignment="Center">
                     <TextBlock Text="Roughen up (0-25)"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Increases surface roughness on materials to better match Vibrant Visuals' artstyle. Uses an inverse curve function to impact glossy surfaces the most.." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -893,6 +913,7 @@
                                  Width="60"
                                  Text="0"
                                  LostFocus="RoughenUp_LostFocus"
+                                 IsTextScaleFactorEnabled="False"
                                  BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
@@ -904,6 +925,7 @@
                             VerticalAlignment="Bottom">
                     <TextBlock Text="Butcher heightmaps (0-255)"
                                FontWeight="SemiBold"
+                               IsTextScaleFactorEnabled="False"
                                ToolTipService.ToolTip="Lazifies heightmaps and reduces refinedness (0 = no change, 255 = fully lazy heightmaps)." />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -938,6 +960,7 @@
                                  Width="60"
                                  Text="0"
                                  LostFocus="ButcherHeightmaps_LostFocus"
+                                 IsTextScaleFactorEnabled="False"
                                  BeforeTextChanging="IntegerTextBox_BeforeTextChanging" />
                     </Grid>
                 </StackPanel>
@@ -986,6 +1009,7 @@
                         VerticalAlignment="Stretch"
                         CornerRadius="4,0,0,0"
                         BorderThickness="0"
+                        IsTextScaleFactorEnabled="False"
                         ToolTipService.ToolTip="Begins the tuning process based on selected packs and given parameters. Make sure Minecraft is closed while tuning or restart the game after tuning is complete.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
@@ -1008,6 +1032,7 @@
                         VerticalAlignment="Stretch"
                         CornerRadius="0,4,0,0"
                         BorderThickness="0"
+                        IsTextScaleFactorEnabled="False"
                         ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are always redeployed from cache unless a new Vanilla RTX update is available.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
@@ -1035,6 +1060,7 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         CornerRadius="0,0,0,4"
+                        IsTextScaleFactorEnabled="False"
                         ToolTipService.ToolTip="Launches Minecraft or Minecraft Preview with ray tracing pre-enabled to avoid issues. Additionally disables VSync for better performanc and enables in-game graphics mode switching.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
@@ -1058,6 +1084,7 @@
                         VerticalAlignment="Stretch"
                         CornerRadius="0,0,4,0"
                         BorderThickness="0"
+                        IsTextScaleFactorEnabled="False"
                         ToolTipService.ToolTip="Exports selected packages.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">

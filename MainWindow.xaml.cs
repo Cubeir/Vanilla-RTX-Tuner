@@ -50,10 +50,6 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- what if there are more than 1 NUMERICAL FOLDER FOR USERS?
-deploy IN ALL folders there besides shared!
-consturct the paths if necessary.
-
 - And ensure titlebar is compatible/nicely configured, including min/max/close colors
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
@@ -62,8 +58,6 @@ for whatever the ****** reason
 - Settle behavior of BG vessel and its appearance
 Why doesn't text appear beneath it? fix that, make it more transparent?
 the slightly checkerboardy noise idea's cool, play around with it
-
-- Disable changing font size on the entire app
 
 - A way for current custom pack selection be visible even outside of logs
 

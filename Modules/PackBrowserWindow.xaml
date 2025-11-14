@@ -87,6 +87,7 @@
 
                 <ScrollViewer Padding="20, 20, 20, 0"
                               Margin="0,-5,0,0"
+                              IsTextScaleFactorEnabled="False"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
                     <StackPanel x:Name="PackListContainer"
@@ -103,10 +104,12 @@
                         Spacing="12">
                 <FontIcon Glyph="&#xE7C3;"
                           FontSize="48"
+                          IsTextScaleFactorEnabled="False"
                           Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                 <TextBlock x:Name="EmptyStateText"
                            Text="No compatible packs found"
                            FontSize="14"
+                           IsTextScaleFactorEnabled="False"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
         </Grid>
