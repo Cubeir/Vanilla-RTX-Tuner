@@ -7,30 +7,41 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Title="Vanilla RTX Tuner"
         mc:Ignorable="d">
-
-
+    
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
 
-
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
-            <!-- Left section -->
             <ColumnDefinition Width="3.5*" />
-            <!-- Right section -->
         </Grid.ColumnDefinitions>
 
+        
+        
+        <!-- Light theme tint overlay -->
+        <Border x:Name="LightThemeOverlay"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False"
+                Visibility="{ThemeResource LightThemeBackgroundVisibility}"
+                Canvas.ZIndex="-1">
+            <Border.Background>
+                <SolidColorBrush Color="#17373737" />
+            </Border.Background>
+        </Border>
+
+        
+        
         <!-- Titlebar background -->
         <Grid Grid.ColumnSpan="2"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Top"
               Height="35">
-
-            <!-- Shadow receiver (sits behind the titlebar) -->
+            <!-- Shadow receiver behind the titlebar) -->
             <Grid x:Name="TitleBarShadowReceiver" />
-
             <!-- Actual titlebar -->
             <Border x:Name="TitleBarBackground"
                     Height="35"
@@ -48,74 +59,8 @@
             </Border>
         </Grid>
 
-        <!-- Light theme tint overlay -->
-        <Border x:Name="LightThemeOverlay"
-                Grid.ColumnSpan="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                IsHitTestVisible="False"
-                Visibility="{ThemeResource LightThemeBackgroundVisibility}"
-                Canvas.ZIndex="-1">
-            <Border.Background>
-                <SolidColorBrush Color="#17373737" />
-            </Border.Background>
-        </Border>
-
-        <!-- Titlebar Buttons -->
-        <Button x:Name="HelpButton"
-                Style="{StaticResource ButtonSegIcons}"
-                Grid.ColumnSpan="2"
-                Content="&#xE897;"
-                Width="40"
-                Height="32"
-                CornerRadius="0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="15, 0, 138, 15"
-                FontSize="14"
-                Background="Transparent"
-                BorderBrush="Transparent"
-                Click="HelpButton_Click"
-                ToolTipService.ToolTip="Help"
-                IsTextScaleFactorEnabled="False"/>
-
-        <Button x:Name="DonateButton"
-                Style="{StaticResource ButtonSegIcons}"
-                Grid.ColumnSpan="2"
-                Content="&#xEB51;"
-                Width="40"
-                Height="32"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="15, 0, 179, 15"
-                CornerRadius="0"
-                FontSize="14"
-                Background="Transparent"
-                BorderBrush="Transparent"
-                Click="DonateButton_Click"
-                PointerEntered="DonateButton_PointerEntered"
-                PointerExited="DonateButton_PointerExited"
-                ToolTipService.ToolTip="Support the developer"
-                IsTextScaleFactorEnabled="False"/>
-
-        <Button x:Name="AppUpdaterButton"
-                Style="{StaticResource ButtonSegIcons}"
-                Grid.ColumnSpan="2"
-                Content="&#xE895;"
-                Width="40"
-                Height="32"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="15, 0, 220, 15"
-                CornerRadius="0"
-                FontSize="14"
-                Background="Transparent"
-                BorderBrush="Transparent"
-                Click="AppUpdaterButton_Click"
-                ToolTipService.ToolTip="Check for app update"
-                IsTextScaleFactorEnabled="False"/>
-
-
+        
+        
         <!-- Titlebar Center Content -->
         <Grid Grid.ColumnSpan="2"
               HorizontalAlignment="Center"
@@ -179,7 +124,7 @@
                         Width="20"
                         Canvas.ZIndex="5"
                         CornerRadius="0"
-                        Click="MojankEasterEggButton_Click"/>
+                        Click="MojankEasterEggButton_Click" />
             </Canvas>
 
             <TextBlock x:Name="TitleBarText"
@@ -195,7 +140,7 @@
 
 
 
-        <!-- LEFT COLUMN CONTENT AREA -->
+        <!-- LEFT CONTENT AREA -->
         <Grid Grid.Column="0"
               x:Name="LeftContentGrid">
             <!-- Shadow receiver for left column -->
@@ -203,7 +148,119 @@
                   IsHitTestVisible="False"
                   Background="Transparent" />
 
-            <!-- Buttons above sidebar log with shadow -->
+            <!-- Titlebar Buttons -->
+            <Border x:Name="CommandBarButtonsShadowReceiver"
+                    Margin="16,-2,16,0"
+                    VerticalAlignment="Top"
+                    Height="34"
+                    Translation="0,0,0"
+                    CornerRadius="4">
+                <Border.Shadow>
+                    <ThemeShadow x:Name="CommandBarShadow" />
+                </Border.Shadow>
+                <Grid Background="Transparent"
+                      BorderBrush="Transparent"
+                      BorderThickness="1"
+                      CornerRadius="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Help Button -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Spacing -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Donate Button -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Separator -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Theme Button -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Separator -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- Update Button -->
+                        <ColumnDefinition Width="*" />
+                        <!-- Flex space -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Help Button -->
+                    <Button x:Name="HelpButton"
+                            Grid.Column="0"
+                            Style="{StaticResource ButtonSegIcons}"
+                            Content="&#xE897;"
+                            Width="40"
+                            Height="35"
+                            CornerRadius="4,0,0,4"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Click="HelpButton_Click"
+                            ToolTipService.ToolTip="Help"
+                            IsTextScaleFactorEnabled="False" />
+
+                    <!-- Spacing -->
+                    <Border Grid.Column="1"
+                            Width="4" />
+
+                    <!-- Donate Button -->
+                    <Button x:Name="DonateButton"
+                            Grid.Column="2"
+                            Style="{StaticResource ButtonSegIcons}"
+                            Content="&#xEB51;"
+                            Width="40"
+                            Height="35"
+                            CornerRadius="0"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Click="DonateButton_Click"
+                            PointerEntered="DonateButton_PointerEntered"
+                            PointerExited="DonateButton_PointerExited"
+                            ToolTipService.ToolTip="Support the developer"
+                            IsTextScaleFactorEnabled="False" />
+
+                    <!-- Separator -->
+                    <Border Grid.Column="3"
+                            Width="1"
+                            Margin="4,6,4,6"
+                            Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                    <!-- Theme Button -->
+                    <Button x:Name="ThemeButton"
+                            Grid.Column="4"
+                            Style="{StaticResource ButtonSegIcons}"
+                            Content="&#xE706;"
+                            Width="40"
+                            Height="35"
+                            CornerRadius="0"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            ToolTipService.ToolTip="Theme: System"
+                            IsTextScaleFactorEnabled="False" />
+
+                    <!-- Separator -->
+                    <Border Grid.Column="5"
+                            Width="1"
+                            Margin="4,6,4,6"
+                            Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                    <!-- Update Button -->
+                    <Button x:Name="AppUpdaterButton"
+                            Grid.Column="6"
+                            Style="{StaticResource ButtonSegIcons}"
+                            Content="&#xE895;"
+                            Width="40"
+                            Height="35"
+                            CornerRadius="0,4,4,0"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Click="AppUpdaterButton_Click"
+                            ToolTipService.ToolTip="Check for app update"
+                            IsTextScaleFactorEnabled="False" />
+                </Grid>
+            </Border>
+
+            <!-- Buttons above sidebar log -->
             <Border x:Name="BrowsePacksButtonShadowHost"
                     Margin="16,51,8,0"
                     VerticalAlignment="Top"
@@ -253,8 +310,7 @@
                 </Grid>
             </Border>
 
-
-            <!-- Sidebar Log Box with shadow -->
+            <!-- Sidebar Log Box -->
             <Grid>
                 <Border x:Name="SidebarLogShadowHost"
                         Margin="16,107,8,16"
@@ -340,7 +396,6 @@
                    Opacity="100"
                    Source="ms-appx:///Assets/empty.png"
                    CacheMode="BitmapCache" />
-
             <Image x:Name="PreviewVesselBackground"
                    Width="Auto"
                    Height="150"
@@ -357,7 +412,8 @@
         </Grid>
 
 
-        <!-- RIGHT COLUMN CONTENT AREA -->
+        
+        <!-- RIGHT CONTENT AREA -->
         <Grid Grid.Column="1">
             <!-- Shadow receiver for right column -->
             <Grid x:Name="RightShadowReceiver"
@@ -987,6 +1043,8 @@
             </Grid>
         </Grid>
 
+
+
         <!-- Splash Blocker -->
         <Grid x:Name="SplashOverlay"
               Grid.ColumnSpan="2"
@@ -1026,7 +1084,5 @@
                 </Grid>
             </Viewbox>
         </Grid>
-
-        <!-- End of Main Grid-->
     </Grid>
 </Window>

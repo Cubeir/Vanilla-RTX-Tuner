@@ -56,6 +56,7 @@ the slightly checkerboardy noise idea's cool, play around with it
 
 - Improve preview arts as you go
 
+
 - Fog slider development:
 
 Make fog multiplier partially impact water scattering (& absorbtion?)
@@ -1244,7 +1245,7 @@ public sealed partial class MainWindow : Window
 
     public async Task LocatePacksButton_Click()
     {
-        await BlinkingLamp(true, true, 1.0);
+        _ = BlinkingLamp(true, true, 1.0);
 
         // Reset these variables and controls
         VanillaRTXCheckBox.IsEnabled = false;
