@@ -194,7 +194,7 @@
                             CornerRadius="0"
                             FontSize="15"
                             Click="HelpButton_Click"
-                            ToolTipService.ToolTip="Help"
+                            ToolTipService.ToolTip="Get help!"
                             IsTextScaleFactorEnabled="False" />
 
                     <!-- Spacing -->
@@ -216,7 +216,7 @@
                             Click="DonateButton_Click"
                             PointerEntered="DonateButton_PointerEntered"
                             PointerExited="DonateButton_PointerExited"
-                            ToolTipService.ToolTip="Support the developer"
+                            ToolTipService.ToolTip="Buy the developer some coffee, maybe some flower and biscuits too, he who works so thanklessly... 🥲"
                             IsTextScaleFactorEnabled="False" />
 
                     <!-- Separator -->
