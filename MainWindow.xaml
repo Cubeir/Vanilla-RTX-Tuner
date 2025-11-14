@@ -580,16 +580,18 @@
                       BorderThickness="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.25*" />
+                        <ColumnDefinition Width="4" />
+                        <!-- 4px gap between buttons -->
                         <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
+
                     <Button x:Name="ClearButton"
-                            BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
-                            BorderThickness="0,0,2,0"
                             Grid.Column="0"
                             Click="ClearButton_Click"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             CornerRadius="4,0,0,4"
+                            BorderThickness="0"
                             ToolTipService.ToolTip="Clears">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
@@ -602,18 +604,41 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
+
                     <Button x:Name="ResetButton"
-                            BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
-                            BorderThickness="2,0,0,0"
-                            Grid.Column="1"
+                            Grid.Column="2"
                             Content="Reset settings"
                             Click="ResetButton_Click"
                             FontWeight="SemiBold"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             CornerRadius="0,4,4,0"
+                            BorderThickness="0"
                             ToolTipService.ToolTip="Resets tuning options back to their default values. Hold SHIFT to perform a hard reset of app's data.">
                     </Button>
+
+                    <!-- Overlay borders for the visual split -->
+                    <!-- Dark border on RIGHT edge of left button -->
+                    <Grid Grid.Column="0"
+                          HorizontalAlignment="Right"
+                          Width="2"
+                          Margin="0,0,-2,0"
+                          IsHitTestVisible="False">
+                        <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                        <Border BorderBrush="{ThemeResource FakeSplitButtonDarkBorderColor}"
+                                BorderThickness="2,0,0,0" />
+                    </Grid>
+
+                    <!-- Bright border on LEFT edge of right button -->
+                    <Grid Grid.Column="2"
+                          HorizontalAlignment="Left"
+                          Width="2"
+                          Margin="-2,0,0,0"
+                          IsHitTestVisible="False">
+                        <Rectangle Fill="{ThemeResource ButtonBackgroundThemeBrush}" />
+                        <Border BorderBrush="{ThemeResource FakeSplitButtonBrightBorderColor}"
+                                BorderThickness="2,0,0,0" />
+                    </Grid>
                 </Grid>
 
                 <!-- Fog Multiplier -->
