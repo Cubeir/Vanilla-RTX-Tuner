@@ -1111,7 +1111,8 @@ public class Processor
     }
 
 
-
+    // TODO: once reworking this, add that idea of yours for slightly checkerboard-y noise
+    // Same as that plugin you once made for PS
     private static void ProcessMaterialNoise(PackInfo pack)
     {
         double CalculateEffectiveness(int colorValue)

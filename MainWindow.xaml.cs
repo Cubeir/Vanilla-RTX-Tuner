@@ -55,6 +55,13 @@ the slightly checkerboardy noise idea's cool, play around with it
 - Implement a way for current custom pack selection be visible even outside of logs
 
 - Improve preview arts as you go
+Add one for theme button?
+Improve clear/clean one?
+
+Make one that references hard reset to "shreds" the app's bits or something to convey it
+Show it with shift and without shift, shift is the more powerful version
+
+clear is just.. it is the broom, but make it more interesting 
 
 
 - Fog slider development:
@@ -148,6 +155,8 @@ public static class TunerVariables
         public static int RoughenUpIntensity = Defaults.RoughenUpIntensity;
         public static int ButcheredHeightmapAlpha = Defaults.ButcheredHeightmapAlpha;
         public static bool AddEmissivityAmbientLight = Defaults.AddEmissivityAmbientLight;
+
+        public static string AppThemeMode = "Dark";
     }
 
     // Defaults are backed up to be used as a compass by other classes
@@ -275,6 +284,10 @@ public sealed partial class MainWindow : Window
 
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
+
+        // APPLY THEME - artifical button click means update ui with the persistent user variable
+        // it won't cycle through themes!
+        CycleThemeButton_Click(null, null);
 
         // Set reinstall latest packs button visuals based on cache status
         if (_updater.HasDeployableCache())
@@ -427,6 +440,60 @@ public sealed partial class MainWindow : Window
             HookThemeChangeListener();
         };
     }
+
+
+    // TODO: Double clicking this, or any titlebar button for that matter, maximizes window, not good
+    // Think of something
+    public void CycleThemeButton_Click(object? sender, RoutedEventArgs? e)
+    {
+        bool invokedByClick = sender is Button;
+        string mode = TunerVariables.Persistent.AppThemeMode;
+
+        if (invokedByClick)
+        {
+            mode = mode switch
+            {
+                "System" => "Light",
+                "Light" => "Dark",
+                _ => "System"
+            };
+            TunerVariables.Persistent.AppThemeMode = mode;
+        }
+
+        var root = MainWindow.Instance.Content as FrameworkElement;
+        root.RequestedTheme = mode switch
+        {
+            "Light" => ElementTheme.Light,
+            "Dark" => ElementTheme.Dark,
+            _ => ElementTheme.Default
+        };
+
+        Button btn = (sender as Button) ?? CycleThemeButton;
+
+        // Visual Feedback
+        if (mode == "System")
+        {
+            btn.Content = new TextBlock
+            {
+                Text = "A",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontSize = 15
+            };
+        }
+        else
+        {
+            btn.Content = mode switch
+            {
+                "Light" => "\uE793",
+                "Dark" => "\uE706",
+                _ => "A",
+            };
+        }
+
+        ToolTipService.SetToolTip(btn, "Theme: " + mode);
+    }
+
 
 
     private void SetPreviews()
@@ -1917,10 +1984,5 @@ public sealed partial class MainWindow : Window
         {
             _ = BlinkingLamp(true, true, 0.0);
         }
-    }
-
-    private void ThemeButton_Click(object sender, RoutedEventArgs e)
-    {
-
     }
 }
