@@ -411,7 +411,8 @@ public sealed partial class PackBrowserWindow : Window
             }
         }
 
-        // Filter out Vanilla RTX packs
+        // Filter out Vanilla RTX packs (we instead filter duplicate paths during tuning, this way older versions of Vanilla RTX remain tunable by Tuner)
+        // Despite the latest being selected automatically by packlocator
         /*
         if (!string.IsNullOrEmpty(headerUUID) && !string.IsNullOrEmpty(moduleUUID))
         {
