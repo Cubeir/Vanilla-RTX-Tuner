@@ -26,6 +26,18 @@ public sealed partial class PackBrowserWindow : Window
         this.InitializeComponent();
         _mainWindow = mainWindow;
 
+        // Theme
+        var mode = TunerVariables.Persistent.AppThemeMode ?? "System";
+        if (this.Content is FrameworkElement root)
+        {
+            root.RequestedTheme = mode switch
+            {
+                "Light" => ElementTheme.Light,
+                "Dark" => ElementTheme.Dark,
+                _ => ElementTheme.Default
+            };
+        }
+
         // Remove title bar and hide system buttons
         var hWnd = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);

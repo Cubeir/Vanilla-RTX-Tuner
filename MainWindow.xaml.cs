@@ -37,6 +37,16 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+FIND A BRUSH FOR TITLEBAR BRODER TOO, A BETTER ONE
+WHATS WITh HTHE DARK LINE?
+
+theme cycling is good -- BUT IT DOESN'T APPLY TO PACK BROWSER MENU! THAT STICKS TO OLD ONE
+
+Other BUTTONS MAXIMIZE AND MINIZE, NOT GOOD, disable it on BUTTONS specicially, somehow
+
+And ensure titlebar is compatible/nicely configured, including min/max/close colors
+
+
 - titlebar color must match checkboxes background, use the same brush
 
 - Perfect the appearance of 2x2 button grid
