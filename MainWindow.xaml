@@ -32,9 +32,10 @@
                 <SolidColorBrush Color="#24373737" />
             </Border.Background>
         </Border>
+        
 
-        
-        
+
+
         <!-- Titlebar background -->
         <Grid Grid.ColumnSpan="2"
               HorizontalAlignment="Stretch"
@@ -44,12 +45,12 @@
             <Grid x:Name="TitleBarShadowReceiver" />
             <!-- Actual titlebar -->
             <Border x:Name="TitleBarBackground"
-                    Height="35"
+                    Height="37"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
                     Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0,0,0,4"
+                    BorderBrush="{ThemeResource HyperlinkButtonBorderThemeBrush}"
+                    BorderThickness="0,0,0,6"
                     CornerRadius="0"
                     Translation="0,0,24"
                     IsHitTestVisible="False">
@@ -266,7 +267,7 @@
 
             <!-- Buttons above sidebar log -->
             <Border x:Name="BrowsePacksButtonShadowHost"
-                    Margin="16,51,8,0"
+                    Margin="16,52,8,0"
                     VerticalAlignment="Top"
                     Height="40"
                     Translation="0,0,32"
@@ -317,7 +318,7 @@
             <!-- Sidebar Log Box -->
             <Grid>
                 <Border x:Name="SidebarLogShadowHost"
-                        Margin="16,107,8,16"
+                        Margin="16,108,8,16"
                         VerticalAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         Translation="0,0,64"
@@ -329,7 +330,7 @@
 
                 <!-- Textbox -->
                 <TextBox x:Name="SidebarLog"
-                         Margin="16,107,8,16"
+                         Margin="16,108,8,16"
                          VerticalAlignment="Stretch"
                          HorizontalAlignment="Stretch"
                          TextWrapping="Wrap"
@@ -364,7 +365,7 @@
 
             <!-- Progress Bar -->
             <ProgressBar x:Name="ProgressBar"
-                         Margin="16,107,8,0"
+                         Margin="16,108,8,0"
                          VerticalAlignment="Top"
                          HorizontalAlignment="Stretch"
                          IsIndeterminate="False"
@@ -426,7 +427,7 @@
 
             <!-- Pack Selection Options with shadow -->
             <Border x:Name="PackOptionsShadowHost"
-                    Margin="8, 50, 16, 0"
+                    Margin="8, 51, 16, 0"
                     Padding="16,3.5"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
@@ -499,7 +500,7 @@
 
             <!-- Sliders Grid with shadow -->
             <Border x:Name="SlidersGridShadowHost"
-                    Margin="8,115,16,105"
+                    Margin="16,112,24,112"
                     Translation="0,0,0"
                     BorderBrush="Transparent"
                     BorderThickness="1"
@@ -510,7 +511,7 @@
             </Border>
 
             <Grid x:Name="SlidersGrid"
-                  Margin="8,115,16,105"
+                  Margin="16,112,24,108"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
 

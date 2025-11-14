@@ -51,19 +51,10 @@ to make something tremendous
 deploy IN ALL folders there besides shared!
 consturct the paths if necessary.
 
-- FIND A BRUSH FOR TITLEBAR BRODER TOO, A BETTER ONE
-WHATS WITh HTHE DARK LINE?
-
 - Make button clicks not register for clicking on titlebar, which causes unintended maximizing and minimizing
 
 - And ensure titlebar is compatible/nicely configured, including min/max/close colors
 
-
-
-- Improve titlebar buttons, they're very outdated-looking, something modern in recommended winui 3.0 style could be done.
-Move them to the space beween tuner lamp and left side
-Like Microsoft word
-They spread out! with bars to separate them
 
 - Settle behavior of BG vessel and its appearance
 Why doesn't text appear beneath it? fix that, make it more transparent?
@@ -76,11 +67,14 @@ the slightly checkerboardy noise idea's cool, play around with it
 - Improve preview arts as you go
 Add one for theme button?
 Improve clear/clean one?
-
 Make one that references hard reset to "shreds" the app's bits or something to convey it
 Show it with shift and without shift, shift is the more powerful version
 
-clear is just.. it is the broom, but make it more interesting 
+clear is just.. it is the broom, but make it more interesting
+
+They all can be improved, previewr can be improved too
+it all could be more pleasant/fast
+The arts could also look better, they go a long way in carrying the right messasge to user
 
 
 - Fog slider development:
@@ -110,7 +104,7 @@ but for now, this is it.
 Potential edge case fixes and refactoring is all that can be done.
 The app, and all of its aspects, are now functionally perfect, further feature development is blissful.
 
-End of Development/Unimportant ideas:
+============== End of Development/Unimportant ideas: =====================
 
 - Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
