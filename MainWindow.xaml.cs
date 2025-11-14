@@ -37,19 +37,27 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-FIND A BRUSH FOR TITLEBAR BRODER TOO, A BETTER ONE
+- Fix conjoined button appearances/hover apperances
+Separate border from button entirly, distance buttons, and put border between em, claude, given enough detes could help make this painless
+could use alternstive brushes instead of colors too!
+
+- Perfect the appearance of 2x2 button grid, as well as the fake split buttons this way
+take the buttons, make their spaces zero, given them enough space between them
+then construct fake directional borders between them, each 2px thick, do the math, can brushes or colors ya got
+to make something tremendous
+
+- what if there are more than 1 NUMERICAL FOLDER FOR USERS?
+deploy IN ALL folders there besides shared!
+consturct the paths if necessary.
+
+- FIND A BRUSH FOR TITLEBAR BRODER TOO, A BETTER ONE
 WHATS WITh HTHE DARK LINE?
 
-theme cycling is good -- BUT IT DOESN'T APPLY TO PACK BROWSER MENU! THAT STICKS TO OLD ONE
+- Make button clicks not register for clicking on titlebar, which causes unintended maximizing and minimizing
 
-Other BUTTONS MAXIMIZE AND MINIZE, NOT GOOD, disable it on BUTTONS specicially, somehow
-
-And ensure titlebar is compatible/nicely configured, including min/max/close colors
+- And ensure titlebar is compatible/nicely configured, including min/max/close colors
 
 
-- titlebar color must match checkboxes background, use the same brush
-
-- Perfect the appearance of 2x2 button grid
 
 - Improve titlebar buttons, they're very outdated-looking, something modern in recommended winui 3.0 style could be done.
 Move them to the space beween tuner lamp and left side
@@ -303,12 +311,12 @@ public sealed partial class MainWindow : Window
         if (_updater.HasDeployableCache())
         {
             UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Syncfolder icon
-            UpdateVanillaRTXButtonText.Text = "Reinstall latest Packs";
+            UpdateVanillaRTXButtonText.Text = "Reinstall latest packs";
         }
         else
         {
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default cloud icon
-            UpdateVanillaRTXButtonText.Text = "Install latest Packs";
+            UpdateVanillaRTXButtonText.Text = "Install latest packs";
         }
 
         // lazy credits and PSA retriever, credits are saved for donate hover event, PSA is shown when ready

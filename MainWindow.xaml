@@ -29,7 +29,7 @@
                 Visibility="{ThemeResource LightThemeBackgroundVisibility}"
                 Canvas.ZIndex="-1">
             <Border.Background>
-                <SolidColorBrush Color="#17373737" />
+                <SolidColorBrush Color="#24373737" />
             </Border.Background>
         </Border>
 
@@ -983,6 +983,7 @@
                 <!-- Launch Button (Bottom-Left) -->
                 <Button x:Name="LaunchButton"
                         Click="LaunchButton_Click"
+                        Style="{StaticResource AccentButtonStyle}"
                         Grid.Row="1"
                         Grid.Column="0"
                         FontWeight="SemiBold"
@@ -1052,7 +1053,7 @@
               Grid.ColumnSpan="2"
               Canvas.ZIndex="9999">
             <Grid.Background>
-                <SolidColorBrush Color="{ThemeResource SplashBackgroundColor}" />
+                <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorBase}" />
             </Grid.Background>
 
             <Viewbox HorizontalAlignment="Stretch"
