@@ -56,8 +56,6 @@ Add it back maybe -- does the current code really gurantee Vanilla RTX remaining
 
 - A way for current custom pack to selection to stay visible to user, outside of logs
 
-- Put easter eggs into the startup lamp too
-
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 for whatever the ****** reason
 
@@ -72,19 +70,14 @@ pack updater, pack locator, pack browser, launcher, they deal with hardcoded pat
 Finish all that you had postponed
 
 
-============== End of Development/Unimportant ideas: =====================
-
 - A way to tell user updates are available for Vanilla RTX packs, occasional auto check
 
-- Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
-(Already have, an unused method, certain suffixes are matched up to share their noise pattern)
-
-- Once reaching the end of development, expose as many params as you can
+- Expose as many params as you can
 Most importantly, the hardcoded Minecraft paths, expose those, paths to search in and go to and whatever class that deals with
 MC data folder, whatever and whatever they are cleanly expose them so if you leave the app people can easily change it
 
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
-It is too integerated, previewer class has some funky behavior tied to it, circumvented by it, 3am brainfart
+It is too integerated, previewer class has some funky behavior tied to it, circumvented by it
 It's a mess but it works perfectly, so, only fix it once you have an abundance of time...!
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
@@ -96,7 +89,6 @@ only concern is performance with large logs
 
 This idea can be a public static method and it won't ever ever block Ui thread
 A variable is getting constantly updated with new logs, a worker in main UI thread's only job is to write out its content as it comes along
-
 
 - Account for different font scalings, windows accessibility settings, etc...
 gonna need lots of painstakingly redoing xamls but if one day you have an abundance of time sure why not
@@ -1017,22 +1009,56 @@ public sealed partial class MainWindow : Window
         const double minFlashDuration = 300;
         const double maxFlashDuration = 700;
 
-        // A chance for "off" flash vs "super" flash
         var random = new Random();
+        var today = DateTime.Today;
+
+        // Easter egg detection
+        string specialImagePath = null;
+        bool isSpecialStatic = false;
+
+        if (today.Month == 4 && today.Day >= 21 && today.Day <= 23)
+        {
+            // Birthday - static special image
+            specialImagePath = "ms-appx:///Assets/special/happybirthdayme.png";
+            isSpecialStatic = true;
+        }
+        else if (today.Month == 10 && (today.DayOfWeek == DayOfWeek.Saturday || today.DayOfWeek == DayOfWeek.Sunday))
+        {
+            // Halloween pumpkins - use themed flash animation
+            SplashLampSuper.Source = new BitmapImage(new Uri(random.NextDouble() < 0.25
+                ? "ms-appx:///Assets/special/pumpkin.off.png"
+                : "ms-appx:///Assets/special/pumpkin.super.png"));
+        }
+        else if (today.Month == 12 && today.Day >= 25)
+        {
+            // Christmas/Holiday - static special image
+            specialImagePath = "ms-appx:///Assets/special/gingerman.png";
+            isSpecialStatic = true;
+        }
+
+        // If it's a static special occasion, just show the image and skip animation
+        if (isSpecialStatic && !string.IsNullOrEmpty(specialImagePath))
+        {
+            SplashLampSuper.Source = new BitmapImage(new Uri(specialImagePath));
+            SplashLampSuper.Opacity = 1.0;
+            SplashLampHalo.Opacity = 0.0;
+            return;
+        }
+
+        // Normal animation logic (or themed animation for Halloween)
         bool isOffFlash = random.NextDouble() < 0.25;
 
-        // Set the appropriate image and target opacities
-        if (isOffFlash)
+        if (specialImagePath == null) // Only set default images if not using special themed ones
         {
-            SplashLampSuper.Source = new BitmapImage(new Uri("ms-appx:///Assets/icons/SplashScreen.Off.png"));
-        }
-        else
-        {
-            // Keep Default SplashLampSuper.Source = new BitmapImage(new Uri("ms-appx:///Assets/icons/SplashScreen.Super.png"));
+            if (isOffFlash)
+            {
+                SplashLampSuper.Source = new BitmapImage(new Uri("ms-appx:///Assets/icons/SplashScreen.Off.png"));
+            }
+            // else: Keep default Super image
         }
 
-        double targetSuperOpacity = isOffFlash ? 1.0 : 1.0;  // Both fade to full opacity
-        double targetHaloOpacity = isOffFlash ? 0.01 : 0.75; // Off = dim, Super = bright
+        double targetSuperOpacity = 1.0;
+        double targetHaloOpacity = isOffFlash ? 0.01 : 0.75;
 
         // Calculate flash timing
         double availableTime = splashDurationMs - 400;
