@@ -78,8 +78,11 @@ public class Previewer
         _bg = backgroundVessel;
 
         _bg.Opacity = 0.0;
+        _bg.Visibility = Visibility.Collapsed;
         _topVessel.Opacity = 0.0;
+        _topVessel.Visibility = Visibility.Collapsed;
         _bottomVessel.Opacity = 0.0;
+        _bottomVessel.Visibility = Visibility.Collapsed;
     }
 
     // Initialize the singleton instance
@@ -109,9 +112,11 @@ public class Previewer
     {
         _currentBottomImage = "";
         _currentTopImage = "";
-        FadeAwayVessels(0.0, true);
         _bottomVessel.Source = null;
         _topVessel.Source = null;
+        _bottomVessel.Visibility = Visibility.Collapsed;
+        _topVessel.Visibility = Visibility.Collapsed;
+        _bg.Visibility = Visibility.Collapsed;
     }
 
     public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = (int)TransitionDurationPublic)
@@ -469,6 +474,8 @@ public class Previewer
 
         _bg.Opacity = 0;
         _bg.Visibility = Visibility.Visible;
+        _bottomVessel.Visibility = Visibility.Visible;
+        _topVessel.Visibility = Visibility.Visible;
 
         // Delay animation to next layout pass (ensures visual tree is ready)
         _bg.DispatcherQueue.TryEnqueue(() =>
@@ -834,6 +841,11 @@ public class Previewer
         {
             SetBottomVesselImage(bottomImagePath);
             _currentBottomImage = bottomImagePath;
+            _bottomVessel.Visibility = Visibility.Visible;
+        }
+        else if (string.IsNullOrEmpty(bottomImagePath))
+        {
+            _bottomVessel.Visibility = Visibility.Collapsed;
         }
 
         // Apply top vessel
@@ -841,6 +853,11 @@ public class Previewer
         {
             SetTopVesselImage(topImagePath);
             _currentTopImage = topImagePath;
+            _topVessel.Visibility = Visibility.Visible;
+        }
+        else if (string.IsNullOrEmpty(topImagePath))
+        {
+            _topVessel.Visibility = Visibility.Collapsed;
         }
 
         // Set opacities (will be animated by the calling transition if needed)

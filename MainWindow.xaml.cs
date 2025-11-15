@@ -54,29 +54,9 @@ namespace Vanilla_RTX_Tuner_WinUI;
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
 
-- A way for current custom pack to selection to stay visible to user, outside of logs
-
-- Put easter eggs into the startup lamp too
-
 - Settle behavior of BG vessel and its appearance
 Why doesn't text appear beneath it? fix that, make it more transparent?
 the slightly checkerboardy noise idea's cool, play around with it
-
-- When holding down shift, turn Reset button and its nearby border to a forced red accent or system accent color to convey its destructive nature better
-
-- Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
-for whatever the ****** reason
-
-
-- Once or if the app goes on the microsoft store, don't remove inbuilt auto updater
-Just put a warning on it somehow that this is for the github version
-Please update the pack through microsoft store
-
-- Unify the 4 places hardcoded paths are used into a class
-pack updater, pack locator, pack browser, launcher, they deal with hardcoded paths, what else? (Ask copilot to scry the code)
-
-- Do the TODO and ISSUES scattered in the code
-Finish all that you had postponed
 
 - Finish Material Grain development
 
@@ -90,6 +70,26 @@ Then have tuner adjust that param instead, this is ideal, touching absorbtion/sc
 Get rid of the overly bloated stupid dampening nonsense come up with something better and cleaner overall
 No need to spill excess density to scattering or otherwise -- too complicated and unpredictable with Vanilla RTX's current fog implementation which heavily relies on absorbtion
 Or come up with something better.
+
+- A way for current custom pack to selection to stay visible to user, outside of logs
+
+- Put easter eggs into the startup lamp too
+
+- When holding down shift, turn Reset button and its nearby border to a forced red accent or system accent color to convey its destructive nature better
+
+- Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
+for whatever the ****** reason
+
+- Once or if the app goes on the microsoft store, don't remove inbuilt auto updater
+Just put a warning on it somehow that this is for the github version
+Please update the pack through microsoft store
+
+- Unify the 4 places hardcoded paths are used into a class
+pack updater, pack locator, pack browser, launcher, they deal with hardcoded paths, what else? (Ask copilot to scry the code)
+
+- Do the TODO and ISSUES scattered in the code
+Finish all that you had postponed
+
 
 ============== End of Development/Unimportant ideas: =====================
 
@@ -417,6 +417,24 @@ public sealed partial class MainWindow : Window
             titleBar.ButtonPressedBackgroundColor = isLight
                 ? Color.FromArgb(40, 0, 0, 0)
                 : Color.FromArgb(60, 255, 255, 255);
+
+            // Color of that little border next to the button 🍝
+            if (IsTargetingPreview)
+            {
+                LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight1"]);
+            }
+            else
+            {
+                var themeKey = theme == ElementTheme.Light ? "Light" : "Dark";
+                var themeDictionaries = Application.Current.Resources.ThemeDictionaries;
+                if (themeDictionaries.TryGetValue(themeKey, out var themeDict) && themeDict is ResourceDictionary dict)
+                {
+                    if (dict.TryGetValue("FakeSplitButtonBrightBorderColor", out var colorObj) && colorObj is Color color)
+                    {
+                        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush(color);
+                    }
+                }
+            }
         });
 
 
@@ -1422,9 +1440,17 @@ public sealed partial class MainWindow : Window
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Release.", LogLevel.Informational);
 
-        // Switch back to whatever the default coilor or brush is in the XAML
-        // FakeSplitButtonBrightBorderColor in itself is theme-variant, does it update properly if it is changed to from the wrong theme?
-        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["FakeSplitButtonBrightBorderColor"]);
+        // Color of that little border next to the button
+        var theme = LeftEdgeOfTargetPreviewButton.ActualTheme;
+        var themeKey = theme == ElementTheme.Light ? "Light" : "Dark";
+        var themeDictionaries = Application.Current.Resources.ThemeDictionaries;
+        if (themeDictionaries.TryGetValue(themeKey, out var themeDict) && themeDict is ResourceDictionary dict)
+        {
+            if (dict.TryGetValue("FakeSplitButtonBrightBorderColor", out var colorObj) && colorObj is Color color)
+            {
+                LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush(color);
+            }
+        }
     }
 
 

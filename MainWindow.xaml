@@ -412,11 +412,10 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
-                   Canvas.ZIndex="999"
-                   Visibility="Visible"
-                   Opacity="100"
-                   Source="ms-appx:///Assets/empty.png"
-                   CacheMode="BitmapCache" />
+                   Canvas.ZIndex="99"
+                   Visibility="Collapsed"
+                   Opacity="0"
+                   Source="ms-appx:///Assets/empty.png" />
             <Image x:Name="PreviewVesselBottom"
                    Width="Auto"
                    Height="150"
@@ -426,11 +425,10 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
-                   Canvas.ZIndex="998"
-                   Visibility="Visible"
-                   Opacity="100"
-                   Source="ms-appx:///Assets/empty.png"
-                   CacheMode="BitmapCache" />
+                   Canvas.ZIndex="98"
+                   Visibility="Collapsed"
+                   Opacity="0"
+                   Source="ms-appx:///Assets/empty.png" />
             <Image x:Name="PreviewVesselBackground"
                    Width="Auto"
                    Height="150"
@@ -439,11 +437,10 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
-                   Canvas.ZIndex="997"
-                   Visibility="Visible"
+                   Canvas.ZIndex="97"
+                   Visibility="Collapsed"
                    Opacity="0"
-                   Source="ms-appx:///Assets/previews/huge_background.png"
-                   CacheMode="BitmapCache" />
+                   Source="ms-appx:///Assets/previews/huge_background.png" />
         </Grid>
 
 
