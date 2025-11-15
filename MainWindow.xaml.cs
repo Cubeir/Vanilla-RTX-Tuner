@@ -67,15 +67,6 @@ the slightly checkerboardy noise idea's cool, play around with it
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 for whatever the ****** reason
 
-- Improve preview arts as you go
-Add one for theme button?
-Improve clear/clean one?
-Make one that references hard reset to "shreds" the app's bits or something to convey it
-Show it with shift and without shift, shift is the more powerful version
-clear is just.. it is the broom, but make it more interesting
-They all can be improved, previewer can be improved too
-it all could be more pleasant/fast
-The arts could also look better, they go a long way in carrying the right messasge to user
 
 - Once or if the app goes on the microsoft store, don't remove inbuilt auto updater
 Just put a warning on it somehow that this is for the github version
@@ -256,7 +247,7 @@ public sealed partial class MainWindow : Window
 
         Instance = this;
 
-        var defaultSize = new SizeInt32(900, 600);
+        var defaultSize = new SizeInt32(975, 575);
         _windowStateManager.ApplySavedStateOrDefaults();
 
         // Version, title and initial logs
@@ -611,7 +602,7 @@ public sealed partial class MainWindow : Window
         );
 
         Previewer.Instance.InitializeButton(ResetButton,
-            "ms-appx:///Assets/previews/table.reset.png"
+            "ms-appx:///Assets/previews/table.reset.variables.png"
         );
 
         Previewer.Instance.InitializeButton(ClearButton,

@@ -29,9 +29,9 @@ public class Previewer
 
     // Configurable global transition settings
     // Change these at runtime via Previewer.Instance to globally affect transitions.
-    public const double TransitionDurationPublic = 40;
-    public double TransitionDurationMs { get; set; } = 40;
-    public double OffFadeDelayThreshold { get; set; } = 1.0; // Delay counterpart fade until lead reaches this fraction of the duration.
+    public const double TransitionDurationPublic = 50;
+    public double TransitionDurationMs { get; set; } = 50;
+    public double OffFadeDelayThreshold { get; set; } = 0.9; // Delay counterpart fade until lead reaches this fraction of the duration.
 
     // Pending state for immediate application  after transition
     private class PendingVesselState
