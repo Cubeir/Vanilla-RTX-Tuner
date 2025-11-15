@@ -53,6 +53,7 @@ namespace Vanilla_RTX_Tuner_WinUI;
 - Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
+In testing, everything works flawlessly, but you don't know why, so trace through the logic
 
 - A way for current custom pack to selection to stay visible to user, outside of logs
 
@@ -79,6 +80,8 @@ MC data folder, whatever and whatever they are cleanly expose them so if you lea
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
 It is too integerated, previewer class has some funky behavior tied to it, circumvented by it
 It's a mess but it works perfectly, so, only fix it once you have an abundance of time...!
+
+Maybe grasp and clean the logic but leave it be honestly, the smooth transitions are worth it
 
 - A cool "Gradual logger" -- log texts gradually but very quickly! It helps make it less overwhelming when dumping huge logs
 Besides that you're gonna need something to unify the logging
@@ -1104,8 +1107,8 @@ public sealed partial class MainWindow : Window
 
     public async void UpdateUI(double animationDurationSeconds = 0.15)
     {
-        // Hide and unhide preview vessels while they update to avoid flickering as slider values update
-        HidePreviewVessels();
+        // Suppress Previewer Updates
+        Previewer.Instance.SuppressUpdates = true;
 
         // Sliders
         var sliderConfigs = new[]
@@ -1135,25 +1138,11 @@ public sealed partial class MainWindow : Window
             SetPreviews();
         }
 
-        ShowPreviewVessels();
+  
+        // Resume Previewer Updates
+        Previewer.Instance.ResumeUpdatesAndApplyPending();
 
 
-        void HidePreviewVessels()
-        {
-            PreviewVesselTop.Visibility = Visibility.Collapsed;
-            PreviewVesselBottom.Visibility = Visibility.Collapsed;
-        }
-
-        void ShowPreviewVessels()
-        {
-            Previewer.Instance.ClearPreviews();
-
-            PreviewVesselTop.Opacity = 0.0;
-            PreviewVesselBottom.Opacity = 0.0;
-
-            PreviewVesselTop.Visibility = Visibility.Visible;
-            PreviewVesselBottom.Visibility = Visibility.Visible;
-        }
 
         async Task AnimateSliders(
             (Slider slider, TextBox textBox, double targetValue, bool isInteger)[] configs,

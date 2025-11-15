@@ -33,6 +33,10 @@ public class Previewer
     public double TransitionDurationMs { get; set; } = 50;
     public double OffFadeDelayThreshold { get; set; } = 0.9; // Delay counterpart fade until lead reaches this fraction of the duration.
 
+    // (insert or replace near the other public members)
+    public bool SuppressUpdates { get; set; } = false;
+
+
     // Pending state for immediate application  after transition
     private class PendingVesselState
     {
@@ -167,6 +171,32 @@ public class Previewer
             // Do not modify _bg. It must remain visible and at its own opacity.
         }
     }
+
+
+    public void ResumeUpdatesAndApplyPending()
+    {
+        SuppressUpdates = false;
+
+        if (_pendingState.HasPendingState)
+        {
+            // If a transition is running, StartCrossFadeTransition will be no-op until it finishes.
+            // Start it now so the latest pending state gets applied.
+            if (!_isTransitioning)
+            {
+                StartCrossFadeTransition();
+            }
+            else
+            {
+                // If transitioning, interrupt and start new transition immediately.
+                _currentTransition?.Stop();
+                StartCrossFadeTransition();
+            }
+        }
+    }
+
+
+
+
     // - - - - - Utility
 
     public void InitializeSlider(Slider slider, string defaultImagePath, string minImagePath, string maxImagePath, double defaultValue)
@@ -443,14 +473,21 @@ public class Previewer
     // Handles vessel states between control changes (nothing to control, control to control, etc...)
     private void HandleControlChange(FrameworkElement newControl)
     {
+        // If updates are suppressed (e.g., during UpdateUI), don't perform visual changes.
+        if (SuppressUpdates)
+        {
+            // Still update active control so other logic relying on it stays coherent.
+            _activeControl = newControl;
+            return;
+        }
+
         bool isControlChange = (_activeControl != newControl && _activeControl != null);
         _activeControl = newControl;
 
         if (isControlChange)
         {
-            // Mark that we need a transition for control change
-            _pendingState.HasPendingState = false; // Will be set by the calling method
-            _forceTransitionForControlChange = true; // New flag to force smooth transitions
+            _pendingState.HasPendingState = false;
+            _forceTransitionForControlChange = true;
         }
 
         FadeInBackground();
@@ -458,6 +495,9 @@ public class Previewer
 
     private void FadeInBackground(double durationMs = TransitionDurationPublic)
     {
+        if (SuppressUpdates)
+            return;
+
         if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
             return;
 
@@ -598,31 +638,38 @@ public class Previewer
 
     private void SetVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity, bool allowTransition)
     {
+        // When suppressed, store the requested state but do not start transitions or change visuals.
+        if (SuppressUpdates)
+        {
+            _pendingState.BottomImagePath = bottomImagePath;
+            _pendingState.TopImagePath = topImagePath;
+            _pendingState.BottomOpacity = bottomOpacity;
+            _pendingState.TopOpacity = topOpacity;
+            _pendingState.HasPendingState = true;
+            return;
+        }
+
         bool bottomImageChanged = !string.IsNullOrEmpty(bottomImagePath) && _currentBottomImage != bottomImagePath;
         bool topImageChanged = !string.IsNullOrEmpty(topImagePath) && _currentTopImage != topImagePath;
         bool bottomOpacityChanged = Math.Abs(_bottomVessel.Opacity - bottomOpacity) > 0.01;
         bool topOpacityChanged = Math.Abs(_topVessel.Opacity - topOpacity) > 0.01;
 
-        // Need transition if images changed OR if we're going from/to zero opacity with smooth transitions enabled
         bool needsTransition = allowTransition && (bottomImageChanged || topImageChanged ||
             (bottomOpacityChanged && (_bottomVessel.Opacity == 0.0 || bottomOpacity == 0.0)) ||
             (topOpacityChanged && (_topVessel.Opacity == 0.0 || topOpacity == 0.0)));
 
         if (!needsTransition)
         {
-            // Direct application - no transition needed
             ApplyVesselState(bottomImagePath, topImagePath, bottomOpacity, topOpacity);
             return;
         }
 
-        // Store the target state
         _pendingState.BottomImagePath = bottomImagePath;
         _pendingState.TopImagePath = topImagePath;
         _pendingState.BottomOpacity = bottomOpacity;
         _pendingState.TopOpacity = topOpacity;
         _pendingState.HasPendingState = true;
 
-        // If already transitioning, the current transition will pick up the new state
         if (_isTransitioning)
         {
             return;

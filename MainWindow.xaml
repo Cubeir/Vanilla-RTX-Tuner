@@ -299,7 +299,7 @@
                                       FontSize="18"
                                       Margin="0,0,8,0"
                                       VerticalAlignment="Center" />
-                            <TextBlock Text="Select from local packs"
+                            <TextBlock Text="Select a local pack"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -583,9 +583,9 @@
                       VerticalAlignment="Bottom"
                       BorderThickness="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.25*" />
+                        <ColumnDefinition Width="2.25*" />
                         <ColumnDefinition Width="6" />
-                        <!-- 4px gap between buttons -->
+                        <!-- 6px gap between buttons -->
                         <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
 
@@ -612,7 +612,7 @@
 
                     <Button x:Name="ResetButton"
                             Grid.Column="2"
-                            Content="Reset options"
+                            Content="Reset"
                             Click="ResetButton_Click"
                             FontWeight="SemiBold"
                             HorizontalAlignment="Stretch"
