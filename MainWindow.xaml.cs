@@ -561,6 +561,19 @@ public sealed partial class MainWindow : Window
             "ms-appx:///Assets/previews/preview.png"
         );
 
+        Previewer.Instance.InitializeCheckBox(VanillaRTXCheckBox,
+            "ms-appx:///Assets/previews/checkbox.regular.ticked.png",
+            "ms-appx:///Assets/previews/checkbox.regular.unticked.png"
+        ); 
+        Previewer.Instance.InitializeCheckBox(NormalsCheckBox,
+            "ms-appx:///Assets/previews/checkbox.normals.ticked.png",
+            "ms-appx:///Assets/previews/checkbox.normals.unticked.png"
+        );
+        Previewer.Instance.InitializeCheckBox(OpusCheckBox,
+            "ms-appx:///Assets/previews/checkbox.opus.ticked.png",
+            "ms-appx:///Assets/previews/checkbox.opus.unticked.png"
+        );
+
         Previewer.Instance.InitializeButton(BrowsePacksButton,
             "ms-appx:///Assets/previews/locate.png"
         );

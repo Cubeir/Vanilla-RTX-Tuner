@@ -27,14 +27,20 @@ public class Previewer
     private bool _isTransitioning = false;
     private bool _forceTransitionForControlChange = false;
 
+    // Configurable global transition settings
+    // Change these at runtime via Previewer.Instance to globally affect transitions.
+    public const double TransitionDurationPublic = 40;
+    public double TransitionDurationMs { get; set; } = 40;
+    public double OffFadeDelayThreshold { get; set; } = 1.0; // Delay counterpart fade until lead reaches this fraction of the duration.
+
     // Pending state for immediate application  after transition
     private class PendingVesselState
     {
-        public string BottomImagePath
+        public string? BottomImagePath
         {
             get; set;
         }
-        public string TopImagePath
+        public string? TopImagePath
         {
             get; set;
         }
@@ -64,7 +70,7 @@ public class Previewer
         }
     }
 
-    // Private constructor
+    // constructor
     private Previewer(Image topVessel, Image bottomVessel, Image backgroundVessel)
     {
         _topVessel = topVessel;
@@ -94,8 +100,8 @@ public class Previewer
     // - - - - - Utility
     public void SetImages(string imageOnPath, string imageOffPath, bool useSmoothTransition = false)
     {
-        double bottomOpacity = !string.IsNullOrEmpty(imageOffPath) ? 1.0 : 0.0;
-        double topOpacity = !string.IsNullOrEmpty(imageOnPath) ? 1.0 : 0.0;
+        var bottomOpacity = !string.IsNullOrEmpty(imageOffPath) ? 1.0 : 0.0;
+        var topOpacity = !string.IsNullOrEmpty(imageOnPath) ? 1.0 : 0.0;
         SetVesselState(imageOffPath ?? "", imageOnPath ?? "", bottomOpacity, topOpacity, useSmoothTransition);
     }
 
@@ -108,7 +114,7 @@ public class Previewer
         _topVessel.Source = null;
     }
 
-    public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = 50)
+    public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = (int)TransitionDurationPublic)
     {
         targetOpacity = Math.Clamp(targetOpacity, 0.0, 1.0);
 
@@ -456,7 +462,7 @@ public class Previewer
         FadeInBackground();
     }
 
-    private void FadeInBackground(double durationMs = 50)
+    private void FadeInBackground(double durationMs = TransitionDurationPublic)
     {
         if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
             return;
@@ -565,11 +571,33 @@ public class Previewer
         var data = element.GetValue(FrameworkElement.TagProperty) as TogglePreviewData;
         if (data == null) return;
 
-        // Handle cases where image paths might be null
-        double bottomOpacity = !string.IsNullOrEmpty(data.ImageOffPath) ? 1.0 : 0.0;
-        double topOpacity = isOn && !string.IsNullOrEmpty(data.ImageOnPath) ? 1.0 : 0.0;
+        // Normalize image paths
+        string bottomImage = data.ImageOffPath ?? "";
+        string topImage = data.ImageOnPath ?? "";
 
-        SetVesselState(data.ImageOffPath ?? "", data.ImageOnPath ?? "", bottomOpacity, topOpacity, true);
+        double bottomOpacity;
+        double topOpacity;
+
+        // If turning ON and an ON image exists, show only the ON image (top) and force OFF image (bottom) to zero opacity.
+        if (isOn && !string.IsNullOrEmpty(topImage))
+        {
+            topOpacity = 1.0;
+            bottomOpacity = 0.0;
+        }
+        // If turning OFF and an OFF image exists, show only the OFF image (bottom).
+        else if (!isOn && !string.IsNullOrEmpty(bottomImage))
+        {
+            topOpacity = 0.0;
+            bottomOpacity = 1.0;
+        }
+        // Fallback: respect whichever image(s) are available.
+        else
+        {
+            topOpacity = !string.IsNullOrEmpty(topImage) && isOn ? 1.0 : 0.0;
+            bottomOpacity = !string.IsNullOrEmpty(bottomImage) && !isOn ? 1.0 : 0.0;
+        }
+
+        SetVesselState(bottomImage, topImage, bottomOpacity, topOpacity, true);
     }
 
     private void SetVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity, bool allowTransition)
@@ -629,14 +657,14 @@ public class Previewer
             {
                 From = _topVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(50)
+                Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
             };
 
             var fadeOutBottom = new DoubleAnimation
             {
                 From = _bottomVessel.Opacity,
                 To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(50)
+                Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
             };
 
             var storyboard = new Storyboard();
@@ -676,19 +704,37 @@ public class Previewer
 
     private void FadeInToTargetOpacities(int transitionId)
     {
+        // Fade top from 0 -> targetTop, bottom from 0 -> targetBottom
         var fadeInTop = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
 
         var fadeInBottom = new DoubleAnimation
         {
             From = 0.0,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
+
+        // If ON image should appear and OFF image should disappear, delay the bottom fade
+        bool topAppearingAndBottomDisappearing = _pendingState.TopOpacity > 0.0 && _pendingState.BottomOpacity == 0.0;
+
+        if (topAppearingAndBottomDisappearing)
+        {
+            // Delay bottom fade by a fraction of the overall duration.
+            fadeInBottom.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
+        }
+
+        // Symmetric case: OFF image appearing while ON should disappear delay top fade
+        bool bottomAppearingAndTopDisappearing = _pendingState.BottomOpacity > 0.0 && _pendingState.TopOpacity == 0.0;
+
+        if (bottomAppearingAndTopDisappearing)
+        {
+            fadeInTop.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
+        }
 
         var storyboard = new Storyboard();
         Storyboard.SetTarget(fadeInTop, _topVessel);
@@ -720,19 +766,38 @@ public class Previewer
 
     private void FadeToTargetOpacities(int transitionId)
     {
+        // Regular fade from current opacities -> pending target opacities
         var fadeTop = new DoubleAnimation
         {
             From = _topVessel.Opacity,
             To = _pendingState.TopOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
 
         var fadeBottom = new DoubleAnimation
         {
             From = _bottomVessel.Opacity,
             To = _pendingState.BottomOpacity,
-            Duration = TimeSpan.FromMilliseconds(50)
+            Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
+
+        // If top is increasing (appearing) and bottom is decreasing to 0, delay bottom fade
+        bool topIncreasing = _pendingState.TopOpacity > _topVessel.Opacity;
+        bool bottomGoingToZero = Math.Abs(_pendingState.BottomOpacity - 0.0) < 0.001 && _bottomVessel.Opacity > 0.0;
+
+        if (topIncreasing && bottomGoingToZero)
+        {
+            fadeBottom.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
+        }
+
+        // Symmetric case: bottom is increasing (appearing) while top is decreasing to 0 -- delay top fade
+        bool bottomIncreasing = _pendingState.BottomOpacity > _bottomVessel.Opacity;
+        bool topGoingToZero = Math.Abs(_pendingState.TopOpacity - 0.0) < 0.001 && _topVessel.Opacity > 0.0;
+
+        if (bottomIncreasing && topGoingToZero)
+        {
+            fadeTop.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
+        }
 
         var storyboard = new Storyboard();
         Storyboard.SetTarget(fadeTop, _topVessel);
@@ -800,15 +865,15 @@ public class Previewer
     }
     private class SliderPreviewData
     {
-        public string DefaultImagePath
+        public string? DefaultImagePath
         {
             get; set;
         }
-        public string MinImagePath
+        public string? MinImagePath
         {
             get; set;
         }
-        public string MaxImagePath
+        public string? MaxImagePath
         {
             get; set;
         }
@@ -820,11 +885,11 @@ public class Previewer
 
     private class ButtonPreviewData
     {
-        public string ImageOnPath
+        public string? ImageOnPath
         {
             get; set;
         }
-        public string ImageOffPath
+        public string? ImageOffPath
         {
             get; set;
         }
@@ -832,11 +897,11 @@ public class Previewer
 
     private class TogglePreviewData
     {
-        public string ImageOnPath
+        public string? ImageOnPath
         {
             get; set;
         }
-        public string ImageOffPath
+        public string? ImageOffPath
         {
             get; set;
         }
