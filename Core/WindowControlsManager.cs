@@ -6,6 +6,9 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Vanilla_RTX_Tuner_WinUI.Core;
 
+// TODO: change the color of little green thing next to preview button
+// similar to how you do it in mainwindow with theme changes etc... (that fucky piece of code)
+
 /// <summary>
 /// Universal control toggle utility for WinUI 3 applications
 /// Manages enabling/disabling of controls while preserving original states

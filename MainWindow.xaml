@@ -612,7 +612,7 @@
 
                     <Button x:Name="ResetButton"
                             Grid.Column="2"
-                            Content="Reset settings"
+                            Content="Reset options"
                             Click="ResetButton_Click"
                             FontWeight="SemiBold"
                             HorizontalAlignment="Stretch"
@@ -655,7 +655,7 @@
                     <TextBlock Text="Fog multiplier (0.0-10.0)"
                                FontWeight="SemiBold"
                                IsTextScaleFactorEnabled="False"
-                               ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.2–0.8 for lighter fog, 1.5-3.0 for dense fog. 0 to disable air fog." />
+                               ToolTipService.ToolTip="Scales all fog densities. Recommended ranges: 0.2–0.8 for lighter fog, 1.5-3.0 for dense fog. 0 to disable air fog. Tip: Multiplier value will be used as a literal density value if fog density is already zero." />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <!-- Slider room -->
@@ -1158,7 +1158,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
                         Background="{ThemeResource IntersectionNeutralizerBrush}"
-                        Opacity="0.075"
+                        Opacity="0.1"
                         IsHitTestVisible="False" />
 
 

@@ -54,28 +54,9 @@ namespace Vanilla_RTX_Tuner_WinUI;
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
 
-- Settle behavior of BG vessel and its appearance
-Why doesn't text appear beneath it? fix that, make it more transparent?
-the slightly checkerboardy noise idea's cool, play around with it
-
-- Finish Material Grain development
-
-- Fog slider development:
-Make fog multiplier partially impact water scattering (& absorbtion?)
-Or add a whole new slider, water fog multiplier...?
-Here's a couple of things to consider:
-official fog docs say there is a density param for water fog, Vanilla RTX doesn't use it, because it still doesn't work after many years
-If it one day does work, use that param
-Then have tuner adjust that param instead, this is ideal, touching absorbtion/scattering is unpredictable since both are compounded for the final color
-Get rid of the overly bloated stupid dampening nonsense come up with something better and cleaner overall
-No need to spill excess density to scattering or otherwise -- too complicated and unpredictable with Vanilla RTX's current fog implementation which heavily relies on absorbtion
-Or come up with something better.
-
 - A way for current custom pack to selection to stay visible to user, outside of logs
 
 - Put easter eggs into the startup lamp too
-
-- When holding down shift, turn Reset button and its nearby border to a forced red accent or system accent color to convey its destructive nature better
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 for whatever the ****** reason
@@ -247,7 +228,7 @@ public sealed partial class MainWindow : Window
 
         Instance = this;
 
-        var defaultSize = new SizeInt32(975, 575);
+        var defaultSize = new SizeInt32(980, 600);
         _windowStateManager.ApplySavedStateOrDefaults();
 
         // Version, title and initial logs
@@ -421,7 +402,7 @@ public sealed partial class MainWindow : Window
             // Color of that little border next to the button 🍝
             if (IsTargetingPreview)
             {
-                LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight1"]);
+                LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight3"]);
             }
             else
             {
@@ -1094,9 +1075,7 @@ public sealed partial class MainWindow : Window
     }
 
 
-    // ISSUE: Background Preview vessel remains visible after tuning for some reason, maybe this isn't the culprit, because UpdateUI after being called by Reset button works
-    // Gotta see what gets triggered after tuning completes...
-    // Clue: maybe its because the clear previews button doesn't actually clear BG vessel! TEST
+
     public async void UpdateUI(double animationDurationSeconds = 0.15)
     {
         // Hide and unhide preview vessels while they update to avoid flickering as slider values update
@@ -1432,7 +1411,7 @@ public sealed partial class MainWindow : Window
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Preview.", LogLevel.Informational);
 
-        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight1"]);
+        LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColorLight3"]);
     }
     private void TargetPreviewToggle_Unchecked(object sender, RoutedEventArgs e)
     {
