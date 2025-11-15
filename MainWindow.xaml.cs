@@ -1699,7 +1699,7 @@ public sealed partial class MainWindow : Window
 
         RuntimeFlags.Unset("Wrote_Supporter_Shoutout");
 
-        Log("To perform a full reset of app's data if necessery, hold SHIFT key while pressing Clear Selection.", LogLevel.Informational);
+        Log($"To perform a full reset of app's data if necessery, hold SHIFT key while pressing {ResetButton.Content}.", LogLevel.Informational);
         Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you can quickly reinstall the latest versions of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button. Other packs will require manual reinstallation.\nUse Export button to back them up!", LogLevel.Informational);
         Log("Tuner variables were reset.", LogLevel.Success);
     }
