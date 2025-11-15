@@ -1108,7 +1108,7 @@ public sealed partial class MainWindow : Window
     public async void UpdateUI(double animationDurationSeconds = 0.15)
     {
         // Suppress Previewer Updates
-        Previewer.Instance.SuppressUpdates = true;
+        Previewer.Instance.SuspendUpdates(freezeVisualState: true);
 
         // Sliders
         var sliderConfigs = new[]
@@ -1138,9 +1138,9 @@ public sealed partial class MainWindow : Window
             SetPreviews();
         }
 
-  
+
         // Resume Previewer Updates
-        Previewer.Instance.ResumeUpdatesAndApplyPending();
+        Previewer.Instance.ResumeUpdates(applyPending: false);
 
 
 

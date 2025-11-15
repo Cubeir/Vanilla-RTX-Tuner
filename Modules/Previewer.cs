@@ -33,8 +33,13 @@ public class Previewer
     public double TransitionDurationMs { get; set; } = 50;
     public double OffFadeDelayThreshold { get; set; } = 0.9; // Delay counterpart fade until lead reaches this fraction of the duration.
 
-    // (insert or replace near the other public members)
+
     public bool SuppressUpdates { get; set; } = false;
+    private bool _suppressFreezeMode = false;
+    private string _frozenBottomImage = "";
+    private string _frozenTopImage = "";
+    private double _frozenBottomOpacity = 0.0;
+    private double _frozenTopOpacity = 0.0;
 
 
     // Pending state for immediate application  after transition
@@ -173,29 +178,67 @@ public class Previewer
     }
 
 
-    public void ResumeUpdatesAndApplyPending()
+    // Resume updates. If applyPending==true, any queued pending state (if present) will be applied; otherwise queued requests are discarded.
+    public void ResumeUpdates(bool applyPending = false)
     {
         SuppressUpdates = false;
+        _suppressFreezeMode = false;
 
-        if (_pendingState.HasPendingState)
+        if (applyPending && _pendingState.HasPendingState)
         {
-            // If a transition is running, StartCrossFadeTransition will be no-op until it finishes.
-            // Start it now so the latest pending state gets applied.
-            if (!_isTransitioning)
+            // Start transition to the latest pending state
+            if (_isTransitioning)
             {
-                StartCrossFadeTransition();
-            }
-            else
-            {
-                // If transitioning, interrupt and start new transition immediately.
                 _currentTransition?.Stop();
-                StartCrossFadeTransition();
             }
+            StartCrossFadeTransition();
         }
+        else
+        {
+            // Discard pending and ensure visuals match the frozen snapshot (if any)
+            _pendingState.HasPendingState = false;
+
+            // Re-apply frozen imagery/opacities so UI remains exactly as it was when suspended.
+            if (!string.IsNullOrEmpty(_frozenBottomImage) && _currentBottomImage != _frozenBottomImage)
+            {
+                _currentBottomImage = _frozenBottomImage;
+                SetBottomVesselImage(_frozenBottomImage);
+            }
+
+            if (!string.IsNullOrEmpty(_frozenTopImage) && _currentTopImage != _frozenTopImage)
+            {
+                _currentTopImage = _frozenTopImage;
+                SetTopVesselImage(_frozenTopImage);
+            }
+
+            _bottomVessel.Opacity = _frozenBottomOpacity;
+            _topVessel.Opacity = _frozenTopOpacity;
+        }
+    }
+    public void ResumeUpdatesAndApplyPending()
+    {
+        ResumeUpdates(true);
     }
 
 
+    // Suspend updates. If freezeVisualState==true, Snapshot current visuals and ignore any incoming preview requests.
+    public void SuspendUpdates(bool freezeVisualState = true)
+    {
+        SuppressUpdates = true;
+        _suppressFreezeMode = freezeVisualState;
 
+        if (freezeVisualState)
+        {
+            // Snapshot currently visible state so we can restore it on resume (and avoid exposing transient updates).
+            _frozenBottomImage = _currentBottomImage ?? "";
+            _frozenTopImage = _currentTopImage ?? "";
+            _frozenBottomOpacity = _bottomVessel.Opacity;
+            _frozenTopOpacity = _topVessel.Opacity;
+
+            // Clear any pending requests accumulated previously to avoid surprise transitions on resume.
+            _pendingState.HasPendingState = false;
+        }
+    }
 
     // - - - - - Utility
 
@@ -473,21 +516,33 @@ public class Previewer
     // Handles vessel states between control changes (nothing to control, control to control, etc...)
     private void HandleControlChange(FrameworkElement newControl)
     {
-        // If updates are suppressed (e.g., during UpdateUI), don't perform visual changes.
-        if (SuppressUpdates)
-        {
-            // Still update active control so other logic relying on it stays coherent.
-            _activeControl = newControl;
-            return;
-        }
-
+        // Always update active control variable so logic relying on it remains correct
         bool isControlChange = (_activeControl != newControl && _activeControl != null);
         _activeControl = newControl;
 
+        // If updates are suppressed and we're in freeze mode, ignore visual state changes entirely.
+        if (SuppressUpdates && _suppressFreezeMode)
+        {
+            // do not call FadeInBackground or set pending states while frozen
+            if (isControlChange)
+            {
+                // keep force flag so that when suppression ends explicit control-change transitions can be triggered if desired
+                _forceTransitionForControlChange = true;
+            }
+            return;
+        }
+
         if (isControlChange)
         {
-            _pendingState.HasPendingState = false;
-            _forceTransitionForControlChange = true;
+            // Mark that we need a transition for control change
+            _pendingState.HasPendingState = false; // Will be set by the calling method
+            _forceTransitionForControlChange = true; // Force smooth transitions for control swap
+        }
+
+        // If suppression active but not freeze-mode, still avoid showing background
+        if (SuppressUpdates && !_suppressFreezeMode)
+        {
+            return;
         }
 
         FadeInBackground();
@@ -495,7 +550,8 @@ public class Previewer
 
     private void FadeInBackground(double durationMs = TransitionDurationPublic)
     {
-        if (SuppressUpdates)
+        // Respect suppression / freeze
+        if (SuppressUpdates && _suppressFreezeMode)
             return;
 
         if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
@@ -638,8 +694,14 @@ public class Previewer
 
     private void SetVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity, bool allowTransition)
     {
-        // When suppressed, store the requested state but do not start transitions or change visuals.
-        if (SuppressUpdates)
+        // If updates are suppressed and freeze mode is active, ignore incoming requests entirely
+        if (SuppressUpdates && _suppressFreezeMode)
+        {
+            return;
+        }
+
+        // If updates are suppressed but NOT freeze mode, queue the last request in pending state (previous behavior)
+        if (SuppressUpdates && !_suppressFreezeMode)
         {
             _pendingState.BottomImagePath = bottomImagePath;
             _pendingState.TopImagePath = topImagePath;
@@ -654,22 +716,32 @@ public class Previewer
         bool bottomOpacityChanged = Math.Abs(_bottomVessel.Opacity - bottomOpacity) > 0.01;
         bool topOpacityChanged = Math.Abs(_topVessel.Opacity - topOpacity) > 0.01;
 
-        bool needsTransition = allowTransition && (bottomImageChanged || topImageChanged ||
+        // Capture and reset force flag produced by HandleControlChange so it influences this single call only.
+        bool forcedByControlChange = _forceTransitionForControlChange;
+        _forceTransitionForControlChange = false;
+
+        // Need transition if images changed OR if we're going from/to zero opacity with smooth transitions enabled
+        // Also respect explicit force from control-change (even if images/opacities are identical).
+        bool needsTransition = allowTransition && (forcedByControlChange ||
+            bottomImageChanged || topImageChanged ||
             (bottomOpacityChanged && (_bottomVessel.Opacity == 0.0 || bottomOpacity == 0.0)) ||
             (topOpacityChanged && (_topVessel.Opacity == 0.0 || topOpacity == 0.0)));
 
         if (!needsTransition)
         {
+            // Direct application - no transition needed
             ApplyVesselState(bottomImagePath, topImagePath, bottomOpacity, topOpacity);
             return;
         }
 
+        // Store the target state
         _pendingState.BottomImagePath = bottomImagePath;
         _pendingState.TopImagePath = topImagePath;
         _pendingState.BottomOpacity = bottomOpacity;
         _pendingState.TopOpacity = topOpacity;
         _pendingState.HasPendingState = true;
 
+        // If already transitioning, the current transition will pick up the new state
         if (_isTransitioning)
         {
             return;
