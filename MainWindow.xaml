@@ -265,7 +265,7 @@
                 </Grid>
             </Border>
 
-            <!-- Buttons above sidebar log -->
+            <!-- Locate Packs and Preview Buttons -->
             <Border x:Name="BrowsePacksButtonShadowHost"
                     Margin="16,52,8,0"
                     VerticalAlignment="Top"

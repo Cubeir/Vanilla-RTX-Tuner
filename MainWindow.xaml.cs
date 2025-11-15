@@ -50,34 +50,42 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- And ensure titlebar is compatible/nicely configured, including min/max/close colors
+- Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
+Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
+Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
 
-- Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
-for whatever the ****** reason
+- A way for current custom pack to selection to stay visible to user, outside of logs
+
+- Put easter eggs into the startup lamp too
 
 - Settle behavior of BG vessel and its appearance
 Why doesn't text appear beneath it? fix that, make it more transparent?
 the slightly checkerboardy noise idea's cool, play around with it
 
-- A way for current custom pack selection be visible even outside of logs
+- When holding down shift, turn Reset button and its nearby border to a forced red accent or system accent color to convey its destructive nature better
+
+- Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
+for whatever the ****** reason
 
 - Improve preview arts as you go
 Add one for theme button?
 Improve clear/clean one?
 Make one that references hard reset to "shreds" the app's bits or something to convey it
 Show it with shift and without shift, shift is the more powerful version
-
 clear is just.. it is the broom, but make it more interesting
-
 They all can be improved, previewer can be improved too
 it all could be more pleasant/fast
 The arts could also look better, they go a long way in carrying the right messasge to user
 
-- Search development resource packs for locating Vanilla RTX as well -- packbrowser does it already, this is the only other places
-If you solidify these hardcoded paths into a class it would be good, make it easy to change...
-pack updater, pack locators, launcher, they deal with hardcoded paths, what else?
+- Once or if the app goes on the microsoft store, don't remove inbuilt auto updater
+Just put a warning on it somehow that this is for the github version
+Please update the pack through microsoft store
 
-- Do the TODOs scattered in the code
+- Unify the 4 places hardcoded paths are used into a class
+pack updater, pack locator, pack browser, launcher, they deal with hardcoded paths, what else? (Ask copilot to scry the code)
+
+- Do the TODO and ISSUES scattered in the code
+Finish all that you had postponed
 
 - Finish Material Grain development
 
@@ -93,6 +101,8 @@ No need to spill excess density to scattering or otherwise -- too complicated an
 Or come up with something better.
 
 ============== End of Development/Unimportant ideas: =====================
+
+- A way to tell user updates are available for Vanilla RTX packs, occasional auto check
 
 - Figure out a solution to keep noises the same between pairs of blocks (e.g. redstone lamp on/off)
 (Already have, an unused method, certain suffixes are matched up to share their noise pattern)
@@ -573,6 +583,10 @@ public sealed partial class MainWindow : Window
 
         Previewer.Instance.InitializeButton(AppUpdaterButton,
             "ms-appx:///Assets/previews/repository.appupdate.png"
+        );
+
+        Previewer.Instance.InitializeButton(CycleThemeButton,
+            "ms-appx:///Assets/previews/theme.png"
         );
 
         Previewer.Instance.InitializeButton(DonateButton,
@@ -1404,6 +1418,8 @@ public sealed partial class MainWindow : Window
         _ = LocatePacksButton_Click();
         Log("Targeting Minecraft Release.", LogLevel.Informational);
 
+        // Switch back to whatever the default coilor or brush is in the XAML
+        // FakeSplitButtonBrightBorderColor in itself is theme-variant, does it update properly if it is changed to from the wrong theme?
         LeftEdgeOfTargetPreviewButton.BorderBrush = new SolidColorBrush((Color)Application.Current.Resources["FakeSplitButtonBrightBorderColor"]);
     }
 
