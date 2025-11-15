@@ -414,7 +414,7 @@
                    IsHitTestVisible="False"
                    Canvas.ZIndex="99"
                    Visibility="Collapsed"
-                   Opacity="0"
+                   Opacity="0.0"
                    Source="ms-appx:///Assets/empty.png" />
             <Image x:Name="PreviewVesselBottom"
                    Width="Auto"
@@ -427,7 +427,7 @@
                    IsHitTestVisible="False"
                    Canvas.ZIndex="98"
                    Visibility="Collapsed"
-                   Opacity="0"
+                   Opacity="0.0"
                    Source="ms-appx:///Assets/empty.png" />
             <Image x:Name="PreviewVesselBackground"
                    Width="Auto"
@@ -438,8 +438,8 @@
                    HorizontalAlignment="Center"
                    IsHitTestVisible="False"
                    Canvas.ZIndex="97"
-                   Visibility="Collapsed"
-                   Opacity="0"
+                   Visibility="Visible"
+                   Opacity="1.0"
                    Source="ms-appx:///Assets/previews/huge_background.png" />
         </Grid>
 

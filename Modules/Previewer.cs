@@ -77,8 +77,10 @@ public class Previewer
         _bottomVessel = bottomVessel;
         _bg = backgroundVessel;
 
-        _bg.Opacity = 0.0;
-        _bg.Visibility = Visibility.Collapsed;
+        // Background must always be present and visible.
+        _bg.Visibility = Visibility.Visible;
+        _bg.Opacity = 1.0;
+
         _topVessel.Opacity = 0.0;
         _topVessel.Visibility = Visibility.Collapsed;
         _bottomVessel.Opacity = 0.0;
@@ -112,11 +114,9 @@ public class Previewer
     {
         _currentBottomImage = "";
         _currentTopImage = "";
+        FadeAwayVessels(0.0, true);
         _bottomVessel.Source = null;
         _topVessel.Source = null;
-        _bottomVessel.Visibility = Visibility.Collapsed;
-        _topVessel.Visibility = Visibility.Collapsed;
-        _bg.Visibility = Visibility.Collapsed;
     }
 
     public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = (int)TransitionDurationPublic)
@@ -139,25 +139,14 @@ public class Previewer
                 Duration = TimeSpan.FromMilliseconds(duration)
             };
 
-            var fadeBackground = new DoubleAnimation
-            {
-                From = _bg.Opacity,
-                To = targetOpacity,
-                Duration = TimeSpan.FromMilliseconds(duration)
-            };
-
-
             var storyboard = new Storyboard();
             Storyboard.SetTarget(fadeTop, _topVessel);
             Storyboard.SetTargetProperty(fadeTop, "Opacity");
             Storyboard.SetTarget(fadeBottom, _bottomVessel);
             Storyboard.SetTargetProperty(fadeBottom, "Opacity");
-            Storyboard.SetTarget(fadeBackground, _bg);
-            Storyboard.SetTargetProperty(fadeBackground, "Opacity");
 
             storyboard.Children.Add(fadeTop);
             storyboard.Children.Add(fadeBottom);
-            storyboard.Children.Add(fadeBackground);
 
             _currentTransition?.Stop();
             _currentTransition = storyboard;
@@ -175,7 +164,7 @@ public class Previewer
         {
             _topVessel.Opacity = targetOpacity;
             _bottomVessel.Opacity = targetOpacity;
-            _bg.Opacity = targetOpacity;
+            // Do not modify _bg. It must remain visible and at its own opacity.
         }
     }
     // - - - - - Utility

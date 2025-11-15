@@ -1116,7 +1116,6 @@ public sealed partial class MainWindow : Window
         {
             PreviewVesselTop.Visibility = Visibility.Collapsed;
             PreviewVesselBottom.Visibility = Visibility.Collapsed;
-            PreviewVesselBackground.Visibility = Visibility.Collapsed;
         }
 
         void ShowPreviewVessels()
@@ -1125,11 +1124,9 @@ public sealed partial class MainWindow : Window
 
             PreviewVesselTop.Opacity = 0.0;
             PreviewVesselBottom.Opacity = 0.0;
-            PreviewVesselBackground.Opacity = 0.0;
 
             PreviewVesselTop.Visibility = Visibility.Visible;
             PreviewVesselBottom.Visibility = Visibility.Visible;
-            // Background image automatically becomes visible on next user interaction
         }
 
         async Task AnimateSliders(
