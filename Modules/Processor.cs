@@ -15,9 +15,6 @@ namespace Vanilla_RTX_Tuner_WinUI.Modules;
 public static class ProcessorVariables
 {
     public const bool FOG_UNIFORM_HEIGHT = false;
-    public const double FOG_EXCESS_DENSITY_DAMPEN = 0.001;
-    public const double FOG_EXCESS_DENSITY_TO_SCATTER_DAMPEN = 0.005;
-    public const double FOG_EXCESS_SCATTERING_DAMPEN = 0.005;
     public const double EMISSIVE_EXCESS_INTENSITY_DAMPEN = 0.1;
 }
 
@@ -87,7 +84,10 @@ public class Processor
         if (FogMultiplier != Defaults.FogMultiplier)
         {
             foreach (var p in packs)
+            {
                 ProcessFog(p);
+                ProcessFog(p, true);
+            }
         }
 
         if (EmissivityMultiplier != Defaults.EmissivityMultiplier || AddEmissivityAmbientLight != Defaults.AddEmissivityAmbientLight)
@@ -105,7 +105,7 @@ public class Processor
         if (MaterialNoiseOffset != Defaults.MaterialNoiseOffset)
         {
             foreach (var p in packs)
-                ProcessMaterialNoise(p);
+                ProcessMaterialGrain(p);
         }
 
         if (RoughenUpIntensity != Defaults.RoughenUpIntensity)
@@ -124,16 +124,14 @@ public class Processor
 
     // TODO: make processors return reasons of their failure for easier debugging at the end without touching UI thread directly.
     // this is got to become a part of the larger logging overhaul down the line (gradual logger thing from public string)
-    // Also make them log any unexpected oddities in Vanilla RTX (whether it be size, opacity, etc...) as warnings
+    // Also make them log any oddities in Vanilla RTX (whether it be size, opacity, etc...) as warnings, serves dual purpose that way
     #region ------------------- Processors
 
-    // Improved the logic but, it can give scientific notations, very bad!
-    // also, the idea of dampening the Multiplier based on its distance from default is great, apply it elsewhere, namely, emissivity multiplier
-    // if we dampen 10.0, it should be dampened TOWARDS 1.0, not be multiplied by a small number that can make it smllaer than the default
-    // this way it always remains larger than 1.0 as intended, and for smaller than 1.0 values it holds the same, it gets damepned TOWARDS 1.0
-    // ANY other damepning logic must follow this, its the right way...
+
     private static void ProcessFog(PackInfo pack, bool processWaterOnly = false)
     {
+        const double MIN_VALUE_THRESHOLD = 0.00000001; // Below this becomes zero
+
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
@@ -189,7 +187,7 @@ public class Processor
 
                 if (processWaterOnly)
                 {
-                    // Only process water coefficients
+                    // Process water coefficients with density-based dampening
                     modified = ProcessWaterCoefficients(volumetric);
                 }
                 else
@@ -204,66 +202,64 @@ public class Processor
                         var weatherSection = density.SelectToken("weather") as JObject;
 
                         var densityValues = new List<(string name, JObject section, double originalValue, double multipliedValue)>();
-                        var anyDensityWasMaxed = false;
+
+                        // Track all density values for proximity calculation
+                        var allDensityValues = new List<double>();
 
                         // Process air density
+                        double airDensityFinal = 0.0;
                         if (airSection != null)
                         {
                             var airMaxDensityToken = airSection.SelectToken("max_density");
                             if (airMaxDensityToken != null && TryGetDensityValue(airMaxDensityToken, out var airDensity))
                             {
-                                // Check if it was already maxed before we touch it
-                                if (Math.Abs(airDensity - 1.0) < 0.0000001)
-                                {
-                                    anyDensityWasMaxed = true;
-                                }
+                                allDensityValues.Add(airDensity);
 
-                                // Apply special logic for near-zero densities
                                 if (Math.Abs(airDensity) < 0.0001)
                                 {
                                     var newDensity = CalculateNewDensity(airDensity, FogMultiplier);
-                                    if (Math.Abs(newDensity - airDensity) >= 0.0000001)
+                                    if (Math.Abs(newDensity - airDensity) >= MIN_VALUE_THRESHOLD)
                                     {
-                                        airSection["max_density"] = Math.Round(newDensity, 7);
+                                        airSection["max_density"] = newDensity;
                                         modified = true;
                                     }
+                                    airDensityFinal = newDensity;
                                 }
                                 else
                                 {
                                     // Normal multiplication - let it run free
                                     var multipliedValue = airDensity * FogMultiplier;
                                     densityValues.Add(("air", airSection, airDensity, multipliedValue));
+                                    airDensityFinal = multipliedValue;
                                 }
                             }
                         }
 
                         // Process weather density
+                        double weatherDensityFinal = 0.0;
                         if (weatherSection != null)
                         {
                             var weatherMaxDensityToken = weatherSection.SelectToken("max_density");
                             if (weatherMaxDensityToken != null && TryGetDensityValue(weatherMaxDensityToken, out var weatherDensity))
                             {
-                                // Check if it was already maxed before we touch it
-                                if (Math.Abs(weatherDensity - 1.0) < 0.0000001)
-                                {
-                                    anyDensityWasMaxed = true;
-                                }
+                                allDensityValues.Add(weatherDensity);
 
-                                // Apply special logic for near-zero densities
                                 if (Math.Abs(weatherDensity) < 0.0001)
                                 {
                                     var newDensity = CalculateNewDensity(weatherDensity, FogMultiplier);
-                                    if (Math.Abs(newDensity - weatherDensity) >= 0.0000001)
+                                    if (Math.Abs(newDensity - weatherDensity) >= MIN_VALUE_THRESHOLD)
                                     {
-                                        weatherSection["max_density"] = Math.Round(newDensity, 7);
+                                        weatherSection["max_density"] = newDensity;
                                         modified = true;
                                     }
+                                    weatherDensityFinal = newDensity;
                                 }
                                 else
                                 {
                                     // Normal multiplication - let it run free
                                     var multipliedValue = weatherDensity * FogMultiplier;
                                     densityValues.Add(("weather", weatherSection, weatherDensity, multipliedValue));
+                                    weatherDensityFinal = multipliedValue;
                                 }
                             }
                         }
@@ -280,8 +276,14 @@ public class Processor
                                 foreach (var (name, section, originalValue, multipliedValue) in densityValues)
                                 {
                                     var scaledValue = multipliedValue * scaleFactor;
-                                    section["max_density"] = Math.Round(scaledValue, 7);
+                                    section["max_density"] = scaledValue;
                                     modified = true;
+
+                                    // Update final values
+                                    if (name == "air")
+                                        airDensityFinal = scaledValue;
+                                    else if (name == "weather")
+                                        weatherDensityFinal = scaledValue;
                                 }
                             }
                             else
@@ -289,18 +291,33 @@ public class Processor
                                 // No scaling needed, just apply the multiplied values
                                 foreach (var (name, section, originalValue, multipliedValue) in densityValues)
                                 {
-                                    section["max_density"] = Math.Round(multipliedValue, 7);
+                                    section["max_density"] = multipliedValue;
                                     modified = true;
                                 }
                             }
                         }
 
-                        // Handle overflow to scattering if any density was already maxed
-                        if (anyDensityWasMaxed)
+                        // Calculate average density for proximity calculation
+                        var avgDensity = allDensityValues.Any() ? allDensityValues.Average() : 0.0;
+                        // Consider final processed values
+                        if (airDensityFinal > 0 || weatherDensityFinal > 0)
                         {
-                            // Calculate dampened multiplier (75% dampening towards 1.0)
+                            var finalDensities = new List<double>();
+                            if (airDensityFinal > 0) finalDensities.Add(Math.Min(airDensityFinal, 1.0));
+                            if (weatherDensityFinal > 0) finalDensities.Add(Math.Min(weatherDensityFinal, 1.0));
+                            avgDensity = finalDensities.Any() ? finalDensities.Average() : avgDensity;
+                        }
+
+                        // Handle scattering adjustment based on average density proximity to 1.0
+                        var proximityToMax = Math.Min(avgDensity, 1.0);
+
+                        // Always adjust scattering based on proximity (no threshold)
+                        if (proximityToMax > 0.0)
+                        {
+                            // Calculate dampened multiplier based on proximity
+                            // Dampen TOWARDS 1.0, not multiply by small number
                             var overage = FogMultiplier - 1.0;
-                            var dampenedOverage = overage * 0.25; // 75% dampening = keep only 25% of overage
+                            var dampenedOverage = overage * 0.25 * proximityToMax; // 75% dampening, scaled by proximity
                             var scatteringMultiplier = 1.0 + dampenedOverage;
 
                             var mediaCoefficients = volumetric.SelectToken("media_coefficients") as JObject;
@@ -314,7 +331,7 @@ public class Processor
                                     var rgbValues = new double[3];
                                     var allValid = true;
 
-                                    // Get current RGB values and multiply freely
+                                    // Get current RGB values and multiply
                                     for (var i = 0; i < 3; i++)
                                     {
                                         if (TryGetDensityValue(scatteringToken[i], out var value))
@@ -346,7 +363,7 @@ public class Processor
                                         // Apply the values
                                         for (var i = 0; i < 3; i++)
                                         {
-                                            scatteringToken[i] = Math.Round(rgbValues[i], 7);
+                                            scatteringToken[i] = rgbValues[i];
                                         }
                                         modified = true;
                                     }
@@ -362,7 +379,13 @@ public class Processor
 
                 if (modified)
                 {
-                    File.WriteAllText(file, root.ToString(Newtonsoft.Json.Formatting.Indented));
+                    // Convert to JSON string
+                    var jsonString = root.ToString(Newtonsoft.Json.Formatting.Indented);
+
+                    // Final pass: sanitize scientific notation in the string
+                    jsonString = SanitizeScientificNotation(jsonString);
+
+                    File.WriteAllText(file, jsonString);
                 }
             }
             catch (Exception ex)
@@ -371,13 +394,74 @@ public class Processor
             }
         }
 
+        // Sanitize JSON string to remove scientific notation
+        string SanitizeScientificNotation(string jsonString)
+        {
+            // Regex to match scientific notation: optional minus, digits, optional decimal, optional digits, E/e, optional +/-, digits
+            // Examples: 1.5E-7, -2.3e+10, 8.5070592E-05
+            var scientificNotationPattern = @"-?\d+\.?\d*[eE][+-]?\d+";
+
+            return System.Text.RegularExpressions.Regex.Replace(jsonString, scientificNotationPattern, match =>
+            {
+                // Parse the scientific notation value
+                if (double.TryParse(match.Value, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out var value))
+                {
+                    // If below threshold, return "0"
+                    if (Math.Abs(value) < MIN_VALUE_THRESHOLD)
+                    {
+                        return "0";
+                    }
+
+                    // Round to 12 decimal places and format as standard decimal
+                    var rounded = Math.Round(value, 12);
+
+                    // Check again after rounding
+                    if (Math.Abs(rounded) < MIN_VALUE_THRESHOLD)
+                    {
+                        return "0";
+                    }
+
+                    // Format with up to 12 decimal places, removing trailing zeros
+                    return rounded.ToString("0.############", System.Globalization.CultureInfo.InvariantCulture);
+                }
+
+                // If parsing fails, return original (shouldn't happen)
+                return match.Value;
+            });
+        }
+
         bool ProcessWaterCoefficients(JObject volumetric)
         {
             var modified = false;
 
-            // Calculate 90% dampened multiplier towards 1.0
+            // Get density values for proximity calculation
+            var density = volumetric.Parent?.Parent?.SelectToken("minecraft:fog_settings.volumetric.density") as JObject;
+            var airDensity = 0.0;
+            var weatherDensity = 0.0;
+
+            if (density != null)
+            {
+                var airSection = density.SelectToken("air.max_density");
+                var weatherSection = density.SelectToken("weather.max_density");
+
+                if (airSection != null)
+                    TryGetDensityValue(airSection, out airDensity);
+                if (weatherSection != null)
+                    TryGetDensityValue(weatherSection, out weatherDensity);
+            }
+
+            // Calculate average density proximity (inverse - lower density = more impact)
+            var densities = new List<double>();
+            if (airDensity > 0) densities.Add(Math.Min(airDensity, 1.0));
+            if (weatherDensity > 0) densities.Add(Math.Min(weatherDensity, 1.0));
+
+            var avgDensity = densities.Any() ? densities.Average() : 0.5; // Default to 0.5 if no densities
+            var proximityToMin = 1.0 - avgDensity; // Inverted: 1.0 = low density, 0.0 = high density
+
+            // Calculate 90% dampened multiplier TOWARDS 1.0, scaled by proximity to low density
             var overage = FogMultiplier - 1.0;
-            var dampenedOverage = overage * 0.1; // 90% dampening = keep only 10% of overage
+            var dampenedOverage = overage * 0.1 * Math.Max(proximityToMin, 0.25); // At least 25% effect, up to 100%
             var waterMultiplier = 1.0 + dampenedOverage;
 
             var mediaCoefficients = volumetric.SelectToken("media_coefficients") as JObject;
@@ -408,7 +492,7 @@ public class Processor
             var rgbValues = new double[3];
             var allValid = true;
 
-            // Get current RGB values and multiply freely
+            // Get current RGB values and multiply
             for (var i = 0; i < 3; i++)
             {
                 if (TryGetDensityValue(rgbArray[i], out var value))
@@ -441,7 +525,7 @@ public class Processor
             // Apply the values
             for (var i = 0; i < 3; i++)
             {
-                rgbArray[i] = Math.Round(rgbValues[i], 7);
+                rgbArray[i] = rgbValues[i];
             }
 
             return true;
@@ -546,7 +630,7 @@ public class Processor
                 var height = bmp.Height;
                 var wroteBack = false;
 
-                // First pass: missivity processing
+                // First pass: emissivity processing
                 if (userMult != 1.0)
                 {
                     // Max green value within image
@@ -563,11 +647,22 @@ public class Processor
                     // Only process if there are green pixels
                     if (maxGreen > 0)
                     {
-                        // Excess Multiplier Dampner
+                        // Calculate how much we can multiply before hitting 255
                         var ratio = 255.0 / maxGreen;
                         var neededMult = ratio;
                         var effectiveMult = userMult < neededMult ? userMult : neededMult;
+
+                        // Calculate excess - the portion of multiplier we couldn't directly apply
                         var excess = Math.Max(0, userMult - effectiveMult);
+
+                        // Dampen excess TOWARDS 1.0
+                        // EMISSIVE_EXCESS_INTENSITY_DAMPEN represents how much we move towards 1.0
+                        // 0.1 = 90% dampening (move 90% closer to 1.0)
+                        // 0.5 = 50% dampening (move 50% closer to 1.0)
+                        // 0.9 = 10% dampening (move 10% closer to 1.0)
+                        var excessOverage = excess - 1.0;
+                        var dampenedExcessOverage = excessOverage * EMISSIVE_EXCESS_INTENSITY_DAMPEN;
+                        var dampenedExcess = 1.0 + dampenedExcessOverage;
 
                         // Process existing emissivity
                         for (var y = 0; y < height; y++)
@@ -578,12 +673,14 @@ public class Processor
                                 int origG = origColor.G;
                                 if (origG == 0)
                                     continue;
-                                // Multiply all by "effective" or necessary portion of the multiplier
+
+                                // Apply effective multiplier (the part we can use fully)
                                 var newG = origG * effectiveMult;
-                                // Apply excess of multiplier to the rest at % effectiveness to partially preserve color composition
+
+                                // Apply dampened excess (the overflow part, dampened towards 1.0)
                                 if (excess > 0)
                                 {
-                                    newG += origG * excess * EMISSIVE_EXCESS_INTENSITY_DAMPEN;
+                                    newG += origG * (dampenedExcess - 1.0);
                                 }
 
                                 // Custom rounding logic: if < 127.5, round up; if >= 127.5, round down
@@ -1111,178 +1208,12 @@ public class Processor
     }
 
 
-    // TODO: once reworking this, add that idea of yours for slightly checkerboard-y noise
-    // Same as that plugin you once made for PS
-    private static void ProcessMaterialNoise(PackInfo pack)
-    {
-        double CalculateEffectiveness(int colorValue)
-        {
-            if (colorValue == 128)
-                return 1.0; // 100% effectiveness at 128
-
-            if (colorValue < 128)
-            {
-                // Linear fall-off from 128 to 0: 100% at 128, 0% at 0
-                return colorValue / 128.0;
-            }
-            else
-            {
-                // Linear fall-off from 128 to 255: 100% at 128, 33% at 255
-                return 1.0 - (colorValue - 128) * 0.67 / 127.0;
-            }
-        }
-
-        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
-            return;
-
-        var files = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Mer);
-
-        if (!files.Any())
-        {
-            MainWindow.Log($"{pack.Name}: no MER(S) texture files found from texture sets.");
-            return;
-        }
-
-        var materialNoiseOffset = MaterialNoiseOffset;
-        if (materialNoiseOffset <= 0)
-            return;
-
-        var random = new Random();
-
-        foreach (var file in files)
-        {
-            try
-            {
-                using var bmp = ReadImage(file, false);
-                var width = bmp.Width;
-                var height = bmp.Height;
-
-                // Check if this is an animated texture (flipbook)
-                var isAnimated = false;
-                var frameHeight = width; // First frame is always square
-                var frameCount = 1;
-
-                if (width > 0 && height >= width * 2 && height % width == 0)
-                {
-                    frameCount = height / width;
-                    isAnimated = frameCount >= 2; // Any number of frames 2+
-                }
-                else if (width == 0)
-                {
-                    continue; // Skip this image if width is 0
-                }
-
-                // Storage for noise offsets to apply to subsequent frames
-                int[,] redOffsets = null;
-                int[,] greenOffsets = null;
-                int[,] blueOffsets = null;
-
-                if (isAnimated)
-                {
-                    redOffsets = new int[width, frameHeight];
-                    greenOffsets = new int[width, frameHeight];
-                    blueOffsets = new int[width, frameHeight];
-                }
-
-                var wroteBack = false;
-
-                for (var frame = 0; frame < frameCount; frame++)
-                {
-                    var frameStartY = frame * frameHeight;
-
-                    for (var y = 0; y < frameHeight; y++)
-                    {
-                        for (var x = 0; x < width; x++)
-                        {
-                            var actualY = frameStartY + y;
-                            var origColor = bmp.GetPixel(x, actualY);
-                            int r = origColor.R;
-                            int g = origColor.G;
-                            int b = origColor.B;
-
-                            int redOffset, greenOffset, blueOffset;
-
-                            if (isAnimated && frame == 0)
-                            {
-                                // First frame: generate and store noise offsets
-                                redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                                greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                                blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-
-                                redOffsets[x, y] = redOffset;
-                                greenOffsets[x, y] = greenOffset;
-                                blueOffsets[x, y] = blueOffset;
-                            }
-                            else if (isAnimated && frame > 0)
-                            {
-                                // Subsequent frames: use stored offsets
-                                redOffset = redOffsets[x, y];
-                                greenOffset = greenOffsets[x, y];
-                                blueOffset = blueOffsets[x, y];
-                            }
-                            else
-                            {
-                                // Non-animated texture: generate unique offsets as before
-                                redOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                                greenOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                                blueOffset = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
-                            }
-
-                            // effectiveness based on current color values
-                            var redEffectiveness = CalculateEffectiveness(r);
-                            var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
-                            var blueEffectiveness = CalculateEffectiveness(b);
-
-                            // set effectiveness of offsets, rounded
-                            var effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
-                            var effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
-                            var effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
-
-                            var newR = r + effectiveRedOffset;
-                            var newG = g + effectiveGreenOffset;
-                            var newB = b + effectiveBlueOffset;
-
-                            // anti-clipping rule: discard if would cause clipping, keep original colors!
-                            if (newR < 0 || newR > 255) newR = r;
-                            if (newG < 0 || newG > 255) newG = g;
-                            if (newB < 0 || newB > 255) newB = b;
-
-                            if (newR != r || newG != g || newB != b)
-                            {
-                                wroteBack = true;
-                                var newColor = Color.FromArgb(origColor.A, newR, newG, newB);
-                                bmp.SetPixel(x, actualY, newColor);
-                            }
-                        }
-                    }
-                }
-
-                if (wroteBack)
-                {
-                    WriteImageAsTGA(bmp, file);
-                    // MainWindow.Log($"{packName}: added material noise to {Path.GetFileName(file)}.");
-                }
-                else
-                {
-                    // MainWindow.Log($"{packName}: no changes in material noise for {Path.GetFileName(file)}.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}", MainWindow.LogLevel.Error);
-                // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
-            }
-        }
-    }
-
-
-    // This one is a copy of the above with something extra to keep the same noise pattern across texture variants
-    // e.g. on/off etc... but I'm not sure about it yet, or if it is even worth it.
-    // The whole idea is that we got a bunch of words, we detect variations based on texture names
-
-    // IT'S OUTDATED BUT THE CONCEPT IS GOING TO WORK!
+    // TODO: Any other potential variant suffixes?!
     private static void ProcessMaterialGrain(PackInfo pack)
     {
+        const double CHECKERBOARD_INTENSITY = 0.2; // % checkerboard pattern blend
+        const double CHECKERBOARD_NOISE_AMOUNT = 0.2; // % noise on the checkerboard itself
+
         double CalculateEffectiveness(int colorValue)
         {
             if (colorValue == 128)
@@ -1338,13 +1269,14 @@ public class Processor
             return string.Join("_", baseParts);
         }
 
-        if (!pack.Enabled || string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
+        if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
             return;
 
-        var files = Directory.GetFiles(pack.Path, "*_mer.tga", SearchOption.AllDirectories);
+        var files = TextureSetHelper.RetrieveFilesFromTextureSets(pack.Path, TextureSetHelper.TextureType.Mer);
+
         if (!files.Any())
         {
-            MainWindow.Log($"{pack.Name}: no _mer.tga files found.", MainWindow.LogLevel.Warning);
+            MainWindow.Log($"{pack.Name}: no MER(S) texture files found from texture sets.");
             return;
         }
 
@@ -1354,8 +1286,8 @@ public class Processor
 
         var random = new Random();
 
-        // Cache for shared noise patterns between variants and flipbook frames
-        var noisePatternCache = new Dictionary<string, (int[,] red, int[,] green, int[,] blue)>();
+        // Cache for shared noise patterns between variants
+        var noisePatternCache = new Dictionary<string, (int[,] red, int[,] green, int[,] blue, int[,] checkerboard)>();
 
         // Group files by their base filename to identify variant families
         var fileGroups = files.GroupBy(file => GetBaseFilename(file))
@@ -1383,68 +1315,82 @@ public class Processor
                     var width = bmp.Width;
                     var height = bmp.Height;
 
+                    if (width == 0)
+                        continue; // Skip if width is 0
+
                     // Check if this is an animated texture (flipbook)
                     var isAnimated = false;
                     var frameHeight = width; // First frame is always square
                     var frameCount = 1;
 
-                    if (width > 0 && height >= width * 2 && height % width == 0)
+                    if (height >= width * 2 && height % width == 0)
                     {
                         frameCount = height / width;
-                        isAnimated = frameCount >= 2; // Any number of frames 2+
-                    }
-                    else if (width == 0)
-                    {
-                        continue; // Skip this image if width is 0
+                        isAnimated = frameCount >= 2;
                     }
 
-                    // Choose cache key strategy based on whether variants exist
-                    string cacheKey;
+                    // Determine cache key - try to match with variants of same dimensions
+                    string cacheKey = $"{baseFilename}_{width}x{frameHeight}";
+
+                    // Check if dimensions match any cached pattern for this base
+                    bool dimensionsMatch = false;
                     if (hasMultipleVariants)
                     {
-                        // Use base filename for variants to share noise patterns
-                        cacheKey = $"{baseFilename}_{width}x{frameHeight}";
-                    }
-                    else
-                    {
-                        // Use full filename for standalone textures to avoid interference
-                        cacheKey = $"{Path.GetFileNameWithoutExtension(file)}_{width}x{frameHeight}";
+                        dimensionsMatch = noisePatternCache.ContainsKey(cacheKey);
                     }
 
-                    // Try to get existing noise pattern from cache
-                    int[,] redOffsets = null;
-                    int[,] greenOffsets = null;
-                    int[,] blueOffsets = null;
+                    // Get or generate noise pattern
+                    int[,] redOffsets;
+                    int[,] greenOffsets;
+                    int[,] blueOffsets;
+                    int[,] checkerboardOffsets;
 
-                    if (noisePatternCache.TryGetValue(cacheKey, out var cachedPattern))
+                    if (dimensionsMatch && noisePatternCache.TryGetValue(cacheKey, out var cachedPattern))
                     {
+                        // Use cached pattern (shared with variants)
                         redOffsets = cachedPattern.red;
                         greenOffsets = cachedPattern.green;
                         blueOffsets = cachedPattern.blue;
+                        checkerboardOffsets = cachedPattern.checkerboard;
                     }
                     else
                     {
-                        // Generate new noise pattern and cache it
+                        // Generate new noise pattern
                         redOffsets = new int[width, frameHeight];
                         greenOffsets = new int[width, frameHeight];
                         blueOffsets = new int[width, frameHeight];
+                        checkerboardOffsets = new int[width, frameHeight];
 
-                        // Pre-generate noise pattern for the first frame dimensions
+                        // Pre-generate noise pattern for the frame dimensions
                         for (var y = 0; y < frameHeight; y++)
                         {
                             for (var x = 0; x < width; x++)
                             {
+                                // Generate random noise offsets
                                 redOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
                                 greenOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
                                 blueOffsets[x, y] = random.Next(-materialNoiseOffset, materialNoiseOffset + 1);
+
+                                // Generate checkerboard pattern with noise
+                                int baseCheckerboard = ((x + y) % 2) * 255; // 0 or 255
+                                int checkerNoise = random.Next(
+                                    (int)(-materialNoiseOffset * CHECKERBOARD_NOISE_AMOUNT),
+                                    (int)(materialNoiseOffset * CHECKERBOARD_NOISE_AMOUNT) + 1
+                                );
+                                checkerboardOffsets[x, y] = Math.Clamp(baseCheckerboard + checkerNoise, 0, 255);
                             }
                         }
 
-                        noisePatternCache[cacheKey] = (redOffsets, greenOffsets, blueOffsets);
+                        // Cache it if this texture has variants or might have variants
+                        if (hasMultipleVariants)
+                        {
+                            noisePatternCache[cacheKey] = (redOffsets, greenOffsets, blueOffsets, checkerboardOffsets);
+                        }
                     }
 
                     var wroteBack = false;
 
+                    // Process all frames (use same noise pattern for all frames)
                     for (var frame = 0; frame < frameCount; frame++)
                     {
                         var frameStartY = frame * frameHeight;
@@ -1459,26 +1405,38 @@ public class Processor
                                 int g = origColor.G;
                                 int b = origColor.B;
 
-                                // Use cached noise offsets (same for all frames and variants)
-                                var redOffset = redOffsets[x, y];
-                                var greenOffset = greenOffsets[x, y];
-                                var blueOffset = blueOffsets[x, y];
+                                // Get cached noise offsets (same for all frames and variants)
+                                var redNoise = redOffsets[x, y];
+                                var greenNoise = greenOffsets[x, y];
+                                var blueNoise = blueOffsets[x, y];
+                                var checkerboard = checkerboardOffsets[x, y];
 
-                                // effectiveness based on current color values
+                                // Calculate checkerboard contribution (centered around 0)
+                                var checkerValue = (checkerboard - 127.5) * (materialNoiseOffset / 127.5);
+
+                                // Blend noise with checkerboard pattern for each channel
+                                var redFinalNoise = redNoise * (1.0 - CHECKERBOARD_INTENSITY) +
+                                                   checkerValue * CHECKERBOARD_INTENSITY;
+                                var greenFinalNoise = greenNoise * (1.0 - CHECKERBOARD_INTENSITY) +
+                                                     checkerValue * CHECKERBOARD_INTENSITY;
+                                var blueFinalNoise = blueNoise * (1.0 - CHECKERBOARD_INTENSITY) +
+                                                    checkerValue * CHECKERBOARD_INTENSITY;
+
+                                // Calculate effectiveness based on current color values
                                 var redEffectiveness = CalculateEffectiveness(r);
-                                var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // keep green at 1/4 effectiveness, no one likes grainy emissives
+                                var greenEffectiveness = CalculateEffectiveness(g) * 0.25; // Keep green at 1/4 effectiveness
                                 var blueEffectiveness = CalculateEffectiveness(b);
 
-                                // set effectiveness of offsets, rounded
-                                var effectiveRedOffset = (int)Math.Round(redOffset * redEffectiveness);
-                                var effectiveGreenOffset = (int)Math.Round(greenOffset * greenEffectiveness);
-                                var effectiveBlueOffset = (int)Math.Round(blueOffset * blueEffectiveness);
+                                // Apply effectiveness to final noise offsets, rounded
+                                var effectiveRedOffset = (int)Math.Round(redFinalNoise * redEffectiveness);
+                                var effectiveGreenOffset = (int)Math.Round(greenFinalNoise * greenEffectiveness);
+                                var effectiveBlueOffset = (int)Math.Round(blueFinalNoise * blueEffectiveness);
 
                                 var newR = r + effectiveRedOffset;
                                 var newG = g + effectiveGreenOffset;
                                 var newB = b + effectiveBlueOffset;
 
-                                // anti-clipping rule: discard if would cause clipping, keep original colors!
+                                // Anti-clipping rule: discard if would cause clipping, keep original colors!
                                 if (newR < 0 || newR > 255) newR = r;
                                 if (newG < 0 || newG > 255) newG = g;
                                 if (newB < 0 || newB > 255) newB = b;
@@ -1496,21 +1454,17 @@ public class Processor
                     if (wroteBack)
                     {
                         WriteImageAsTGA(bmp, file);
-                        // MainWindow.Log($"{packName}: added material noise to {Path.GetFileName(file)}.");
-                    }
-                    else
-                    {
-                        // MainWindow.Log($"{packName}: no changes in material noise for {Path.GetFileName(file)}.");
+                        // MainWindow.Log($"{pack.Name}: added material noise to {Path.GetFileName(file)}.");
                     }
                 }
                 catch (Exception ex)
                 {
                     MainWindow.Log($"{pack.Name}: error processing {Path.GetFileName(file)} — {ex.Message}", MainWindow.LogLevel.Error);
-                    // Updates UI which can cause freezing if too many files give error, but it is worth it as logs will appear in the end
                 }
             }
         }
     }
+
 
     #endregion Processors -------------------
 }
