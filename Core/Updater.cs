@@ -28,7 +28,7 @@ public class AppUpdater
 {
     public static string? latestAppVersion = null;
     public static string? latestAppRemote_URL = null;
-    private const string API_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX-Tuner/releases/latest";
+    private const string API_URL = "https://api.github.com/repos/Cubeir/Vanilla-RTX-App/releases/latest";
 
     private const string CACHE_APP_VERSION_KEY = "CachedAppUpdateVersion";
     private const string CACHE_APP_ZIP_PATH_KEY = "CachedAppUpdateZipPath";
@@ -63,7 +63,7 @@ public class AppUpdater
 
             using (HttpClient client = new HttpClient())
             {
-                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
+                string userAgent = $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)";
                 client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
                 // Get the latest release info json
@@ -676,7 +676,7 @@ public class PackUpdater
         try
         {
             using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)");
+            client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)");
 
             var rtxTask = client.GetStringAsync(VANILLA_RTX_MANIFEST_URL);
             var normalsTask = client.GetStringAsync(VANILLA_RTX_NORMALS_MANIFEST_URL);
@@ -742,7 +742,7 @@ public class PackUpdater
             }
 
             // Step 1: Extract zipball directly into resource pack directory with UUID suffix
-            tempExtractionDir = Path.Combine(resourcePackPath, $"_tunertemp_{Guid.NewGuid()}");
+            tempExtractionDir = Path.Combine(resourcePackPath, $"_vrtxapptemp_{Guid.NewGuid()}");
             Directory.CreateDirectory(tempExtractionDir);
 
             ZipFile.ExtractToDirectory(packagePath, tempExtractionDir, overwriteFiles: true);
@@ -855,7 +855,7 @@ public class PackUpdater
             {
                 try
                 {
-                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "_tunertemp_*", SearchOption.TopDirectoryOnly);
+                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "_vrtxapptemp_*", SearchOption.TopDirectoryOnly);
                     foreach (var orphanedDir in orphanedDirs)
                     {
                         try
@@ -1200,7 +1200,7 @@ public class CreditsUpdater
             using (HttpClient client = new HttpClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
-                string userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
+                string userAgent = $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)";
                 client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
                 var response = await client.GetAsync(README_URL);
@@ -1264,7 +1264,7 @@ public class CreditsUpdater
 
 public class PSAUpdater
 {
-    private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-Tuner/master/README.md";
+    private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-App/master/README.md";
     private const string CACHE_KEY = "PSAContentCache";
     private const string TIMESTAMP_KEY = "PSALastCheckedTimestamp";
     private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(2);
@@ -1291,7 +1291,7 @@ public class PSAUpdater
             using (HttpClient client = new HttpClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
-                var userAgent = $"vanilla_rtx_tuner_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-Tuner)";
+                var userAgent = $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)";
                 client.DefaultRequestHeaders.Add("User-Agent", userAgent);
                 var response = await client.GetAsync(README_URL);
                 if (!response.IsSuccessStatusCode)

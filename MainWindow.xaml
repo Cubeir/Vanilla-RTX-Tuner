@@ -82,7 +82,7 @@
 
                 <!-- Halo (Bottom layer) -->
                 <Image x:Name="iconHaloImageBox"
-                       Source="ms-appx:///Assets/tuner.lamp.halo.png"
+                       Source="ms-appx:///Assets/vrtx.lamp.halo.png"
                        Height="128"
                        Width="128"
                        Canvas.Left="-54"
@@ -94,7 +94,7 @@
 
                 <!-- Base "On" image (always visible) -->
                 <Image x:Name="iconImageBox"
-                       Source="ms-appx:///Assets/tuner.lamp.on.small.png"
+                       Source="ms-appx:///Assets/vrtx.lamp.on.small.png"
                        Height="20"
                        Width="20"
                        Canvas.Top="1"
@@ -105,7 +105,7 @@
 
                 <!-- Overlay "Off" image (fades in and out during the animation) -->
                 <Image x:Name="iconOverlayImageBox"
-                       Source="ms-appx:///Assets/tuner.lamp.off.small.png"
+                       Source="ms-appx:///Assets/vrtx.lamp.off.small.png"
                        Height="20"
                        Width="20"
                        Canvas.Top="1"

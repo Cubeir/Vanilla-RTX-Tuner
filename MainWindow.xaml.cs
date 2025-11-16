@@ -385,7 +385,7 @@ public sealed partial class MainWindow : Window
             presenter.PreferredMinimumHeight = (int)(525 * scaleFactor);
         }
 
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.ico");
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "vrtx.lamp.on.ico");
         appWindow.SetTaskbarIcon(iconPath);
         appWindow.SetTitleBarIcon(iconPath);
 
@@ -730,9 +730,9 @@ public sealed partial class MainWindow : Window
         const double maxRampSec = 8;
         const double fadeAnimationMs = 75;
 
-        var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.on.small.png");
-        var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.super.small.png");
-        var offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tuner.lamp.off.small.png");
+        var onPath = Path.Combine(AppContext.BaseDirectory, "Assets", "vrtx.lamp.on.small.png");
+        var superOnPath = Path.Combine(AppContext.BaseDirectory, "Assets", "vrtx.lamp.super.small.png");
+        var offPath = Path.Combine(AppContext.BaseDirectory, "Assets", "vrtx.lamp.off.small.png");
 
         var today = DateTime.Today;
         string specialPath = null;
@@ -1210,7 +1210,7 @@ public sealed partial class MainWindow : Window
     private void HelpButton_Click(object sender, RoutedEventArgs e)
     {
         Log("Find helpful resources in the README file, launching in your browser shortly.", LogLevel.Informational);
-        OpenUrl("https://github.com/Cubeir/Vanilla-RTX-Tuner/blob/master/README.md");
+        OpenUrl("https://github.com/Cubeir/Vanilla-RTX-App/blob/master/README.md");
     }
 
 
@@ -1848,7 +1848,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var exportQueue = new List<(string path, string name)>();
-            var suffix = $"_export_tuner_{appVersion}";
+            var suffix = $"_export_{appVersion}";
 
             if (IsVanillaRTXEnabled && Directory.Exists(VanillaRTXLocation))
                 exportQueue.Add((VanillaRTXLocation, "Vanilla_RTX_" + VanillaRTXVersion + suffix));

@@ -511,37 +511,37 @@
     <Content Update="Assets\titlebar.background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.halo.png">
+    <Content Update="Assets\vrtx.lamp.halo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.off.ico">
+    <Content Update="Assets\vrtx.lamp.off.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.off.png">
+    <Content Update="Assets\vrtx.lamp.off.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.off.small.png">
+    <Content Update="Assets\vrtx.lamp.off.small.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.on.ico">
+	<Content Update="Assets\vrtx.lamp.on.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.on.png">
+    <Content Update="Assets\vrtx.lamp.on.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.on.small.png">
+    <Content Update="Assets\vrtx.lamp.on.small.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.lamp.super.small.png">
+    <Content Update="Assets\vrtx.lamp.super.small.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.redstone.lamp.1024..png">
+    <Content Update="Assets\vrtx.redstone.lamp.1024..png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.redstone.lamp.1024.png">
+    <Content Update="Assets\vrtx.redstone.lamp.1024.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\tuner.redstone.lamp.icon.ico">
+    <Content Update="Assets\vrtx.redstone.lamp.icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -688,15 +688,15 @@
     <None Update="Assets\StoreLogo.scale-400.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Assets\tuner.lamp.on.png">
+    <None Update="Assets\vrtx.lamp.on.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Update="Assets\tuner.redstone.lamp.1024..png">
+    <None Update="Assets\vrtx.redstone.lamp.1024..png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Update="Assets\tuner.redstone.lamp.1024.png">
+    <None Update="Assets\vrtx.redstone.lamp.1024.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
@@ -923,8 +923,8 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <PackageIcon>tuner.lamp.on.png</PackageIcon>
-    <ApplicationIcon>Assets\tuner.lamp.on.ico</ApplicationIcon>
+    <PackageIcon>vrtx.lamp.on.png</PackageIcon>
+    <ApplicationIcon>Assets\vrtx.lamp.on.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -942,8 +942,8 @@
     <PackageCertificateThumbprint>3588B0B93277B31455632323E8F10AE4529C1222</PackageCertificateThumbprint>
     <SignAssembly>False</SignAssembly>
     <Copyright>All Rights Reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/Cubeir/Vanilla-RTX-Tuner</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cubeir/Vanilla-RTX-Tuner</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Cubeir/Vanilla-RTX-App</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cubeir/Vanilla-RTX-App</RepositoryUrl>
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <AssemblyName>Vanilla RTX App</AssemblyName>
     <AssemblyOriginatorKeyFile>CubeirSoftware.pfx</AssemblyOriginatorKeyFile>
@@ -951,6 +951,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <ErrorReport>none</ErrorReport>
+    <Description>The Official Vanilla RTX App</Description>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DebugType>none</DebugType>

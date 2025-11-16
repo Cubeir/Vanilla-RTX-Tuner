@@ -177,7 +177,7 @@ public static class Helpers
             {
                 // === HTTP CLIENT CONFIGURATION ===
                 SharedHttpClient.Timeout = TimeSpan.FromSeconds(15);
-                var userAgent = $"vanilla_rtx_tuner/{TunerVariables.appVersion}";
+                var userAgent = $"vanilla_rtx_app/{TunerVariables.appVersion}";
                 if (!SharedHttpClient.DefaultRequestHeaders.Contains("User-Agent"))
                 {
                     SharedHttpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
@@ -238,8 +238,8 @@ public static class Helpers
                         Directory.CreateDirectory(testDir);
 
                         // Test write access with a temp file
-                        var testFile = Path.Combine(testDir, $"tuner_write_test_{Guid.NewGuid()}.tmp");
-                        File.WriteAllText(testFile, "tuner_write_test");
+                        var testFile = Path.Combine(testDir, $"vrtxapp_write_test_{Guid.NewGuid()}.tmp");
+                        File.WriteAllText(testFile, "vrtxapp_write_test");
                         File.Delete(testFile);
 
                         // Check if file exists and generate unique name if needed
@@ -347,11 +347,11 @@ public static class Helpers
             var suffix = (idx >= 0 && idx < family.Length - 1)
                 ? family[(idx + 1)..]
                 : family;
-            return $"tuner_{suffix}";
+            return $"vrtxapp_{suffix}";
         }
         catch
         {
-            return "vanilla_rtx_tuner_cache";
+            return "vanilla_rtx_app_cache";
         }
     }
 
