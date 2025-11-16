@@ -50,8 +50,6 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Play around with splash art margins, it appears too small sometimes, it is under pressure from top/bottom?
-
 - Set random preview arts on startup, featuring locations from Vanilla RTX's history
 Or simple pixel arts you'd like to make in the same style
 Have 5-10 made
@@ -271,6 +269,7 @@ public sealed partial class MainWindow : Window
         this.Activated -= MainWindow_Activated;
 
         // Give the window time to render for the first time
+        // If one day something goes on the background that needs waiting, increase this, it delays the flash
         await Task.Delay(50);
 
         // RTX shaders omg

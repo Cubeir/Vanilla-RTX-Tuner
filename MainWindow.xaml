@@ -18,8 +18,46 @@
             <ColumnDefinition Width="3.5*" />
         </Grid.ColumnDefinitions>
 
-        
-        
+        <!-- Splash Blocker -->
+        <Grid x:Name="SplashOverlay"
+              Grid.ColumnSpan="2"
+              Canvas.ZIndex="9999">
+            <Grid.Background>
+                <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorBase}" />
+            </Grid.Background>
+
+            <Viewbox HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch"
+                     Margin="208, 164, 208, 164"
+                     Stretch="Uniform">
+                <Grid Width="256"
+                      Height="256">
+                    <Image x:Name="SplashLampHalo"
+                           Source="ms-appx:///Assets/icons/SplashScreen.Halo.png"
+                           Width="1280"
+                           Height="1280"
+                           Margin="-512,-512,-512,-512"
+                           Opacity="0.175"
+                           Stretch="Uniform"
+                           CacheMode="BitmapCache" />
+                    <Image x:Name="SplashLamp"
+                           Source="ms-appx:///Assets/icons/SplashScreen.Regular.png"
+                           Width="192"
+                           Height="192"
+                           Opacity="1.0"
+                           Stretch="Uniform"
+                           CacheMode="BitmapCache" />
+                    <Image x:Name="SplashLampSuper"
+                           Source="ms-appx:///Assets/icons/SplashScreen.Super.png"
+                           Width="192"
+                           Height="192"
+                           Opacity="0.0"
+                           Stretch="Uniform"
+                           CacheMode="BitmapCache" />
+                </Grid>
+            </Viewbox>
+        </Grid>
+
         <!-- Light theme tint overlay -->
         <Border x:Name="LightThemeOverlay"
                 Grid.ColumnSpan="2"
@@ -1163,48 +1201,6 @@
 
 
             </Grid>
-        </Grid>
-
-
-
-        <!-- Splash Blocker -->
-        <Grid x:Name="SplashOverlay"
-              Grid.ColumnSpan="2"
-              Canvas.ZIndex="9999">
-            <Grid.Background>
-                <SolidColorBrush Color="{ThemeResource SolidBackgroundFillColorBase}" />
-            </Grid.Background>
-
-            <Viewbox HorizontalAlignment="Stretch"
-                     VerticalAlignment="Stretch"
-                     Margin="208, 208, 208, 208"
-                     Stretch="Uniform">
-                <Grid Width="256"
-                      Height="256">
-                    <Image x:Name="SplashLampHalo"
-                           Source="ms-appx:///Assets/icons/SplashScreen.Halo.png"
-                           Width="1280"
-                           Height="1280"
-                           Margin="-512,-512,-512,-512"
-                           Opacity="0.175"
-                           Stretch="Uniform"
-                           CacheMode="BitmapCache" />
-                    <Image x:Name="SplashLamp"
-                           Source="ms-appx:///Assets/icons/SplashScreen.Regular.png"
-                           Width="192"
-                           Height="192"
-                           Opacity="1.0"
-                           Stretch="Uniform"
-                           CacheMode="BitmapCache" />
-                    <Image x:Name="SplashLampSuper"
-                           Source="ms-appx:///Assets/icons/SplashScreen.Super.png"
-                           Width="192"
-                           Height="192"
-                           Opacity="0.0"
-                           Stretch="Uniform"
-                           CacheMode="BitmapCache" />
-                </Grid>
-            </Viewbox>
         </Grid>
     </Grid>
 </Window>
