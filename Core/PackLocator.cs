@@ -74,7 +74,7 @@ public class PackLocator
 
             if (allManifestFiles.Count == 0)
             {
-                return $"Resource pack directory not found ❌ is the correct version of {versionName} installed?";
+                return $"❌ Resource pack directory not found, is the correct version of {versionName} installed?";
             }
 
             // Track latest version for each pack type
