@@ -408,7 +408,7 @@
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          Padding="12,12,12,138"
                          IsTextScaleFactorEnabled="False"
-                         ToolTipService.ToolTip="Relevant logs appear here to guide, warn, or inform the user while using the app." />
+                         ToolTipService.ToolTip="Relevant logs appear here to inform, guide, or warn the user while using the app. Double click the art area to copy logs to clipboard." />
 
                 <!-- Invisible Log Copy Button -->
                 <Button x:Name="LogCopyButton"
