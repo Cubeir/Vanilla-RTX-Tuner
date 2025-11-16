@@ -50,8 +50,17 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
-There is nothing that must be done imminently, release 2.0, then take your time with these ideas and improvements
-Perfect the app later
+- Play around with splash art margins, it appears too small sometimes, it is under pressure from top/bottom?
+
+- Set random preview arts on startup, featuring locations from Vanilla RTX's history
+Or simple pixel arts you'd like to make in the same style
+Have 5-10 made
+
+- Take the hammer off the table for tune selectiom button and make the flying rays brighter
+- BG vessel image could be improved, with one that affects and appears in dark theme as well
+Something overall darker and more opaque towards bottom, and just as bright nad transparent as before towards the top
+Keep the slightly checkerboardy noise style
+
 
 - Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
@@ -241,8 +250,7 @@ public sealed partial class MainWindow : Window
         // Version, title and initial logs
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        var versionStringShort = $"{version.Major}.{version.Minor}";
-        TitleBarText.Text = "Vanilla RTX App " + versionStringShort;
+        // TitleBarText.Text = "Vanilla RTX App " + versionStringShort;
         appVersion = versionString;
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
@@ -283,12 +291,12 @@ public sealed partial class MainWindow : Window
         if (_updater.HasDeployableCache())
         {
             UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Syncfolder icon
-            UpdateVanillaRTXButtonText.Text = "Reinstall latest packs";
+            UpdateVanillaRTXButtonText.Text = "Reinstall latest RTX packs";
         }
         else
         {
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default cloud icon
-            UpdateVanillaRTXButtonText.Text = "Install latest packs";
+            UpdateVanillaRTXButtonText.Text = "Install latest RTX packages";
         }
 
         // Brief delay to ensure everything is fully rendered, then fade out splash screen
@@ -320,7 +328,7 @@ public sealed partial class MainWindow : Window
         if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             var buttonName = LaunchButtonText.Text;
-            Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
+            Log($"Please close Minecraft while using the app, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
 
         async Task FadeOutSplash()
@@ -1910,7 +1918,7 @@ public sealed partial class MainWindow : Window
     private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
         if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
-            Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+            Log($"Please close Minecraft while using the app, when finished, launch the game using {LaunchButtonText.Text} button.", LogLevel.Warning);
 
         try
         {
@@ -1953,7 +1961,7 @@ public sealed partial class MainWindow : Window
     {
         if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
-            Log("Please close Minecraft while using Tuner, when finished, launch the game using Launch Minecraft RTX button.", LogLevel.Warning);
+            Log($"Please close Minecraft while using the app, when finished, launch the game using {LaunchButtonText.Text} button.", LogLevel.Warning);
         }
         try
         {
@@ -1999,12 +2007,12 @@ public sealed partial class MainWindow : Window
             if (_updater.HasDeployableCache())
             {
                 UpdateVanillaRTXGlyph.Glyph = "\uE8F7";
-                UpdateVanillaRTXButtonText.Text = "Reinstall latest packs";
+                UpdateVanillaRTXButtonText.Text = "Reinstall latest RTX packages";
             }
             else
             {
                 UpdateVanillaRTXGlyph.Glyph = "\uEBD3";
-                UpdateVanillaRTXButtonText.Text = "Install latest packs";
+                UpdateVanillaRTXButtonText.Text = "Install latest RTX packages";
             }
 
             // Trigger an automatic pack location check after update (fail or not)

@@ -530,7 +530,7 @@
 
             <!-- Sliders Grid with shadow -->
             <Border x:Name="SlidersGridShadowHost"
-                    Margin="16,112,24,112"
+                    Margin="16,112,24,102"
                     Translation="0,0,0"
                     BorderBrush="Transparent"
                     BorderThickness="1"
@@ -541,7 +541,7 @@
             </Border>
 
             <Grid x:Name="SlidersGrid"
-                  Margin="16,112,24,108"
+                  Margin="16,112,24,102"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch">
 
@@ -1030,7 +1030,7 @@
                         CornerRadius="0,4,0,0"
                         BorderThickness="0"
                         IsTextScaleFactorEnabled="False"
-                        ToolTipService.ToolTip="Downloads and caches the latest releases of Vanilla RTX and Vanilla RTX Normals (Opus can only be installed manually) further reinstallations are always redeployed from cache unless a new Vanilla RTX update is available.">
+                        ToolTipService.ToolTip="Downloads the latest releases of Vanilla RTX and Vanilla RTX Normals, further reinstallations are always redeployed from a cached version unless a new Vanilla RTX update is available.">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center">
                         <FontIcon Glyph="&#xEBD3;"
@@ -1039,7 +1039,7 @@
                                   VerticalAlignment="Center"
                                   x:Name="UpdateVanillaRTXGlyph"
                                   x:FieldModifier="public" />
-                        <TextBlock Text="Reinstall latest packs"
+                        <TextBlock Text="Install latest RTX packages"
                                    VerticalAlignment="Center"
                                    x:Name="UpdateVanillaRTXButtonText"
                                    x:FieldModifier="public" />
@@ -1065,7 +1065,7 @@
                                   FontSize="18"
                                   Margin="0,0,8,0"
                                   VerticalAlignment="Center" />
-                        <TextBlock Text="Launch Minecraft RTX"
+                        <TextBlock Text="Launch Minecraft with RTX"
                                    VerticalAlignment="Center"
                                    x:Name="LaunchButtonText" />
                     </StackPanel>
