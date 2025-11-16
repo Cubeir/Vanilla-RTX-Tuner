@@ -59,10 +59,6 @@ In testing, everything works flawlessly, but you don't know why, so trace throug
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 
-- Once or if the app goes on the microsoft store, don't remove inbuilt auto updater
-Just put a warning on it somehow that this is for the github version when the button is hovered, flag it to log once
-"Please update the pack through microsoft store"
-
 - Unify the 4 places hardcoded paths are used into a class
 pack updater, pack locator, pack browser, launcher, they deal with hardcoded paths, what else? (Ask copilot to scry the code)
 
