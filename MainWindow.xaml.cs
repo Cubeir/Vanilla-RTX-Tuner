@@ -50,16 +50,6 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Set random preview arts on startup, featuring locations from Vanilla RTX's history
-Or simple pixel arts you'd like to make in the same style
-Have 5-10 made
-
-- Take the hammer off the table for tune selectiom button and make the flying rays brighter
-- BG vessel image could be improved, with one that affects and appears in dark theme as well
-Something overall darker and more opaque towards bottom, and just as bright nad transparent as before towards the top
-Keep the slightly checkerboardy noise style
-
-
 - Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
@@ -111,6 +101,10 @@ only concern is performance with large logs
 
 This idea can be a public static method and it won't ever ever block Ui thread
 A variable is getting constantly updated with new logs, a worker in main UI thread's only job is to write out its content as it comes along
+
+- Set random preview arts on startup, featuring locations from Vanilla RTX's history
+Or simple pixel arts you'd like to make in the same style
+Have 5-10 made
 
 - Account for different font scalings, windows accessibility settings, etc...
 gonna need lots of painstakingly redoing xamls but if one day you have an abundance of time sure why not
