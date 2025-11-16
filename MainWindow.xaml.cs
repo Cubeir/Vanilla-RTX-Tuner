@@ -250,7 +250,6 @@ public sealed partial class MainWindow : Window
         // Version, title and initial logs
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        // TitleBarText.Text = "Vanilla RTX App " + versionStringShort;
         appVersion = versionString;
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
