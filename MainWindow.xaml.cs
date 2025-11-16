@@ -50,31 +50,39 @@ namespace Vanilla_RTX_Tuner_WinUI;
 /*
 ### GENERAL TODO & IDEAS ###
 
+There is nothing that must be done imminently, release 2.0, then take your time with these ideas and improvements
+Perfect the app later
+
 - Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
 In testing, everything works flawlessly, but you don't know why, so trace through the logic
 
-- A way for current custom pack to selection to stay visible to user, outside of logs
+- A way for current custom pack selection to stay visible to user, outside of logs
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
-for whatever the ****** reason
 
 - Once or if the app goes on the microsoft store, don't remove inbuilt auto updater
-Just put a warning on it somehow that this is for the github version
-Please update the pack through microsoft store
+Just put a warning on it somehow that this is for the github version when the button is hovered, flag it to log once
+"Please update the pack through microsoft store"
 
 - Unify the 4 places hardcoded paths are used into a class
 pack updater, pack locator, pack browser, launcher, they deal with hardcoded paths, what else? (Ask copilot to scry the code)
 
+- Expose as many params as you can to a json in app's root
+the hard URLs the app sends requests to + the hardcoded Minecraft paths
+
+ALSO: No need for a Vanilla RTX update checker, it is a triangle you can't quite figure between cache, remote and installed version
+Instead the cleaner way would be to utilize the existing PSA Retriever to inform users of new updates!
+
+Additionally, while going through params, 
+Check your github RAW and API urls, usage patterns (caching, and cooldowns)
+All settled there? ensure there isn't a way the app can ddos github, ensure the usage is always clean and legit.
+
+
 - Do the TODO and ISSUES scattered in the code
 Finish all that you had postponed
 
-
-- A way to tell user updates are available for Vanilla RTX packs, occasional auto check
-
-- Expose as many params as you can to a json in app's root
-the hard URLs the app sends requests to + the hardcoded Minecraft paths
 
 - What if, you expanded Butcher heightmaps into Butcher Normals
 Then had it generate simple seamless normal maps as well and blend them?
@@ -234,7 +242,7 @@ public sealed partial class MainWindow : Window
         var version = Windows.ApplicationModel.Package.Current.Id.Version;
         var versionString = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         var versionStringShort = $"{version.Major}.{version.Minor}";
-        TitleBarText.Text = "Vanilla RTX Tuner " + versionStringShort;
+        TitleBarText.Text = "Vanilla RTX App " + versionStringShort;
         appVersion = versionString;
         Log($"App Version: {versionString}" + new string('\n', 2) +
              "Not affiliated with Mojang Studios or NVIDIA;\nby continuing, you consent to modifications to your Minecraft data folder.");
