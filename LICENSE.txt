@@ -8,7 +8,7 @@ https://github.com/dlemstra/Magick.NET/blob/main/License.txt
 
                             - - -                            
 
-Vanilla RTX Tuner App - Copyright (c) June 2025 Cubeir
+Vanilla RTX App - Copyright (c) June 2025 Cubeir
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

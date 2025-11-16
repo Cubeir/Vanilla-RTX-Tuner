@@ -113,5 +113,4 @@ Because changes stack on each tuning attempt, only use this once on freshly inst
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
 
 ### PSA
-If your Minecraft has been updated to 1.21.120+ make sure to update Vanilla RTX Tuner to 1.5.0.0+
-This is due to the GDK update which alters all local file paths compared to the UWP (1.21.114 and lower) versions of Minecraft 
+Vanilla RTX Tuner is dead! Long live Tuner! -- Kidding! The app is being renamed soon with a gigantic 2.0 release, stay tuned!
