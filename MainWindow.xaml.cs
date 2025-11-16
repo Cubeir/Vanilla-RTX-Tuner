@@ -55,6 +55,8 @@ Something feels off not seeing that "Found - version" log, but you had to remove
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
 In testing, everything works flawlessly, but you don't know why, so trace through the logic
 
+There may be issues after rebranding within the app, thorough testing of all areas is needed
+
 - A way for current custom pack selection to stay visible to user, outside of logs
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
@@ -1721,9 +1723,12 @@ public sealed partial class MainWindow : Window
 
         RuntimeFlags.Unset("Wrote_Supporter_Shoutout");
 
-        Log($"To perform a full reset of app's data if necessery, hold SHIFT key while pressing {ResetButton.Content}.", LogLevel.Informational);
-        Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you can quickly reinstall the latest versions of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button. Other packs will require manual reinstallation.\nUse Export button to back them up!", LogLevel.Informational);
-        Log("Tuner variables were reset.", LogLevel.Success);
+        if (RuntimeFlags.Set("Said_Extra_Resetting_Information"))
+        {
+            Log($"To perform a full reset of app's data if necessery, hold SHIFT key while pressing {ResetButton.Content}.", LogLevel.Informational);
+            Log($"Note: this does not restore the packs to their default state!\nTo reset packs back to original you can quickly reinstall the latest versions of Vanilla RTX using the '{UpdateVanillaRTXButtonText.Text}' button. Other packs will require manual reinstallation.\nUse Export button to back them up!", LogLevel.Informational);
+        }
+        Log("Tuning environment reset.", LogLevel.Success);
     }
     private void ClearButton_Click(object sender, RoutedEventArgs e)
     {
