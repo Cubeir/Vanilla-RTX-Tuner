@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Vanilla_RTX_Tuner_WinUI.Modules;
+using Vanilla_RTX_App.Modules;
 using Windows.Storage;
 
-namespace Vanilla_RTX_Tuner_WinUI.Modules;
+namespace Vanilla_RTX_App.Modules;
 public static class MojankMessages
 {
     public static readonly string[] WarningMessages = new[]

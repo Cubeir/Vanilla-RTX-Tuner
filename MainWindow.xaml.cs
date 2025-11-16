@@ -20,17 +20,17 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Vanilla_RTX_Tuner_WinUI.Core;
-using Vanilla_RTX_Tuner_WinUI.Modules;
+using Vanilla_RTX_App.Core;
+using Vanilla_RTX_App.Modules;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI;
 using Microsoft.UI.Xaml.Input;
-using static Vanilla_RTX_Tuner_WinUI.Core.WindowControlsManager;
-using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using static Vanilla_RTX_Tuner_WinUI.TunerVariables.Persistent;
+using static Vanilla_RTX_App.Core.WindowControlsManager;
+using static Vanilla_RTX_App.TunerVariables;
+using static Vanilla_RTX_App.TunerVariables.Persistent;
 /*
 * Documentation
 * Resource packs only end up in shared
@@ -45,10 +45,13 @@ using static Vanilla_RTX_Tuner_WinUI.TunerVariables.Persistent;
 * The naming convention for packages on github must remain the same or else the autoupdater's backward compatibility will break.
 * 
 */
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_App;
 
 /*
 ### GENERAL TODO & IDEAS ###
+
+- Hold off renaming the project and GitHub for now -- some hardcoded urls will need updating + web side of things
+because once you do, it is best you remove the inbuilt auto updater, let microsoft handle things
 
 - Play around with splash art margins, it appears too small sometimes, it is under pressure from top/bottom?
 
@@ -1405,7 +1408,7 @@ public sealed partial class MainWindow : Window
     {
         ToggleControls(this, false, true, []);
 
-        var packBrowserWindow = new Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow(this);
+        var packBrowserWindow = new Vanilla_RTX_App.PackBrowser.PackBrowserWindow(this);
         var mainAppWindow = this.AppWindow;
 
         packBrowserWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(

@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "Vanilla RTX Tuner WinUI (Package)": {
+    "Vanilla RTX App (Package)": {
       "commandName": "MsixPackage"
     },
-    "Vanilla RTX Tuner WinUI (Unpackaged)": {
+    "Vanilla RTX App (Unpackaged)": {
       "commandName": "Project"
     }
   }

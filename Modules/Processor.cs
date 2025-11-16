@@ -4,13 +4,13 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using static Vanilla_RTX_Tuner_WinUI.TunerVariables;
-using static Vanilla_RTX_Tuner_WinUI.TunerVariables.Persistent;
-using static Vanilla_RTX_Tuner_WinUI.Modules.Helpers;
-using static Vanilla_RTX_Tuner_WinUI.Modules.ProcessorVariables;
+using static Vanilla_RTX_App.TunerVariables;
+using static Vanilla_RTX_App.TunerVariables.Persistent;
+using static Vanilla_RTX_App.Modules.Helpers;
+using static Vanilla_RTX_App.Modules.ProcessorVariables;
 using System.Diagnostics;
 
-namespace Vanilla_RTX_Tuner_WinUI.Modules;
+namespace Vanilla_RTX_App.Modules;
 
 public static class ProcessorVariables
 {

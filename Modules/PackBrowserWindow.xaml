@@ -1,7 +1,7 @@
-<Window x:Class="Vanilla_RTX_Tuner_WinUI.PackBrowser.PackBrowserWindow"
+<Window x:Class="Vanilla_RTX_App.PackBrowser.PackBrowserWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="using:Vanilla_RTX_Tuner_WinUI.PackBrowser"
+        xmlns:local="using:Vanilla_RTX_App.PackBrowser"
         Title="Tuner: Browse Packs">
 
     <Window.SystemBackdrop>

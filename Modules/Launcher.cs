@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Vanilla_RTX_Tuner_WinUI.Modules;
+namespace Vanilla_RTX_App.Modules;
 public class Launcher
 {
     public static async Task<string> LaunchMinecraftRTXAsync(bool isTargetingPreview)

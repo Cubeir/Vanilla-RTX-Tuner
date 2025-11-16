@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
 
-namespace Vanilla_RTX_Tuner_WinUI.Modules;
+namespace Vanilla_RTX_App.Modules;
 public class Previewer
 {
     private static Previewer? _instance;

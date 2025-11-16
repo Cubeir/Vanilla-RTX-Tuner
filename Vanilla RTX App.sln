@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vanilla RTX Tuner WinUI", "Vanilla RTX Tuner WinUI.csproj", "{A2BBE85B-4125-4CBC-B2B8-F8F52799DA6D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vanilla RTX App", "Vanilla RTX App.csproj", "{A2BBE85B-4125-4CBC-B2B8-F8F52799DA6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

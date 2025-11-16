@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading;
 using Microsoft.UI.Xaml;
-using Vanilla_RTX_Tuner_WinUI.Modules;
+using Vanilla_RTX_App.Modules;
 
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Vanilla_RTX_Tuner_WinUI;
+namespace Vanilla_RTX_App;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
@@ -64,7 +64,7 @@ public partial class App : Application
     private void BringExistingWindowToFront()
     {
         // Find the existing window process
-        var processes = System.Diagnostics.Process.GetProcessesByName("Vanilla RTX Tuner WinUI");
+        var processes = System.Diagnostics.Process.GetProcessesByName("Vanilla RTX App");
         foreach (var process in processes)
         {
             if (process.Id != Environment.ProcessId)

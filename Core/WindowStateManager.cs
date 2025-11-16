@@ -4,7 +4,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 
-namespace Vanilla_RTX_Tuner_WinUI.Core;
+namespace Vanilla_RTX_App.Core;
 
 /// <summary>
 /// Window state manager

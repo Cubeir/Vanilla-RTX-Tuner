@@ -10,10 +10,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Windows.Storage;
-using Vanilla_RTX_Tuner_WinUI.Modules;
-using static Vanilla_RTX_Tuner_WinUI.Core.PackLocator; // For static UUIDs, they are stored there for locating packs
+using Vanilla_RTX_App.Modules;
+using static Vanilla_RTX_App.Core.PackLocator; // For static UUIDs, they are stored there for locating packs
 
-namespace Vanilla_RTX_Tuner_WinUI.Core;
+namespace Vanilla_RTX_App.Core;
 
 // Updating logging of classes here to allow it to properly use the actual Logging method with logLevels
 

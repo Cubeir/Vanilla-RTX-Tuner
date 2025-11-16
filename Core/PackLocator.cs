@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Vanilla_RTX_Tuner_WinUI.Core;
+namespace Vanilla_RTX_App.Core;
 
 public class PackLocator
 {

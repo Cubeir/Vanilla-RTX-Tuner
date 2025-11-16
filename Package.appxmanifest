@@ -8,7 +8,7 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="Cubeir.VanillaRTX.Tuner"
+    Name="Cubeir.VanillaRTXApp"
     Publisher="CN=Cubeir"
     Version="2.0.0.0" />
 

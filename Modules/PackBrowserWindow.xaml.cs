@@ -10,11 +10,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Vanilla_RTX_Tuner_WinUI.Core;
+using Vanilla_RTX_App.Core;
 using Windows.Storage;
 using WinRT.Interop;
 
-namespace Vanilla_RTX_Tuner_WinUI.PackBrowser;
+namespace Vanilla_RTX_App.PackBrowser;
 
 public sealed partial class PackBrowserWindow : Window
 {

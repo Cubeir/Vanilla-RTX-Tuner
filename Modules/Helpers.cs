@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using ImageMagick;
 using Windows.ApplicationModel;
-using static Vanilla_RTX_Tuner_WinUI.MainWindow;
+using static Vanilla_RTX_App.MainWindow;
 
-namespace Vanilla_RTX_Tuner_WinUI.Modules;
+namespace Vanilla_RTX_App.Modules;
 
 public static class Helpers
 {

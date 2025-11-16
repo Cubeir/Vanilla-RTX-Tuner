@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
-namespace Vanilla_RTX_Tuner_WinUI.Core;
+namespace Vanilla_RTX_App.Core;
 
 // TODO: change the color of little green thing next to preview button
 // similar to how you do it in mainwindow with theme changes etc... (that fucky piece of code)

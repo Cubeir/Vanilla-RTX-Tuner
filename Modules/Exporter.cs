@@ -6,9 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
-using static Vanilla_RTX_Tuner_WinUI.MainWindow;
+using static Vanilla_RTX_App.MainWindow;
 
-namespace Vanilla_RTX_Tuner_WinUI.Modules;
+namespace Vanilla_RTX_App.Modules;
 
 public static class Exporter
 {
