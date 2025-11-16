@@ -18,7 +18,7 @@ namespace Vanilla_RTX_App.Core;
 // Updating logging of classes here to allow it to properly use the actual Logging method with logLevels
 
 /// =====================================================================================================================
-/// Checks for updates by querying the GitHub API for the latest release of "Vanilla.RTX.Tuner.WinUI_"
+/// Checks for updates by querying the GitHub API for the latest release of the app
 /// comparing it to the current app version, and caching the update package locally to avoid redundant downloads in case user says no to the installation UAC admin prompt
 /// If the cache becomes outdated or invalid, old cache is claered, downloads the latest update, and extracts it for installation. 
 /// The InstallAppUpdate method uses the cached or freshly downloaded package to launch an installer (preferring Installer.bat or falling back to an .msix file)
@@ -80,9 +80,9 @@ public class AppUpdater
                     return (false, "⚠️ No assets found in latest release.");
                 }
 
-                // Find the target asset (Should always start with "Vanilla.RTX.Tuner.WinUI_[version]")
+                // Find the target asset (Should always start with "Vanilla.RTX.App_[version]")
                 var targetAsset = assets.FirstOrDefault(asset =>
-                    asset["name"]?.ToString().StartsWith("Vanilla.RTX.Tuner.WinUI_") == true);
+                    asset["name"]?.ToString().StartsWith("Vanilla.RTX.App_") == true);
 
                 if (targetAsset == null)
                 {
@@ -95,7 +95,7 @@ public class AppUpdater
 
                 var versionMatch = Regex.Match(
                     fileName,
-                    @"Vanilla[\._\s]?RTX[\._\s]?Tuner[\._\s]?WinUI[\._\s]?[_\-]?(\d+(?:\.\d+){1,3})(?:[^\d].*?)?\.zip$",
+                    @"Vanilla[\._\s]?RTX[\._\s]?App[\._\s]?[_\-]?(\d+(?:\.\d+){1,3})(?:[^\d].*?)?\.zip$",
                     RegexOptions.IgnoreCase
                 );
                 if (!versionMatch.Success)
@@ -219,7 +219,7 @@ public class AppUpdater
             }
 
             // Clean up old zip files (but not the current cached one)
-            var zipFiles = Directory.GetFiles(baseDirectory, "Vanilla.RTX.Tuner.WinUI_*.zip");
+            var zipFiles = Directory.GetFiles(baseDirectory, "Vanilla.RTX.App_*.zip");
             foreach (string zipFile in zipFiles)
             {
                 if (!string.Equals(zipFile, currentZipPath, StringComparison.OrdinalIgnoreCase))
@@ -237,7 +237,7 @@ public class AppUpdater
             }
 
             // Clean up old extraction directories (but not the current one)
-            var extractionDirs = Directory.GetDirectories(baseDirectory, "Vanilla_RTX_Tuner_AutoUpdater_*");
+            var extractionDirs = Directory.GetDirectories(baseDirectory, "Vanilla_RTX_App_AutoUpdater_*");
             foreach (string extractionDir in extractionDirs)
             {
                 if (!string.Equals(extractionDir, currentExtractionPath, StringComparison.OrdinalIgnoreCase))
@@ -335,7 +335,7 @@ public class AppUpdater
                     // Create new extraction directory and re-extract
                     extractionDir = Path.Combine(
                         Path.GetDirectoryName(zipFilePath),
-                        $"Vanilla_RTX_Tuner_AutoUpdater_{Guid.NewGuid():N}"
+                        $"Vanilla_RTX_App_AutoUpdater_{Guid.NewGuid():N}"
                     );
 
                     // Extract the zip file
@@ -367,7 +367,7 @@ public class AppUpdater
                 // Create unique extraction directory
                 extractionDir = Path.Combine(
                     Path.GetDirectoryName(zipFilePath),
-                    $"Vanilla_RTX_Tuner_AutoUpdater_{Guid.NewGuid():N}"
+                    $"Vanilla_RTX_App_AutoUpdater_{Guid.NewGuid():N}"
                 );
 
                 // Extract the zip file
@@ -713,7 +713,7 @@ public class PackUpdater
     {
         if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
-            LogMessage("⚠️ Minecraft is running. Please close the game while using Tuner.");
+            LogMessage("⚠️ Minecraft is running. Please close the game while using the app.");
         }
 
         bool success_status = false;

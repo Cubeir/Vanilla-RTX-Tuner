@@ -50,9 +50,6 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Hold off renaming the project and GitHub for now -- some hardcoded urls will need updating + web side of things
-because once you do, it is best you remove the inbuilt auto updater, let microsoft handle things
-
 - Play around with splash art margins, it appears too small sometimes, it is under pressure from top/bottom?
 
 - Set random preview arts on startup, featuring locations from Vanilla RTX's history
