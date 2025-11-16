@@ -28,37 +28,16 @@ public class Previewer
     private bool _forceTransitionForControlChange = false;
 
     // Configurable global transition settings
-    // Change these at runtime via Previewer.Instance to globally affect transitions.
-    public const double TransitionDurationPublic = 50;
-    public double TransitionDurationMs { get; set; } = 50;
-    public double OffFadeDelayThreshold { get; set; } = 0.9; // Delay counterpart fade until lead reaches this fraction of the duration.
+    public const double TransitionDurationPublic = 49;
+    public double TransitionDurationMs { get; set; } = 49;
+    public double OffFadeDelayThreshold { get; set; } = 0.9;
 
-
-    public bool SuppressUpdates { get; set; } = false;
-    private bool _suppressFreezeMode = false;
+    // Freeze system - suspends all preview updates and snapshots current visual state
+    public bool FreezeUpdates { get; set; } = false;
     private string _frozenBottomImage = "";
     private string _frozenTopImage = "";
     private double _frozenBottomOpacity = 0.0;
     private double _frozenTopOpacity = 0.0;
-
-
-    // Pending state for immediate application  after transition
-    private class PendingVesselState
-    {
-        public string? BottomImagePath
-        {
-            get; set;
-        }
-        public string? TopImagePath
-        {
-            get; set;
-        }
-        public double BottomOpacity { get; set; } = 1.0;
-        public double TopOpacity { get; set; } = 0.0;
-        public bool HasPendingState { get; set; } = false;
-    }
-
-    private readonly PendingVesselState _pendingState = new();
 
     // Singleton instance access
     public static Previewer Instance
@@ -79,17 +58,15 @@ public class Previewer
         }
     }
 
-    // constructor
+    // Constructor
     private Previewer(Image topVessel, Image bottomVessel, Image backgroundVessel)
     {
         _topVessel = topVessel;
         _bottomVessel = bottomVessel;
         _bg = backgroundVessel;
 
-        // Background must always be present and visible.
-        _bg.Visibility = Visibility.Visible;
         _bg.Opacity = 1.0;
-
+        _bg.Visibility = Visibility.Visible;
         _topVessel.Opacity = 0.0;
         _topVessel.Visibility = Visibility.Collapsed;
         _bottomVessel.Opacity = 0.0;
@@ -111,7 +88,8 @@ public class Previewer
         }
     }
 
-    // - - - - - Utility
+    // - - - - - Utility Methods
+
     public void SetImages(string imageOnPath, string imageOffPath, bool useSmoothTransition = false)
     {
         var bottomOpacity = !string.IsNullOrEmpty(imageOffPath) ? 1.0 : 0.0;
@@ -123,9 +101,14 @@ public class Previewer
     {
         _currentBottomImage = "";
         _currentTopImage = "";
-        FadeAwayVessels(0.0, true);
         _bottomVessel.Source = null;
         _topVessel.Source = null;
+        _bottomVessel.Visibility = Visibility.Collapsed;
+        _topVessel.Visibility = Visibility.Collapsed;
+        //_bg.Visibility = Visibility.Collapsed;
+        _bottomVessel.Opacity = 0.0;
+        _topVessel.Opacity = 0.0;
+        //_bg.Opacity = 0.0;
     }
 
     public void FadeAwayVessels(double targetOpacity, bool useSmoothTransition = true, int duration = (int)TransitionDurationPublic)
@@ -148,14 +131,24 @@ public class Previewer
                 Duration = TimeSpan.FromMilliseconds(duration)
             };
 
+            var fadeBackground = new DoubleAnimation
+            {
+                From = _bg.Opacity,
+                To = targetOpacity,
+                Duration = TimeSpan.FromMilliseconds(duration)
+            };
+
             var storyboard = new Storyboard();
             Storyboard.SetTarget(fadeTop, _topVessel);
             Storyboard.SetTargetProperty(fadeTop, "Opacity");
             Storyboard.SetTarget(fadeBottom, _bottomVessel);
             Storyboard.SetTargetProperty(fadeBottom, "Opacity");
+            Storyboard.SetTarget(fadeBackground, _bg);
+            Storyboard.SetTargetProperty(fadeBackground, "Opacity");
 
             storyboard.Children.Add(fadeTop);
             storyboard.Children.Add(fadeBottom);
+            storyboard.Children.Add(fadeBackground);
 
             _currentTransition?.Stop();
             _currentTransition = storyboard;
@@ -165,6 +158,13 @@ public class Previewer
             {
                 _isTransitioning = false;
                 _currentTransition = null;
+
+                if (Math.Abs(targetOpacity) < 0.01)
+                {
+                    _topVessel.Visibility = Visibility.Collapsed;
+                    _bottomVessel.Visibility = Visibility.Collapsed;
+                    _bg.Visibility = Visibility.Collapsed;
+                }
             };
 
             storyboard.Begin();
@@ -173,74 +173,52 @@ public class Previewer
         {
             _topVessel.Opacity = targetOpacity;
             _bottomVessel.Opacity = targetOpacity;
-            // Do not modify _bg. It must remain visible and at its own opacity.
-        }
-    }
+            _bg.Opacity = targetOpacity;
 
-
-    // Resume updates. If applyPending==true, any queued pending state (if present) will be applied; otherwise queued requests are discarded.
-    public void ResumeUpdates(bool applyPending = false)
-    {
-        SuppressUpdates = false;
-        _suppressFreezeMode = false;
-
-        if (applyPending && _pendingState.HasPendingState)
-        {
-            // Start transition to the latest pending state
-            if (_isTransitioning)
+            if (Math.Abs(targetOpacity) < 0.01)
             {
-                _currentTransition?.Stop();
+                _topVessel.Visibility = Visibility.Collapsed;
+                _bottomVessel.Visibility = Visibility.Collapsed;
+                _bg.Visibility = Visibility.Collapsed;
             }
-            StartCrossFadeTransition();
-        }
-        else
-        {
-            // Discard pending and ensure visuals match the frozen snapshot (if any)
-            _pendingState.HasPendingState = false;
-
-            // Re-apply frozen imagery/opacities so UI remains exactly as it was when suspended.
-            if (!string.IsNullOrEmpty(_frozenBottomImage) && _currentBottomImage != _frozenBottomImage)
-            {
-                _currentBottomImage = _frozenBottomImage;
-                SetBottomVesselImage(_frozenBottomImage);
-            }
-
-            if (!string.IsNullOrEmpty(_frozenTopImage) && _currentTopImage != _frozenTopImage)
-            {
-                _currentTopImage = _frozenTopImage;
-                SetTopVesselImage(_frozenTopImage);
-            }
-
-            _bottomVessel.Opacity = _frozenBottomOpacity;
-            _topVessel.Opacity = _frozenTopOpacity;
         }
     }
-    public void ResumeUpdatesAndApplyPending()
+
+    // Freeze all preview updates and snapshot current visual state
+    public void Freeze()
     {
-        ResumeUpdates(true);
+        FreezeUpdates = true;
+
+        // Snapshot currently visible state
+        _frozenBottomImage = _currentBottomImage ?? "";
+        _frozenTopImage = _currentTopImage ?? "";
+        _frozenBottomOpacity = _bottomVessel.Opacity;
+        _frozenTopOpacity = _topVessel.Opacity;
     }
 
-
-    // Suspend updates. If freezeVisualState==true, Snapshot current visuals and ignore any incoming preview requests.
-    public void SuspendUpdates(bool freezeVisualState = true)
+    // Unfreeze and restore to the frozen snapshot
+    public void Unfreeze()
     {
-        SuppressUpdates = true;
-        _suppressFreezeMode = freezeVisualState;
+        FreezeUpdates = false;
 
-        if (freezeVisualState)
+        // Restore frozen state
+        if (!string.IsNullOrEmpty(_frozenBottomImage) && _currentBottomImage != _frozenBottomImage)
         {
-            // Snapshot currently visible state so we can restore it on resume (and avoid exposing transient updates).
-            _frozenBottomImage = _currentBottomImage ?? "";
-            _frozenTopImage = _currentTopImage ?? "";
-            _frozenBottomOpacity = _bottomVessel.Opacity;
-            _frozenTopOpacity = _topVessel.Opacity;
-
-            // Clear any pending requests accumulated previously to avoid surprise transitions on resume.
-            _pendingState.HasPendingState = false;
+            _currentBottomImage = _frozenBottomImage;
+            SetBottomVesselImage(_frozenBottomImage);
         }
+
+        if (!string.IsNullOrEmpty(_frozenTopImage) && _currentTopImage != _frozenTopImage)
+        {
+            _currentTopImage = _frozenTopImage;
+            SetTopVesselImage(_frozenTopImage);
+        }
+
+        _bottomVessel.Opacity = _frozenBottomOpacity;
+        _topVessel.Opacity = _frozenTopOpacity;
     }
 
-    // - - - - - Utility
+    // - - - - - Control Initialization Methods
 
     public void InitializeSlider(Slider slider, string defaultImagePath, string minImagePath, string maxImagePath, double defaultValue)
     {
@@ -341,19 +319,16 @@ public class Previewer
             ImageOffPath = imageOffPath
         });
 
-        // Don't initialize preview state immediately - let it show on first hover
-        // This prevents images from showing up on app startup
-
-        toggleButton.Checked += (s, e) => {
-            // Only update if this control is currently active (being hovered/interacted with)
+        toggleButton.Checked += (s, e) =>
+        {
             if (_activeControl == toggleButton)
             {
                 SetTogglePreview(toggleButton, true);
             }
         };
 
-        toggleButton.Unchecked += (s, e) => {
-            // Only update if this control is currently active (being hovered/interacted with)
+        toggleButton.Unchecked += (s, e) =>
+        {
             if (_activeControl == toggleButton)
             {
                 SetTogglePreview(toggleButton, false);
@@ -404,10 +379,8 @@ public class Previewer
             ImageOffPath = imageOffPath
         });
 
-        // Don't initialize preview state immediately - let it show on first hover
-
-        toggleSwitch.Toggled += (s, e) => {
-            // Only update if this control is currently active (being hovered/interacted with)
+        toggleSwitch.Toggled += (s, e) =>
+        {
             if (_activeControl == toggleSwitch)
             {
                 SetTogglePreview(toggleSwitch, toggleSwitch.IsOn);
@@ -428,7 +401,6 @@ public class Previewer
             _mouseDown = true;
             _activeControl = toggleSwitch;
             toggleSwitch.CapturePointer(e.Pointer);
-            // For ToggleSwitch, preview the opposite state when pressed
             SetTogglePreview(toggleSwitch, !toggleSwitch.IsOn);
         };
 
@@ -458,18 +430,16 @@ public class Previewer
             ImageOffPath = imageOffPath
         });
 
-        // Don't initialize preview state immediately - let it show on first hover
-
-        checkBox.Checked += (s, e) => {
-            // Only update if this control is currently active (being hovered/interacted with)
+        checkBox.Checked += (s, e) =>
+        {
             if (_activeControl == checkBox)
             {
                 SetTogglePreview(checkBox, true);
             }
         };
 
-        checkBox.Unchecked += (s, e) => {
-            // Only update if this control is currently active (being hovered/interacted with)
+        checkBox.Unchecked += (s, e) =>
+        {
             if (_activeControl == checkBox)
             {
                 SetTogglePreview(checkBox, false);
@@ -512,35 +482,19 @@ public class Previewer
         };
     }
 
+    // - - - - - Private Helper Methods
 
-    // Handles vessel states between control changes (nothing to control, control to control, etc...)
     private void HandleControlChange(FrameworkElement newControl)
     {
-        // Always update active control variable so logic relying on it remains correct
         bool isControlChange = (_activeControl != newControl && _activeControl != null);
         _activeControl = newControl;
 
-        // If updates are suppressed and we're in freeze mode, ignore visual state changes entirely.
-        if (SuppressUpdates && _suppressFreezeMode)
-        {
-            // do not call FadeInBackground or set pending states while frozen
-            if (isControlChange)
-            {
-                // keep force flag so that when suppression ends explicit control-change transitions can be triggered if desired
-                _forceTransitionForControlChange = true;
-            }
-            return;
-        }
-
         if (isControlChange)
         {
-            // Mark that we need a transition for control change
-            _pendingState.HasPendingState = false; // Will be set by the calling method
-            _forceTransitionForControlChange = true; // Force smooth transitions for control swap
+            _forceTransitionForControlChange = true;
         }
 
-        // If suppression active but not freeze-mode, still avoid showing background
-        if (SuppressUpdates && !_suppressFreezeMode)
+        if (FreezeUpdates)
         {
             return;
         }
@@ -550,8 +504,7 @@ public class Previewer
 
     private void FadeInBackground(double durationMs = TransitionDurationPublic)
     {
-        // Respect suppression / freeze
-        if (SuppressUpdates && _suppressFreezeMode)
+        if (FreezeUpdates)
             return;
 
         if (_bg.Visibility == Visibility.Visible && _bg.Opacity >= 1.0)
@@ -559,10 +512,7 @@ public class Previewer
 
         _bg.Opacity = 0;
         _bg.Visibility = Visibility.Visible;
-        _bottomVessel.Visibility = Visibility.Visible;
-        _topVessel.Visibility = Visibility.Visible;
 
-        // Delay animation to next layout pass (ensures visual tree is ready)
         _bg.DispatcherQueue.TryEnqueue(() =>
         {
             var fadeIn = new DoubleAnimation
@@ -581,9 +531,10 @@ public class Previewer
         });
     }
 
-
     private void UpdateSliderPreview(Slider slider)
     {
+        if (FreezeUpdates) return;
+
         var data = slider.GetValue(FrameworkElement.TagProperty) as SliderPreviewData;
         if (data == null) return;
 
@@ -592,18 +543,15 @@ public class Previewer
         double maxValue = slider.Maximum;
         double defaultValue = data.DefaultValue;
 
-        // Determine target images and opacities
         string targetBottomImage = data.DefaultImagePath ?? "";
         double targetBottomOpacity = !string.IsNullOrEmpty(data.DefaultImagePath) ? 1.0 : 0.0;
 
-        // Check if both min and max images are null - if so, set top vessel opacity to 0
         bool bothMinMaxNull = string.IsNullOrEmpty(data.MinImagePath) && string.IsNullOrEmpty(data.MaxImagePath);
         string targetTopImage = "";
         double targetTopOpacity = 0.0;
 
         if (!bothMinMaxNull)
         {
-            // Top vessel: Dynamic image and opacity based on slider position
             if (currentValue >= defaultValue)
             {
                 targetTopImage = data.MaxImagePath ?? "";
@@ -638,51 +586,48 @@ public class Previewer
             }
         }
 
-        // Use main transition system for inter-control changes, direct updates for intra-control
         bool useTransition = _forceTransitionForControlChange;
-        _forceTransitionForControlChange = false; // Reset the flag
+        _forceTransitionForControlChange = false;
 
         SetVesselState(targetBottomImage, targetTopImage, targetBottomOpacity, targetTopOpacity, useTransition);
     }
 
     private void SetButtonPreview(Button button, bool isPressed)
     {
+        if (FreezeUpdates) return;
+
         var data = button.GetValue(FrameworkElement.TagProperty) as ButtonPreviewData;
         if (data == null) return;
 
         string imagePath = isPressed ? data.ImageOnPath : data.ImageOffPath;
-
-        // For buttons: bottom vessel shows the image, top vessel is always transparent
-        // If no image path provided, set bottom vessel opacity to 0 as well
         double bottomOpacity = !string.IsNullOrEmpty(imagePath) ? 1.0 : 0.0;
+
         SetVesselState(imagePath ?? "", "", bottomOpacity, 0.0, true);
     }
 
     private void SetTogglePreview(FrameworkElement element, bool isOn)
     {
+        if (FreezeUpdates) return;
+
         var data = element.GetValue(FrameworkElement.TagProperty) as TogglePreviewData;
         if (data == null) return;
 
-        // Normalize image paths
         string bottomImage = data.ImageOffPath ?? "";
         string topImage = data.ImageOnPath ?? "";
 
         double bottomOpacity;
         double topOpacity;
 
-        // If turning ON and an ON image exists, show only the ON image (top) and force OFF image (bottom) to zero opacity.
         if (isOn && !string.IsNullOrEmpty(topImage))
         {
             topOpacity = 1.0;
             bottomOpacity = 0.0;
         }
-        // If turning OFF and an OFF image exists, show only the OFF image (bottom).
         else if (!isOn && !string.IsNullOrEmpty(bottomImage))
         {
             topOpacity = 0.0;
             bottomOpacity = 1.0;
         }
-        // Fallback: respect whichever image(s) are available.
         else
         {
             topOpacity = !string.IsNullOrEmpty(topImage) && isOn ? 1.0 : 0.0;
@@ -694,34 +639,16 @@ public class Previewer
 
     private void SetVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity, bool allowTransition)
     {
-        // If updates are suppressed and freeze mode is active, ignore incoming requests entirely
-        if (SuppressUpdates && _suppressFreezeMode)
-        {
-            return;
-        }
-
-        // If updates are suppressed but NOT freeze mode, queue the last request in pending state (previous behavior)
-        if (SuppressUpdates && !_suppressFreezeMode)
-        {
-            _pendingState.BottomImagePath = bottomImagePath;
-            _pendingState.TopImagePath = topImagePath;
-            _pendingState.BottomOpacity = bottomOpacity;
-            _pendingState.TopOpacity = topOpacity;
-            _pendingState.HasPendingState = true;
-            return;
-        }
+        if (FreezeUpdates) return;
 
         bool bottomImageChanged = !string.IsNullOrEmpty(bottomImagePath) && _currentBottomImage != bottomImagePath;
         bool topImageChanged = !string.IsNullOrEmpty(topImagePath) && _currentTopImage != topImagePath;
         bool bottomOpacityChanged = Math.Abs(_bottomVessel.Opacity - bottomOpacity) > 0.01;
         bool topOpacityChanged = Math.Abs(_topVessel.Opacity - topOpacity) > 0.01;
 
-        // Capture and reset force flag produced by HandleControlChange so it influences this single call only.
         bool forcedByControlChange = _forceTransitionForControlChange;
         _forceTransitionForControlChange = false;
 
-        // Need transition if images changed OR if we're going from/to zero opacity with smooth transitions enabled
-        // Also respect explicit force from control-change (even if images/opacities are identical).
         bool needsTransition = allowTransition && (forcedByControlChange ||
             bottomImageChanged || topImageChanged ||
             (bottomOpacityChanged && (_bottomVessel.Opacity == 0.0 || bottomOpacity == 0.0)) ||
@@ -729,45 +656,22 @@ public class Previewer
 
         if (!needsTransition)
         {
-            // Direct application - no transition needed
-            ApplyVesselState(bottomImagePath, topImagePath, bottomOpacity, topOpacity);
+            ApplyVesselState(bottomImagePath, topImagePath, bottomOpacity, topOpacity, false);
             return;
         }
 
-        // Store the target state
-        _pendingState.BottomImagePath = bottomImagePath;
-        _pendingState.TopImagePath = topImagePath;
-        _pendingState.BottomOpacity = bottomOpacity;
-        _pendingState.TopOpacity = topOpacity;
-        _pendingState.HasPendingState = true;
-
-        // If already transitioning, the current transition will pick up the new state
+        // Start cross-fade transition
         if (_isTransitioning)
         {
-            return;
-        }
-
-        StartCrossFadeTransition();
-    }
-
-    private void StartCrossFadeTransition()
-    {
-        if (_isTransitioning)
-        {
-            // Cancel current transition
             _currentTransition?.Stop();
         }
 
         _isTransitioning = true;
         int currentTransitionId = ++_transitionId;
 
-        // Determine if we need to fade out first (for image changes) or can directly fade to target
-        bool bottomImageChanging = !string.IsNullOrEmpty(_pendingState.BottomImagePath) && _currentBottomImage != _pendingState.BottomImagePath;
-        bool topImageChanging = !string.IsNullOrEmpty(_pendingState.TopImagePath) && _currentTopImage != _pendingState.TopImagePath;
-
-        if (bottomImageChanging || topImageChanging)
+        if (bottomImageChanged || topImageChanged)
         {
-            // Image is changing - fade out first, then apply new image and fade in
+            // Fade out, swap images, fade in
             var fadeOutTop = new DoubleAnimation
             {
                 From = _topVessel.Opacity,
@@ -793,18 +697,17 @@ public class Previewer
 
             storyboard.Completed += (s, e) =>
             {
-                // Check if this transition is still valid
-                if (currentTransitionId != _transitionId || !_pendingState.HasPendingState)
+                if (currentTransitionId != _transitionId)
                 {
                     _isTransitioning = false;
                     return;
                 }
 
-                // Apply the images while vessels are faded out
-                ApplyVesselState(_pendingState.BottomImagePath, _pendingState.TopImagePath, 0.0, 0.0);
+                // Apply the new images while faded out (but keep vessels visible for fade-in)
+                ApplyVesselState(bottomImagePath, topImagePath, 0.0, 0.0, true);
 
-                // Now fade in to target opacities
-                FadeInToTargetOpacities(currentTransitionId);
+                // Fade in to target opacities
+                FadeInToTargetOpacities(bottomOpacity, topOpacity, currentTransitionId);
             };
 
             _currentTransition = storyboard;
@@ -812,40 +715,34 @@ public class Previewer
         }
         else
         {
-            // No image change - just animate opacity directly to target
-            FadeToTargetOpacities(currentTransitionId);
+            // Just animate opacity change
+            FadeToTargetOpacities(bottomOpacity, topOpacity, currentTransitionId);
         }
     }
 
-    private void FadeInToTargetOpacities(int transitionId)
+    private void FadeInToTargetOpacities(double targetBottomOpacity, double targetTopOpacity, int transitionId)
     {
-        // Fade top from 0 -> targetTop, bottom from 0 -> targetBottom
         var fadeInTop = new DoubleAnimation
         {
             From = 0.0,
-            To = _pendingState.TopOpacity,
+            To = targetTopOpacity,
             Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
 
         var fadeInBottom = new DoubleAnimation
         {
             From = 0.0,
-            To = _pendingState.BottomOpacity,
+            To = targetBottomOpacity,
             Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
 
-        // If ON image should appear and OFF image should disappear, delay the bottom fade
-        bool topAppearingAndBottomDisappearing = _pendingState.TopOpacity > 0.0 && _pendingState.BottomOpacity == 0.0;
-
+        bool topAppearingAndBottomDisappearing = targetTopOpacity > 0.0 && targetBottomOpacity == 0.0;
         if (topAppearingAndBottomDisappearing)
         {
-            // Delay bottom fade by a fraction of the overall duration.
             fadeInBottom.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
         }
 
-        // Symmetric case: OFF image appearing while ON should disappear delay top fade
-        bool bottomAppearingAndTopDisappearing = _pendingState.BottomOpacity > 0.0 && _pendingState.TopOpacity == 0.0;
-
+        bool bottomAppearingAndTopDisappearing = targetBottomOpacity > 0.0 && targetTopOpacity == 0.0;
         if (bottomAppearingAndTopDisappearing)
         {
             fadeInTop.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
@@ -864,14 +761,7 @@ public class Previewer
         {
             if (transitionId == _transitionId)
             {
-                _pendingState.HasPendingState = false;
                 _isTransitioning = false;
-
-                // Check if there's another pending state that came in during transition
-                if (_pendingState.HasPendingState)
-                {
-                    StartCrossFadeTransition();
-                }
             }
         };
 
@@ -879,35 +769,32 @@ public class Previewer
         storyboard.Begin();
     }
 
-    private void FadeToTargetOpacities(int transitionId)
+    private void FadeToTargetOpacities(double targetBottomOpacity, double targetTopOpacity, int transitionId)
     {
-        // Regular fade from current opacities -> pending target opacities
         var fadeTop = new DoubleAnimation
         {
             From = _topVessel.Opacity,
-            To = _pendingState.TopOpacity,
+            To = targetTopOpacity,
             Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
 
         var fadeBottom = new DoubleAnimation
         {
             From = _bottomVessel.Opacity,
-            To = _pendingState.BottomOpacity,
+            To = targetBottomOpacity,
             Duration = TimeSpan.FromMilliseconds(TransitionDurationMs)
         };
 
-        // If top is increasing (appearing) and bottom is decreasing to 0, delay bottom fade
-        bool topIncreasing = _pendingState.TopOpacity > _topVessel.Opacity;
-        bool bottomGoingToZero = Math.Abs(_pendingState.BottomOpacity - 0.0) < 0.001 && _bottomVessel.Opacity > 0.0;
+        bool topIncreasing = targetTopOpacity > _topVessel.Opacity;
+        bool bottomGoingToZero = Math.Abs(targetBottomOpacity - 0.0) < 0.001 && _bottomVessel.Opacity > 0.0;
 
         if (topIncreasing && bottomGoingToZero)
         {
             fadeBottom.BeginTime = TimeSpan.FromMilliseconds(TransitionDurationMs * OffFadeDelayThreshold);
         }
 
-        // Symmetric case: bottom is increasing (appearing) while top is decreasing to 0 -- delay top fade
-        bool bottomIncreasing = _pendingState.BottomOpacity > _bottomVessel.Opacity;
-        bool topGoingToZero = Math.Abs(_pendingState.TopOpacity - 0.0) < 0.001 && _topVessel.Opacity > 0.0;
+        bool bottomIncreasing = targetBottomOpacity > _bottomVessel.Opacity;
+        bool topGoingToZero = Math.Abs(targetTopOpacity - 0.0) < 0.001 && _topVessel.Opacity > 0.0;
 
         if (bottomIncreasing && topGoingToZero)
         {
@@ -927,14 +814,7 @@ public class Previewer
         {
             if (transitionId == _transitionId)
             {
-                _pendingState.HasPendingState = false;
                 _isTransitioning = false;
-
-                // Check if there's another pending state that came in during transition
-                if (_pendingState.HasPendingState)
-                {
-                    StartCrossFadeTransition();
-                }
             }
         };
 
@@ -942,7 +822,7 @@ public class Previewer
         storyboard.Begin();
     }
 
-    private void ApplyVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity)
+    private void ApplyVesselState(string bottomImagePath, string topImagePath, double bottomOpacity, double topOpacity, bool duringTransition)
     {
         // Apply bottom vessel
         if (!string.IsNullOrEmpty(bottomImagePath) && _currentBottomImage != bottomImagePath)
@@ -953,7 +833,11 @@ public class Previewer
         }
         else if (string.IsNullOrEmpty(bottomImagePath))
         {
-            _bottomVessel.Visibility = Visibility.Collapsed;
+            // Only collapse if no image path AND not during a transition
+            if (!duringTransition)
+            {
+                _bottomVessel.Visibility = Visibility.Collapsed;
+            }
         }
 
         // Apply top vessel
@@ -965,10 +849,14 @@ public class Previewer
         }
         else if (string.IsNullOrEmpty(topImagePath))
         {
-            _topVessel.Visibility = Visibility.Collapsed;
+            // Only collapse if no image path AND not during a transition
+            if (!duringTransition)
+            {
+                _topVessel.Visibility = Visibility.Collapsed;
+            }
         }
 
-        // Set opacities (will be animated by the calling transition if needed)
+        // Set opacities
         _bottomVessel.Opacity = bottomOpacity;
         _topVessel.Opacity = topOpacity;
     }
@@ -988,6 +876,9 @@ public class Previewer
             _topVessel.Source = new BitmapImage(new Uri(imagePath));
         }
     }
+
+    // - - - - - Data Classes
+
     private class SliderPreviewData
     {
         public string? DefaultImagePath

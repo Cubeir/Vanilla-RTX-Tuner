@@ -73,9 +73,13 @@ Finish all that you had postponed
 
 - A way to tell user updates are available for Vanilla RTX packs, occasional auto check
 
-- Expose as many params as you can
-Most importantly, the hardcoded Minecraft paths, expose those, paths to search in and go to and whatever class that deals with
-MC data folder, whatever and whatever they are cleanly expose them so if you leave the app people can easily change it
+- Expose as many params as you can to a json in app's root
+the hard URLs the app sends requests to + the hardcoded Minecraft paths
+
+- What if, you expanded Butcher heightmaps into Butcher Normals
+Then had it generate simple seamless normal maps as well and blend them?
+That way all sliders can affect all packs in some shape or form, which is good.
+
 
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
 It is too integerated, previewer class has some funky behavior tied to it, circumvented by it
@@ -263,9 +267,9 @@ public sealed partial class MainWindow : Window
         Previewer.Initialize(PreviewVesselTop, PreviewVesselBottom, PreviewVesselBackground);
         LoadSettings();
 
-        // APPLY THEME - artifical button click means update ui with the persistent user variable
-        // it won't cycle through themes!
+        // APPLY THEME if it isn't a button click they won't cycle and apply the loaded setting instead
         CycleThemeButton_Click(null, null);
+
 
         // Set reinstall latest packs button visuals based on cache status
         if (_updater.HasDeployableCache())
@@ -277,6 +281,21 @@ public sealed partial class MainWindow : Window
         {
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default cloud icon
             UpdateVanillaRTXButtonText.Text = "Install latest packs";
+        }
+
+        // Brief delay to ensure everything is fully rendered, then fade out splash screen
+        await Task.Delay(1000);
+        // ================ Do all UI updates you DON'T want to be seen BEFORE here, and what you want seen AFTER ======================= 
+        await FadeOutSplash();
+
+
+        // Slightly slower UI update override for a smoother startup
+        UpdateUI(0.2);
+
+        // Locate packs, if Preview is enabled, TargetPreview triggers another pack location, avoid redundant operation
+        if (!IsTargetingPreview)
+        {
+            _ = LocatePacksButton_Click();
         }
 
         // lazy credits and PSA retriever, credits are saved for donate hover event, PSA is shown when ready
@@ -296,23 +315,6 @@ public sealed partial class MainWindow : Window
             Log($"Please close Minecraft while using Tuner, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
         }
 
-        // Brief delay to ensure everything is fully rendered, then fade out splash screen
-        await Task.Delay(1000);
-
-        // ================ Do all UI updates you DON'T want to be seen BEFORE here, and what you want seen AFTER ======================= 
-        await FadeOutSplash();
-
-        
-        // Slower UI update override for a smoother startup
-        UpdateUI(0.31415926535);
-
-        // Locate packs, if Preview is enabled, TargetPreview triggers another pack location, avoid redundant operation
-        if (!IsTargetingPreview)
-        {
-            _ = LocatePacksButton_Click();
-        }
-
-
         async Task FadeOutSplash()
         {
             if (SplashOverlay == null) return;
@@ -321,7 +323,7 @@ public sealed partial class MainWindow : Window
             {
                 From = 1.0,
                 To = 0.0,
-                Duration = new Duration(TimeSpan.FromMilliseconds(256)),
+                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
             };
 
@@ -489,7 +491,6 @@ public sealed partial class MainWindow : Window
 
         ToolTipService.SetToolTip(btn, "Theme: " + mode);
     }
-
 
 
     private void SetPreviews()
@@ -1108,7 +1109,7 @@ public sealed partial class MainWindow : Window
     public async void UpdateUI(double animationDurationSeconds = 0.15)
     {
         // Suppress Previewer Updates
-        Previewer.Instance.SuspendUpdates(freezeVisualState: true);
+        Previewer.Instance.Freeze();
 
         // Sliders
         var sliderConfigs = new[]
@@ -1140,7 +1141,7 @@ public sealed partial class MainWindow : Window
 
 
         // Resume Previewer Updates
-        Previewer.Instance.ResumeUpdates(applyPending: false);
+        Previewer.Instance.Unfreeze();
 
 
 
