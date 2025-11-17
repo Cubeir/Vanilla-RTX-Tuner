@@ -50,6 +50,12 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Make frequency of startup PSAs less, once every 15 minutes
+
+- change lang to en from en-us? does it matter really? prolly not
+
+- test the shift alt behavior thingy more
+
 - Add a proper, non-intrusive leave a review prompt
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
