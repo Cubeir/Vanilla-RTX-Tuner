@@ -953,7 +953,7 @@
     <ErrorReport>none</ErrorReport>
     <Description>The Official Vanilla RTX App</Description>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
-    <DefaultLanguage>en</DefaultLanguage>
+    <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DebugType>none</DebugType>
