@@ -137,6 +137,7 @@ public static class TunerVariables
     public static class Persistent
     {
         public static bool IsTargetingPreview = Defaults.IsTargetingPreview;
+
         public static double FogMultiplier = Defaults.FogMultiplier;
         public static double EmissivityMultiplier = Defaults.EmissivityMultiplier;
         public static int NormalIntensity = Defaults.NormalIntensity;
@@ -447,7 +448,6 @@ public sealed partial class MainWindow : Window
     }
 
 
-
     public void CycleThemeButton_Click(object? sender, RoutedEventArgs? e)
     {
         bool invokedByClick = sender is Button;
@@ -584,10 +584,6 @@ public sealed partial class MainWindow : Window
 
         Previewer.Instance.InitializeButton(LaunchButton,
             "ms-appx:///Assets/previews/minecart.launch.png"
-        );
-
-        Previewer.Instance.InitializeButton(AppUpdaterButton,
-            "ms-appx:///Assets/previews/repository.appupdate.png"
         );
 
         Previewer.Instance.InitializeButton(CycleThemeButton,
@@ -1263,86 +1259,6 @@ public sealed partial class MainWindow : Window
 
 
 
-    private async void AppUpdaterButton_Click(object sender, RoutedEventArgs e)
-    {
-        // Downloading department: Check if we already found an update and should proceed with download/install
-        // criteria is update URL and version both having been extracted from Github by AppUpdater class, otherwise we try to get them again in the following else block.
-        if (!string.IsNullOrEmpty(AppUpdater.latestAppVersion) && !string.IsNullOrEmpty(AppUpdater.latestAppRemote_URL))
-        {
-            ToggleControls(this, false);
-            _progressManager.ShowProgress();
-            _ = BlinkingLamp(true);
-            try
-            {
-                var installSucess = await AppUpdater.InstallAppUpdate();
-                if (installSucess.Item1)
-                {
-                    Log("Continue in Windows App Installer.", LogLevel.Informational);
-                }
-                else
-                {
-                    Log($"Automatic update failed, reason: {installSucess.Item2}\nYou can also visit the repository to download the update manually.", LogLevel.Error);
-                }
-
-
-
-                // Button Visuals -> default (we're done with the update)
-                AppUpdaterButton.Content = "\uE895";
-                ToolTipService.SetToolTip(AppUpdaterButton, "Check for update");
-                AppUpdaterButton.Background = new SolidColorBrush(Colors.Transparent);
-                AppUpdaterButton.BorderBrush = new SolidColorBrush(Colors.Transparent);
-
-                // Clear these so next time it checks for updates in the else block below
-                AppUpdater.latestAppVersion = null;
-                AppUpdater.latestAppRemote_URL = null;
-            }
-            finally
-            {
-                ToggleControls(this, true);
-                _progressManager.HideProgress();
-                _ = BlinkingLamp(false);
-            }
-        }
-
-        // Checking department: If version and URL variables aren't filled (an update isn't available) try to get them, check for updates.
-        else
-        {
-            AppUpdaterButton.IsEnabled = false;
-            _progressManager.ShowProgress();
-            _ = BlinkingLamp(true);
-            try
-            {
-                var updateAvailable = await AppUpdater.CheckGitHubForUpdates();
-
-                if (updateAvailable.Item1)
-                {
-                    // Button Visuals -> Download Available
-                    // Set icon to a "download" glyph (listed in WinUI 3.0 gallery as a part of Segoe font)
-                    AppUpdaterButton.Content = "\uE896";
-                    ToolTipService.SetToolTip(AppUpdaterButton, "App Update available! Click again to install");
-                    var accent = (SolidColorBrush)Application.Current.Resources["SystemControlHighlightAccentBrush"];
-                    AppUpdaterButton.Background = accent;
-                    AppUpdaterButton.BorderBrush = accent;
-
-                    Log(updateAvailable.Item2);
-                }
-                else
-                {
-                    Log(updateAvailable.Item2);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log($"Error during update check: {ex.Message}", LogLevel.Error);
-            }
-            finally
-            {
-                AppUpdaterButton.IsEnabled = true;
-                _progressManager.HideProgress();
-                _ = BlinkingLamp(false);
-            }
-        }
-    }
 
 
 

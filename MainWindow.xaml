@@ -214,10 +214,6 @@
                         <ColumnDefinition Width="Auto" />
                         <!-- Theme Button -->
                         <ColumnDefinition Width="Auto" />
-                        <!-- Separator -->
-                        <ColumnDefinition Width="Auto" />
-                        <!-- Update Button -->
-                        <ColumnDefinition Width="*" />
                         <!-- Flex space -->
                     </Grid.ColumnDefinitions>
 
@@ -235,9 +231,11 @@
                             ToolTipService.ToolTip="Get help!"
                             IsTextScaleFactorEnabled="False" />
 
-                    <!-- Spacing -->
+                    <!-- Separator -->
                     <Border Grid.Column="1"
-                            Width="4" />
+                            Width="1"
+                            Margin="4,6,4,6"
+                            Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
                     <!-- Donate Button -->
                     <Button x:Name="DonateButton"
@@ -277,28 +275,6 @@
                             BorderBrush="Transparent"
                             Click="CycleThemeButton_Click"
                             ToolTipService.ToolTip="Theme: System"
-                            IsTextScaleFactorEnabled="False" />
-
-                    <!-- Separator -->
-                    <Border Grid.Column="5"
-                            Width="1"
-                            Margin="4,6,4,6"
-                            Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
-                    <!-- Update Button -->
-                    <Button x:Name="AppUpdaterButton"
-                            Grid.Column="6"
-                            FontFamily="Segoe Fluent Icons"
-                            Style="{StaticResource SubtleButtonStyle}"
-                            Content="&#xE895;"
-                            Width="42"
-                            Height="35"
-                            CornerRadius="0"
-                            FontSize="14"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            Click="AppUpdaterButton_Click"
-                            ToolTipService.ToolTip="Check for app update"
                             IsTextScaleFactorEnabled="False" />
                 </Grid>
             </Border>
