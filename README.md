@@ -99,13 +99,10 @@ For that reason, `Emissivity Multiplier` is automatically reset to default (1.0)
   Allowing you to keep your personal favorite tuning values and quickly re-tune newer versions without having to remember everything. Just don't press the reset button by accident!
 
 - Top-left titlebar buttons in order:
-  - App Update: Checks for updates against this GitHub repository, if an update is available, it attempts to download and install the github release of the app.
   - Cycle themes: Change between dark, light, or system theme.
   - Help: Attempts to open this page, which will hold up-to-date information about the app.
   - Donate: Attempts to open the developer's Ko-Fi page.  
     When this button is hovered, an up-to-date list of Vanilla RTX Insiders is displayed. Consider supporting my projects to have your name here! (or else I have to resort to ads, dead serious)
-
-- Click the lamp 4 times consecutively to have your Minecraft startup splash arts replaced with the [correct Mojang logo](https://gist.github.com/Cubeir/3b69646ae5a0b809d8157da88a5ddb62).
 
 - The app silently retrieves PSAs from this readme file and caches it for several hours, these announcements will be displayed on startup. They are used to inform users of important Vanilla RTX or App updates, known issues, etc... and occasionally for entertainment!
 
