@@ -87,8 +87,8 @@ For that reason, `Emissivity Multiplier` is automatically reset to default (1.0)
   Resets tuning values and options to their defaults — this does not reset the pack back to its default state, to do that, you must reinstall the packages via `Reinstall latest RTX packs` or if it is a custom pack, manually reimport it to Minecraft.
 
 - `Hard Reset (Shift Key + Reset)`  
-  Wipes all of app's storage, as well as any temporary data, including: tuning options, app window state, cached pack location, cached app update files, and more..., then restarts the app.
-  Effectively makes it as if the app was just freshly installed.
+  Wipes all of app's storage, as well as any temporary data, including: cache timestamps/cooldowns, tuning options, app window state, cached pack location, cached app update files, and more..., then restarts the app.
+  Effectively makes it as if the app was just freshly installed on your system!
 
 ## Miscellaneous
 
