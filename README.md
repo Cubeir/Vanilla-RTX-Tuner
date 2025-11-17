@@ -36,7 +36,7 @@ The Vanilla RTX App includes tools to tune Vanilla RTX or any other RTX or Vibra
 
 Upon launch, the app automatically scans for already-installed Vanilla RTX packs, available packs become selectable for tuning or export.    
 If packs are installed or reinstalled through the app, or if Preview button is toggled, checkboxes refresh.
-If multiple versions of the same Vanilla RTX variant are installed, the highest version will be picked, you can select older versions manually.
+If multiple versions of the same Vanilla RTX variant are present, the highest will be picked, you can still select older versions manually from the list of local packs.
 
 - `Select a local pack`  
   Opens a menu containing a list of your installed RTX or Vibrant Visuals resource packs. You can select one pack to be tuned alongside any of the 3 primary Vanilla RTX variants.
