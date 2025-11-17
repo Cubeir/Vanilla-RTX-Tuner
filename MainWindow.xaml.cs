@@ -52,12 +52,6 @@ namespace Vanilla_RTX_App;
 
 - Add a proper, non-intrusive leave a review prompt
 
-- A way for current custom pack selection to stay visible to user, outside of logs
-Also Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
-Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
-Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
-In testing, everything works flawlessly, but you don't know why, so trace through the logic
-
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 
 - Unify the 4 places hardcoded paths are used into a class
@@ -1258,7 +1252,7 @@ public sealed partial class MainWindow : Window
 
 
 
-    public async Task LocatePacksButton_Click()
+    public async Task LocatePacksButton_Click(bool ShowLogs = false)
     {
         _ = BlinkingLamp(true, true, 1.0);
 
@@ -1287,7 +1281,10 @@ public sealed partial class MainWindow : Window
             out VanillaRTXLocation, out VanillaRTXVersion,
             out VanillaRTXNormalsLocation, out VanillaRTXNormalsVersion,
             out VanillaRTXOpusLocation, out VanillaRTXOpusVersion);
-        // Log(statusMessage);
+        if (ShowLogs)
+        {
+            Log(statusMessage);
+        }
 
         if (!string.IsNullOrEmpty(VanillaRTXLocation) && Directory.Exists(VanillaRTXLocation))
         {
@@ -1306,6 +1303,13 @@ public sealed partial class MainWindow : Window
     }
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
+        var shiftState = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
+        if (shiftState.HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+        {
+            _ = LocatePacksButton_Click(true);
+            return;
+        }
+
         ToggleControls(this, false, true, []);
 
         var packBrowserWindow = new Vanilla_RTX_App.PackBrowser.PackBrowserWindow(this);

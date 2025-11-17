@@ -306,7 +306,7 @@
                             CornerRadius="4,0,0,4"
                             BorderThickness="0"
                             IsTextScaleFactorEnabled="False"
-                            ToolTipService.ToolTip="Select a pack from your local PBR-enabled resource packs for tuning or export.">
+                            ToolTipService.ToolTip="Select a pack from your local PBR-enabled resource packs for tuning or export. Hold shift and press to see detailed status of Vanilla RTX resource pack installations">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xF78B;"
@@ -634,7 +634,7 @@
                             CornerRadius="0,4,4,0"
                             BorderThickness="0"
                             IsTextScaleFactorEnabled="False"
-                            ToolTipService.ToolTip="Resets tuning options back to their default values. Hold SHIFT to perform a hard reset of app's data.">
+                            ToolTipService.ToolTip="Resets tuning options back to their default values. Hold Shift and press to perform a hard reset of app's data.">
                     </Button>
 
                     <!-- Overlay borders for the visual split -->
