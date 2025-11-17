@@ -1,18 +1,32 @@
 # Vanilla-RTX-App
 
-All-in-one Vanilla RTX app to tune various aspects of Vanilla RTX to your preferences, easily enable Minecraft's ray tracing, automatically update the ray tracing packages for latest versions of the game, and more...  
+All-in-one Vanilla RTX app to tune various aspects of Vanilla RTX to your preferences, easily enable Minecraft's ray tracing, automatically update ray tracing packages for the latest versions of the game, and more...  
 Ensuring ray tracing is accessible to newcomers, and frictionless for existing users — despite years of neglect from Mojang.
 
 <div align="center">
-  
-![vanilla-rtx-app-cover-render](https://github.com/user-attachments/assets/44571ffe-cd1b-4004-bc7d-d99951a557e1)
-[![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud)
-[![Ko-Fi](https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
+
+  <a href="https://apps.microsoft.com/detail/9N6PCRZ5V9DJ?referrer=appbadge&mode=direct">
+    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="384"/>
+  </a>
+
+  <br>
+
+  <a href="https://ko-fi.com/cubeir">
+    <img src="https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555" alt="Ko-Fi" width="184"/>
+  </a>
+  <a href="https://discord.gg/A4wv4wwYud">
+    <img src="https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3" alt="Discord", width = "184"/>
+  </a>
+
+  <br>
+
+  <img src="https://github.com/user-attachments/assets/5b95f170-a683-4c51-b175-4abd4c401a19" alt="vanilla-rtx-app-cover-render"/>
+
 </div>
 
 # Overview
 
-Below you'll find a list of features and documentation of functionalities included in the latest version of the app.   
+Below you'll find an up-to-date list of features and documentation of functionalities included in the app.   
 
 - `Launch Minecraft with RTX`  
   Launches Minecraft with ray tracing pre-enabled, additionally disables VSync for better performance and enables in-game graphics mode switching, this circumvents issues such as these that make enabling ray tracing difficult:    
@@ -93,50 +107,23 @@ For that reason, `Emissivity Multiplier` is automatically reset to default (1.0)
 
 ## Miscellaneous
 
-- Hovering any control in the app displays unique artwork communicating its function, sliders show how they should impact the textures in-game as you change them, toggles show before/after, and buttons display an artistic interpretation of what the they do!
-  In combination with tooltips, this is meant to help make the app less intimidating/more newbie-friendly.  
+- Hovering any control in the app displays a unique Minecraft-inspired artwork communicating its function in the bottom left side of the app, for instance, sliders show how they should impact the textures in-game as you change them, toggles show before/after, and buttons display an artistic interpretation of what the they do!
+  In combination with tooltips, this is meant to help make the app less intimidating and more newbie-friendly!  
 
 - The app persists tuning options, slider values, Preview toggle, and theme selection between sessions.  
   Allowing you to keep your personal favorite tuning values and quickly re-tune newer versions without having to remember everything. Just don't press the reset button by accident!
 
 - Top-left titlebar buttons in order:
   - Cycle themes: Change between dark, light, or system theme.
-  - Help: Attempts to open this page, which will hold up-to-date information about the app.
-  - Donate: Attempts to open the developer's Ko-Fi page.  
-    When this button is hovered, an up-to-date list of Vanilla RTX Insiders is displayed. Consider supporting my projects to have your name here! (or else I have to resort to ads, dead serious)
+  - Help: Opens this page, which will hold up-to-date information about the app.
+  - Donate: Opens the developer's Ko-Fi page.  
+    When this button is hovered, an up-to-date list of Vanilla RTX Insiders is displayed. I'm able to maintain my projects thanks to them. Consider becoming a supporter to have your name there! (or else I have to resort to ads, dead serious!)
 
-- The app silently retrieves PSAs from this readme file and caches it for several hours, these announcements will be displayed on startup. They are used to inform users of important Vanilla RTX or App updates, known issues, etc... and occasionally for entertainment!
-
-## Installation Guide
-
-### Option 1: Microsoft Store Install (Recommended)
-Soon™️
-
-### Option 2: Quick Install (GitHub Version)
-
-> **Prerequisites:**    
-> 1. Requires [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) for Windows (64-bit).   
-> In most cases, it installs automatically with the `.msix`. If that is failing, try installing it manually from the link above.   
-> 2. Windows [App Installer](https://learn.microsoft.com/en-us/windows/msix/app-installer/install-update-app-installer) to open `.msix` packages.  
-
-1. [Download the latest package](https://github.com/Cubeir/Vanilla-RTX-Tuner/releases) from releases and unzip the `Vanilla.RTX.Tuner.WinUI_[version].zip` file.
-2. **Right-click** `Installer.bat` and select **Run as administrator**.
-3. The script will:
-   - Automatically install the required certificate to the Trusted People store (Local Machine).
-   - Launch the `.msix` package for installation. Once here, in the Windows App Installer click `Install`.
-
-> Future `.msix` packages signed by Cubeir should remain trusted, allowing you to open the `.msix` directly.
-
-### Option 3: Build It Yourself
-
-1. Clone this repository or download the source code.
-2. Open the solution in Visual Studio 2022.
-3. Enable Developer Mode in Windows (if not already).
-4. Build — the app should auto-install. 
+- The app occasionally displays announcements from this readme file and caches it for several hours, these announcements will be shown on startup. They are used to inform users of important Vanilla RTX or App updates, known issues, etc... and sometimes for entertainment!
 
 ### Need help?
 
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
 
 ### PSA
-Vanilla RTX Tuner is dead! Long live Tuner! -- Kidding! The app is being rebranded to Vanilla RTX App soon followed with a ginormous 2.0 release, stay *tuned*! (Haha!)
+Bye Bye Tuner! Vanilla RTX App is here a fresh coat of paint and more capable than ever! Be sure to get the new app from the Microsoft Store!
