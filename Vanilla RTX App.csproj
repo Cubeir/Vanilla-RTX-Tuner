@@ -939,7 +939,7 @@
     <AppxBundle>Auto</AppxBundle>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageDir>C:\Users\Administrator\Desktop\</AppxPackageDir>
-    <PackageCertificateThumbprint>3588B0B93277B31455632323E8F10AE4529C1222</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>1426D6CA9C80678225E501154069D87676C19DC6</PackageCertificateThumbprint>
     <SignAssembly>False</SignAssembly>
     <Copyright>All Rights Reserved.</Copyright>
     <PackageProjectUrl>https://github.com/Cubeir/Vanilla-RTX-App</PackageProjectUrl>
