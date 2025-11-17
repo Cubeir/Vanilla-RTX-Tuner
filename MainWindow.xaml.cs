@@ -52,14 +52,11 @@ namespace Vanilla_RTX_App;
 
 - Add a proper, non-intrusive leave a review prompt
 
-- Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
+- A way for current custom pack selection to stay visible to user, outside of logs
+Also Test Potential Edge cases relating to pack locating, custom pack locating, and checkboxes of it
 Something feels off not seeing that "Found - version" log, but you had to remove it for brevity
 Add it back maybe -- does the current code really gurantee Vanilla RTX remaining located?
 In testing, everything works flawlessly, but you don't know why, so trace through the logic
-
-There may be issues after rebranding within the app, thorough testing of all areas is needed
-
-- A way for current custom pack selection to stay visible to user, outside of logs
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 
@@ -68,9 +65,6 @@ pack updater, pack locator, pack browser, launcher, they deal with hardcoded pat
 
 - Expose as many params as you can to a json in app's root
 the hard URLs the app sends requests to + the hardcoded Minecraft paths
-
-ALSO: No need for a Vanilla RTX update checker, it is a triangle you can't quite figure between cache, remote and installed version
-Instead the cleaner way would be to utilize the existing PSA Retriever to inform users of new updates!
 
 Additionally, while going through params, 
 Check your github RAW and API urls, usage patterns (caching, and cooldowns)

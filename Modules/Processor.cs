@@ -127,7 +127,7 @@ public class Processor
     // Also make them log any oddities in Vanilla RTX (whether it be size, opacity, etc...) as warnings, serves dual purpose that way
     #region ------------------- Processors
 
-
+    // TODO: Further test this, it might be throwing colors off-balance in Vanilla RTX
     private static void ProcessFog(PackInfo pack, bool processWaterOnly = false)
     {
         const double MIN_VALUE_THRESHOLD = 0.00000001; // Below this becomes zero
