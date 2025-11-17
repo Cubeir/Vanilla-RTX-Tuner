@@ -23,6 +23,7 @@ namespace Vanilla_RTX_App.Core;
 /// Deployment deletes any pack that matches UUIDs as defined at the begenning of PackLocator class
 /// =====================================================================================================================
 
+// Implement Opus once or if Opus is out on GH
 public class PackUpdater
 {
     private const string VANILLA_RTX_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
@@ -35,7 +36,7 @@ public class PackUpdater
 
     // For cooldown of checking for update to avoid spamming github
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
-    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(90);
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -602,7 +603,7 @@ public class CreditsUpdater
     private const string CREDITS_TIMESTAMP_KEY = "CreditsTimestamp";
     private const string CREDITS_LAST_SHOWN_KEY = "CreditsLastShown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
-    private const int CACHE_UPDATE_COOLDOWN_DAYS = 1;
+    private const int CACHE_UPDATE_COOLDOWN_DAYS = 2;
     private const int DISPLAY_COOLDOWN_DAYS = 0;
 
     public static string Credits { get; private set; } = string.Empty;
@@ -820,7 +821,7 @@ public class PSAUpdater
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-App/master/README.md";
     private const string CACHE_KEY = "PSAContentCache";
     private const string TIMESTAMP_KEY = "PSALastCheckedTimestamp";
-    private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(2);
+    private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(4);
 
     public static async Task<string?> GetPSAAsync()
     {
