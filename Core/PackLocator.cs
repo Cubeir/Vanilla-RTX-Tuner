@@ -16,7 +16,7 @@ public class PackLocator
     public const string VANILLA_RTX_OPUS_MODULE_UUID = "be0b22f0-ad13-4bbd-81ba-b457fd9e38b8";
 
     // Change the minimum version of Vanilla RTX packs detected by Tuner
-    private static readonly int[] MinVersion = new int[] { 1, 21, 150 };
+    private static readonly int[] MinVersion = new int[] { 1, 0, 0 };
 
     public static string LocatePacks(bool isTargetingPreview,
     out string vanillaRTXLocation, out string vanillaRTXVersion,
@@ -110,8 +110,6 @@ public class PackLocator
                     (int)(verArray?[1] ?? 0),
                     (int)(verArray?[2] ?? 0)
                 };
-
-                    // Only consider packs >= 1.21.150
                     if (CompareVersion(version, MinVersion) < 0)
                         continue;
 
