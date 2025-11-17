@@ -1303,10 +1303,12 @@ public sealed partial class MainWindow : Window
     }
     private void BrowsePacksButton_Click(object sender, RoutedEventArgs e)
     {
-        var shiftState = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift);
-        if (shiftState.HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+        var shiftPressed = Microsoft.UI.Input.InputKeyboardSource
+                                .GetKeyStateForCurrentThread(VirtualKey.Shift)
+                                .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        _ = LocatePacksButton_Click(shiftPressed);
+        if (shiftPressed)
         {
-            _ = LocatePacksButton_Click(true);
             return;
         }
 
