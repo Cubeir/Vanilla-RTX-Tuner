@@ -35,7 +35,8 @@ Below you'll find a list of features and documentation of functionalities includ
 The Vanilla RTX App includes tools to tune Vanilla RTX or any other RTX or Vibrant Visuals resource pack according to your preferences. Tuning options use algorithms designed to protect the artist's original work with PBR textures, making it difficult to accidentally destroy the pack's intended look. The whole tuning process works together with the app's other features to keep the experience streamlined.
 
 Upon launch, the app automatically scans for already-installed Vanilla RTX packs, available packs become selectable for tuning or export.    
-If packs are installed or reinstalled through the app, or if Preview button is toggled, scans will repeat.
+If packs are installed or reinstalled through the app, or if Preview button is toggled, checkboxes refresh.
+If multiple versions of the same Vanilla RTX variant are installed, the highest version will be picked, you can select older versions manually.
 
 - `Select a local pack`  
   Opens a menu containing a list of your installed RTX or Vibrant Visuals resource packs. You can select one pack to be tuned alongside any of the 3 primary Vanilla RTX variants.
