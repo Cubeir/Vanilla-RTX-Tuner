@@ -1,86 +1,129 @@
-# Vanilla-RTX-Tuner
+# Vanilla-RTX-App
 
-All-in-one app to tune various aspects of Vanilla RTX to your preferences, automatically update Vanilla RTX ray tracing packages, launch Minecraft with RTX easily, and more...
+All-in-one Vanilla RTX app to tune various aspects of Vanilla RTX to your preferences, easily enable Minecraft's ray tracing, automatically update the ray tracing packages for latest updates of the game, and more...
 
-⚠️ [Vanilla RTX +1.21.150 Only](https://github.com/Cubeir/Vanilla-RTX)  
-⚠️ Requires Windows 10 20H1 (May 2020) or later
-
-
+<div align="center">
+  
+![vanilla-rtx-app-cover-render](https://github.com/user-attachments/assets/44571ffe-cd1b-4004-bc7d-d99951a557e1)
 [![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud)
 [![Ko-Fi](https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
-
-![vanilla rtx tuner render 1 2](https://github.com/user-attachments/assets/fa30f80f-8863-4159-b53c-55797113974b)
+</div>
 
 # Overview
 
-Below you'll find a comprehensive list of features and functionalities included in the latest version of the app.   
+Below you'll find a comprehensive list of features with full documentation of functionalities included in the latest version of the app.   
 
-- **`Launch Minecraft RTX`**  
-  Launches Minecraft with ray tracing pre-enabled by updating the game’s `options.txt` file. Additionally disables VSync for better performance, this is a direct workaround for the following issues:  
+- `Launch Minecraft with RTX`  
+  Launches Minecraft with ray tracing pre-enabled, additionally disables VSync for better performance and enables in-game graphics mode switching, this is a direct workaround for issues such as these and more that make enabling ray tracing difficult:    
   [MCPE-191513](https://bugs.mojang.com/browse/MCPE/issues/MCPE-191513): Ray tracing can no longer be enabled while in the main menu.  
   [MCPE-152158](https://bugs.mojang.com/browse/MCPE/issues/MCPE-152158): PBR textures don't load properly upon enabling ray tracing after the game is freshly launched.  
   [MCPE-121850](https://bugs.mojang.com/browse/MCPE/issues/MCPE-121850): Ray Tracing performance starvation when VSync is enabled.
 
-- **`Reinstall Latest Packages`**  
-  Downloads and reinstalls the latest Vanilla RTX & Vanilla RTX Normals packages from the [Vanilla RTX GitHub repository](https://github.com/cubeir/Vanilla-RTX), redeploys from cache unless a new update is available.
+- `Install latest RTX packages`  
+  Downloads and (re)installs the latest Vanilla RTX & Vanilla RTX Normals packages directly from the [Vanilla RTX GitHub repository](https://github.com/cubeir/Vanilla-RTX) — no more third party websites!  
+  The file is then cached and further reinstallations are deployed from cache unless a new Vanilla RTX is available, this serves two main purposes: first to reset the packs back to original state if tuning doesn't go well, allowing you to rapidly experiment and learn what the tuning options do by doing, and second it ensures you're always getting the latest version of Vanilla RTX, acting as an auto-updater.
 
-- **`Export Selection`**  
-  Exports selected packs. Useful for sharing tuned packs with friends or backing up your snapshot of the pack before making more changes.
+- `Preview (Toggle)`  
+  All of the app's functionalities are targeted at Preview/Beta version of Minecraft instead of main release while  `Preview` is toggled on.
+  
+- `Export selection`  
+  Exports selected packs. Useful for backing up your snapshot of the pack before making more changes, or share your tuned version of Vanilla RTX or another PBR resource pack with friends!
 
-- **Minecraft Preview support**  
-  All of the app's functionality is targeted at Preview/Beta version of Minecraft while  `Preview` button is active.
-## Tuning
-- **`Locate Vanilla RTX`**  
-  Locates all currently-installed Vanilla RTX versions. Present packs become selectable for tuning, exporting, etc...
-  If multiple versions of the same pack are installed, only the most recent version will be picked up.
+- `Vanilla RTX | Vanilla RTX Normals | Vanilla RTX Opus` checkboxes   
+Upon launch, the app automatically scans for already-installed Vanilla RTX packs, checkboxes for available packs become selectable for tuning or export.    
+If packs are installed or reinstalled through the app, or if Preview button is toggled, scans will be repeated for the selected version of the game.
+  
+## Tuner
 
-- **`Fog Multiplier`**  
-  Updates all fog densities by a given number — e.g., `0.5` to halve, `3.0` to triple, or `0` to effectively disable air fog. If a fog density is already at 0, the multiplier is converted into an acceptable literal number between `0.0-1.0`.
-  If fog density is at maximum, excess of the multiplier will be used to scatter more light in the atmosphere.
+The Vanilla RTX App comes with several tools to tune Vanilla RTX (or any other RTX or Vibrant Visuals resource pack of your choice) according to your preferences.  
+Tuning options come with minimal complexity and use specialized algorithms that make it especially difficult to destroy or derail artist's work with the PBR textures.  
+The whole tuning process works with the other features in the app to keep the whole experience streamlined and frictionless.  
+
+- `Select a local pack`  
+  Opens a menu containing a list of your installed RTX or Vibrant Visuals resource packs. You can select one pack to be tuned alongside any of the 3 primary Vanilla RTX variants.
+
+- `Fog multiplier`  
+  Updates all fog densities by a given number — e.g., `0.5` to halve, `3.0` to triple, or `0` to effectively disable air fog. If a fog density is already at 0, the multiplier is instead converted into an acceptable literal number between `0.0-1.0`.
+  If fog density is at maximum, excess of the multiplier will be used to scatter more light in the atmosphere. Underwater fog is affected partially to a much lesser degree.
   
   ![fog-panel](https://github.com/user-attachments/assets/a865a95c-f436-47f9-a56f-ec17c75e1fb0)
 
-- **`Emissivity Multiplier`**  
-  Multiplies emissivity on blocks using a special formula that keeps the color composition intact, even when the multiplier is too high for a particular block.
+- `Emissivity multiplier`  
+  Multiplies emissivity on blocks using a special formula that preserves the relative emissive values and keeps the composition intact, even if the multiplier is too high for a particular block.
   
   ![street-default-vanilla-rtx](https://github.com/user-attachments/assets/bc5af2b1-8dd3-47fc-8344-15bce477ba5d)
   ![street-3x-emissivity-tuned-vanilla-rtx](https://github.com/user-attachments/assets/a545d9c2-2890-46b3-b5f6-3cea7d98e13e)
 
-- **`Increase Ambient Light`**  
-Adds a small amount of emissivity to all surfaces, effectively increasing ambient light.
-This works in conjunction with the Emissivity Multiplier — higher multipliers (e.g. 6.0) will amplify the effect.
+- `Increase ambient light`  
+Adds a small amount of emissivity to all surfaces, effectively increasing ambient light with ray tracing. With vibrant visuals this may result in a nightvision effect.  
+This options works in conjunction with the Emissivity Multiplier — higher multipliers (e.g. 6.0) will amplify the effect.
 Because changes stack on each tuning attempt, only use this once on freshly installed packs, and avoid setting higher emissivity multipliers on further consecutive tuning attempts.  
-`Emissivity Multiplier` is automatically reset to default (1.0) if previous tuning attempt has had this option enabled.
+For that reason, `Emissivity Multiplier` is automatically reset to default (1.0) if previous tuning attempt has had this option enabled.
 
-- **`Normal Intensity Adjustment`**  
-  Updates normal map intensity using a similar formula as the Emissive Multiplier, preserving relative intensity composition even at high percentage increases.
+- `Normal intensity adjustment`  
+  Adjusts normal map and heightmap intensities.
+  A value of 0 will flatten the textures in any given PBR resource pack. Larger values will increase the intensity of normal maps on blocks  This is done through an special algorithm that makes it impossible to lose relative intensity data even with extreme values.
 
-- **`Material Grain Offset`**  
+- `Material grain offset`  
   Creates grainy materials by adding a layer of noise, user input determines the maximum deviation.
   This is done in a safe manner with a special algorithm that makes it nearly impossible to take away from the pack's intended look.
-  Additionally, noise patterns persist throughout animated textures.
+  Examples:
+  Emissives, subtle or extreme values are affected much less by the noise, additionally, noise patterns persist throughout animated textures and texture variations (e.g. a redstone lamp off and redstone lamp on retain the same PBR noise)
+  The noise is random with a subtle checkerboard pattern that mimics the noise on PBR textures seen in Vibrant Visuals, giving the pack a slightly fresh look each time noise is newly applied!
   
-- **`Roughen Up`**  
-  Increases roughness on materials using a decaying curve function to impact glossy surfaces more than rough surfaces, allowing alignment with Vibrant Visuals' artstyle.
+- `Roughen up`  
+  Increases roughness on materials using a decaying curve function to impact glossy surfaces more than rough surfaces, allowing alignment with Vibrant Visuals' PBR artstyle.
   
-- **`Butcher Heightmaps`**  
-  Uses a modified color texture to make the heightmaps less refined and more noisy. The given number determines effectiveness `(0 = no change, 255 = fully lazy heightmaps)`.
+- `Butcher heightmaps`  
+  Uses a modified color texture to make the heightmaps less refined and lazier. The given number determines effectiveness `(0 = no change, 255 = fully lazy heightmaps)`.
+  > Note: Assuming the pack isn't already shoddy, a value of 1-10 can be a nice choice!
 
-- **`Tune Selection`**  
-  Begins the tuning process with your current settings. Packages are processed locally.
-  Changes you make are permanent unless the pack is updated or freshly reinstalled.
+- `Tune selection`  
+  Begins the tuning process with your current settings and pack selections (Checked Vanilla RTX packages + one other local pack, if any was selected)
+  Packages are then processed locally, as such changes you made are permanent, unless the pack is updated or freshly reinstalled.
 
-- **`Reset`**  
-  Resets tuning numbers and options to their defaults — this does not reset the pack back to its default state, to do that use `Reinstall Latest Packs` button
+> These tools can be extraorindarly powerful when used correctly on the right pack, for instance, PBR textures in Vanilla RTX can be processed to fully match the "style" of Mojang's Vibrant Visuals or most other vanilla PBR resource packs, **but this statement won't be true the other way around!**  
+
+- `Clear Selection` 
+  Clears the Vanilla RTX and custom pack selections, as if you just booted up the app!
+
+- `Reset`  
+  Resets tuning values and options to their defaults — this does not reset the pack back to its default state, to do that, you must reinstall the packages via `Reinstall latest RTX packs` or if it is a custom pack, manually reimport it to Minecraft.
+
+- `Hard Reset (Shift Key + Reset)`  
+  Wipes all of app's storage, as well as any temporary data, including: tuning options, app window state, cached pack location, cached app update files, and more..., then restarts the app.
+  Effectively makes it as if the app was just freshly installed.
+
+## Miscellaneous
+
+- Hovering any control in the app displays a unique art piece to help visually communicate their functionality, sliders show how they should impact the textures in-game as you change them, toggles show before/after, and buttons display an artistic interpretation of what the they do!
+In combination with tooltips, this is meant to help make the app less intimidating and newbie-friendly.  
+
+- Persistence of tuning options and slider values, Preview toggle, and theme selection between sessions
+This allows you to keep your personal favorite tuning values and quickly re-tune newer versions without having to remember everything. Just don't press the reset button by accident!
+
+- Top-left titlebar buttons in order:
+  - App Update: Checks for updates against this GitHub repository, if an update is available, it attempts to download and install the github release of the app.
+  - Cycle themes: Change beween dark, light, or system theme.
+  - Help: Attempts to open this page, which will hold up-to-date information about the app.
+  - Donate: Attempts to open the developer's Ko-Fi page.  
+    When this button is hovered, an up-to-date list of Vanilla RTX Insiders is displayed. Consider supporting my projects to have your name here! (or else I have to resort to ads, dead serious!)
+
+- Click the lamp 4 times consecutively to have your Minecraft startup splash arts replaced with the [correct Mojang logo](https://gist.github.com/Cubeir/3b69646ae5a0b809d8157da88a5ddb62).
+
+
 
 ## Installation Guide
+
+### Option 1: Microsoft Store Install (Recommended)
+Soon™️
+
+### Option 2: Quick Install (GitHub Version)
 
 > **Prerequisites:**    
 > 1. Requires [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) for Windows (64-bit).   
 > In most cases, it installs automatically with the `.msix`. If that is failing, try installing it manually from the link above.   
 > 2. Windows [App Installer](https://learn.microsoft.com/en-us/windows/msix/app-installer/install-update-app-installer) to open `.msix` packages.  
-
-### Option 1: Quick Install (Recommended)
 
 1. [Download the latest package](https://github.com/Cubeir/Vanilla-RTX-Tuner/releases) from releases and unzip the `Vanilla.RTX.Tuner.WinUI_[version].zip` file.
 2. **Right-click** `Installer.bat` and select **Run as administrator**.
@@ -89,17 +132,6 @@ Because changes stack on each tuning attempt, only use this once on freshly inst
    - Launch the `.msix` package for installation. Once here, in the Windows App Installer click `Install`.
 
 > Future `.msix` packages signed by Cubeir should remain trusted, allowing you to open the `.msix` directly.
-
-### Option 2: Manual Certificate Import
-
-1. Download and extract the latest release `.zip` package from [here](https://github.com/Cubeir/Vanilla-RTX-Tuner/releases).
-2. Open the accompanying certificate file.
-3. Click **Install Certificate**.
-4. Select **Local Machine** > Next.
-5. Choose **Place all certificates in the following store**, click **Browse**.
-6. Select **Trusted People**, then OK.
-7. Click Next > Finish.
-8. You can now install the .msix package.
 
 ### Option 3: Build It Yourself
 
@@ -113,4 +145,4 @@ Because changes stack on each tuning attempt, only use this once on freshly inst
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
 
 ### PSA
-Vanilla RTX Tuner is dead! Long live Tuner! -- Kidding! The app is being renamed soon with a gigantic 2.0 release, stay tuned!
+Vanilla RTX Tuner is dead! Long live Tuner! -- Kidding! The app is being rebranded to Vanilla RTX App soon followed with a ginormous 2.0 release, stay *tuned*! (Haha!)
