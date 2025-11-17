@@ -56,6 +56,7 @@ If multiple versions of the same Vanilla RTX variant are present, the highest wi
 
 - `Select a local pack`  
   Opens a menu containing a list of your installed RTX or Vibrant Visuals resource packs. You can select one pack to be tuned alongside any of the 3 primary Vanilla RTX variants.
+  Holding shift while pressing this button will instead trigger a Vanilla RTX version check which will be written in the sideebar logs.
 
 - `Fog multiplier`  
   Updates all fog densities by a given factor — e.g., `0.5` to halve, `3.0` to triple, or `0` to effectively disable air fog. If a fog density is already at 0, the multiplier is instead converted into an acceptable literal number between `0.0-1.0`.
