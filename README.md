@@ -126,4 +126,4 @@ For that reason, `Emissivity Multiplier` is automatically reset to default (1.0)
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
 
 ### PSA
-Bye Bye Tuner! Vanilla RTX App is here a fresh coat of paint and more capable than ever! Be sure to get the new app from the Microsoft Store!
+Bye Bye Tuner! Vanilla RTX App is here with a fresh coat of paint and more capable than ever! Be sure to get the new app from the Microsoft Store!
