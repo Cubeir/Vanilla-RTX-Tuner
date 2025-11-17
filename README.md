@@ -3,26 +3,28 @@
 All-in-one Vanilla RTX app to tune various aspects of Vanilla RTX to your preferences, easily enable Minecraft's ray tracing, automatically update ray tracing packages for the latest versions of the game, and more...  
 Ensuring ray tracing is accessible to newcomers, and frictionless for existing users — despite years of neglect from Mojang.
 
-<div align="center">
+<div>
 
-  <a href="https://apps.microsoft.com/detail/9N6PCRZ5V9DJ?referrer=appbadge&mode=direct">
-    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="384"/>
-  </a>
+  <!-- Horizontal badges row -->
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <a href="https://apps.microsoft.com/detail/9N6PCRZ5V9DJ?referrer=appbadge&mode=direct">
+      <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="350"/>
+    </a>
+    <a href="https://ko-fi.com/cubeir">
+      <img src="https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555" alt="Ko-Fi" width="150"/>
+    </a>
+    <a href="https://discord.gg/A4wv4wwYud">
+      <img src="https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3" alt="Discord" width="150"/>
+    </a>
+  </div>
 
-  <br>
-
-  <a href="https://ko-fi.com/cubeir">
-    <img src="https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555" alt="Ko-Fi" width="184"/>
-  </a>
-  <a href="https://discord.gg/A4wv4wwYud">
-    <img src="https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3" alt="Discord", width = "184"/>
-  </a>
-
-  <br>
-
-  <img src="https://github.com/user-attachments/assets/5b95f170-a683-4c51-b175-4abd4c401a19" alt="vanilla-rtx-app-cover-render"/>
+  <!-- Cover image, centered -->
+  <div style="text-align: center; margin-top: 16px;">
+    <img src="https://github.com/user-attachments/assets/5b95f170-a683-4c51-b175-4abd4c401a19" alt="vanilla-rtx-app-cover-render"/>
+  </div>
 
 </div>
+
 
 # Overview
 
