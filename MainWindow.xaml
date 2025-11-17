@@ -542,7 +542,7 @@
                 </Grid>
             </Border>
 
-            <!-- Sliders Grid with shadow -->
+            <!-- =============== Sliders Grid with shadow =============== -->
             <Border x:Name="SlidersGridShadowHost"
                     Margin="16,112,24,102"
                     Translation="0,0,0"
@@ -976,7 +976,7 @@
                     </Grid>
                 </StackPanel>
             </Grid>
-            <!-- End of Sliders Grid-->
+            <!-- =============== End of Sliders Grid =============== -->
 
             <!-- Bottom Buttons Grid 2x2 with shadow -->
             <Border x:Name="BottomButtonsShadowHost"
@@ -1177,6 +1177,8 @@
 
 
             </Grid>
+            
+            
         </Grid>
     </Grid>
 </Window>

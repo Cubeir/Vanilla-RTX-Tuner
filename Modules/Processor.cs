@@ -141,7 +141,7 @@ public class Processor
             .Where(d => string.Equals(Path.GetFileName(d), "fogs", StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        if (!fogDirectories.Any())
+        if (!fogDirectories.Any() && processWaterOnly == false)
         {
             MainWindow.Log($"{pack.Name}: does not contain fog files.");
             return;
