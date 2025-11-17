@@ -17,7 +17,7 @@ public static class MojankMessages
         "You're one click away from the akashic records.",
         "You're poking... something...",
         "The next click can't be undone!\njust kidding.",
-        "Bold move, curious one. The truth of Mojang awaits.",
+        "Bold move, curious one. The truth awaits.",
         "I wouldn't stop there if I were you.",
         "You've gone too far to pretend you didn't mean it.",
         "Strange things happen to those who click too much.",
@@ -32,7 +32,7 @@ public static class MojankMessages
         "Toss a coin into your sense of judgment.",
         "You were warned not to push that button, Dovahkiin.",
         "Some of these lines are cheesy at best, BUT",
-        "War never changes. Neither does Mojang's non-existent QA.",
+        "War never changes. Neither does Mojang's QA.",
         "Predatory practices are their creed. Continue and find out who.",
         "Mojank Studios! Where elevating slop takes a backseat to game's development.",
         "I love Minecraft! guess who doesn't?"

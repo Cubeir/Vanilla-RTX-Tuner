@@ -1133,7 +1133,7 @@ public class Processor
     }
 
 
-
+    // Make it lower metalness in proportion to the increase in roughness -- that way it can truly align with VV's style
     private static void ProcessRoughingUp(PackInfo pack)
     {
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
