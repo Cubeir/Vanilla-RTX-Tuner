@@ -38,8 +38,8 @@ public class PackUpdater
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
     private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(90);
 
-    // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal
-    public string EnhancementFolderName { get; set; } = "_enhancements";
+    // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal.
+    public string EnhancementFolderName { get; set; } = "__enhancements";
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -550,8 +550,6 @@ public class PackUpdater
             LogMessage($"No '{EnhancementFolderName}' folders found.");
             return;
         }
-
-        LogMessage($"Found {enhancementFolders.Count} '{EnhancementFolderName}' folder(s).");
 
         foreach (var enhancementPath in enhancementFolders)
         {
