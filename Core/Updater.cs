@@ -23,7 +23,7 @@ namespace Vanilla_RTX_App.Core;
 /// Deployment deletes any pack that matches UUIDs as defined at the begenning of PackLocator class
 /// =====================================================================================================================
 
-// Implement Opus once or if Opus is out on GH
+// TODO: Implement Opus once it is on GH
 public class PackUpdater
 {
     private const string VANILLA_RTX_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
@@ -37,6 +37,9 @@ public class PackUpdater
     // For cooldown of checking for update to avoid spamming github
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
     private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(90);
+
+    // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal
+    public string EnhancementFolderName { get; set; } = "_enhancements";
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -369,6 +372,8 @@ public class PackUpdater
 
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtx");
                 Directory.Move(vanillaRTXSrc, finalDestination);
+
+                ProcessEnhancementFolders(finalDestination);
             }
 
             if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
@@ -377,7 +382,11 @@ public class PackUpdater
 
                 var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtxn");
                 Directory.Move(vanillaRTXNormalsSrc, finalDestination);
+
+                ProcessEnhancementFolders(finalDestination);
             }
+
+
 
             success_status = true;
             return true;
@@ -519,6 +528,70 @@ public class PackUpdater
         catch
         {
             return null;
+        }
+    }
+
+
+
+    // ---------- Enhanced option enabler
+    private void ProcessEnhancementFolders(string rootDirectory)
+    {
+        if (string.IsNullOrEmpty(EnhancementFolderName))
+        {
+            return; // Skip if no folder name is specified
+        }
+
+        // Find all directories with the specified name recursively
+        var enhancementFolders = Directory.GetDirectories(rootDirectory, EnhancementFolderName, SearchOption.AllDirectories)
+                                          .ToList();
+
+        if (enhancementFolders.Count == 0)
+        {
+            LogMessage($"No '{EnhancementFolderName}' folders found.");
+            return;
+        }
+
+        LogMessage($"Found {enhancementFolders.Count} '{EnhancementFolderName}' folder(s).");
+
+        foreach (var enhancementPath in enhancementFolders)
+        {
+            try
+            {
+                // Get the parent directory
+                string parentDirectory = Directory.GetParent(enhancementPath).FullName;
+
+                LogMessage($"Processing {EnhancementFolderName} at: {enhancementPath}");
+
+                // Copy contents
+                CopyDirectoryContents(enhancementPath, parentDirectory);
+
+                // Delete
+                ForceWritable(enhancementPath);
+                Directory.Delete(enhancementPath, true);
+
+                LogMessage($"✅ Successfully processed and removed '{EnhancementFolderName}' folder.");
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"⚠️ Error processing '{EnhancementFolderName}' folder at {enhancementPath}: {ex.Message}");
+            }
+        }
+    }
+    private void CopyDirectoryContents(string sourceDir, string destDir)
+    {
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            string fileName = Path.GetFileName(file);
+            string destFile = Path.Combine(destDir, fileName);
+            File.Copy(file, destFile, true); // overwrite
+            LogMessage($"  Copied file: {fileName}");
+        }
+        foreach (var subDir in Directory.GetDirectories(sourceDir))
+        {
+            string dirName = Path.GetFileName(subDir);
+            string destSubDir = Path.Combine(destDir, dirName);
+            Directory.CreateDirectory(destSubDir);
+            CopyDirectoryContents(subDir, destSubDir);
         }
     }
 

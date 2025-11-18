@@ -37,6 +37,8 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
+- Integerate BetterRTX if possible
+
 - Make frequency of startup PSAs less, once every 15 minutes
 
 - change lang to en from en-us? does it matter really? prolly not
