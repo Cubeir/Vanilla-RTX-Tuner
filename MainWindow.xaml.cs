@@ -31,20 +31,7 @@ using Microsoft.UI.Xaml.Input;
 using static Vanilla_RTX_App.Core.WindowControlsManager;
 using static Vanilla_RTX_App.TunerVariables;
 using static Vanilla_RTX_App.TunerVariables.Persistent;
-/*
-* Documentation
-* Resource packs only end up in shared
-* Options file is in both shared and non-shared, but non-shared is presumably the one that takes priority, still, we take care of both
-* PackLocator, PackUpdater (deployer), Browse Packs, and LaunchMinecraftRTX's options.txt updater are the only things that rely on hardcoded paths on the system
-* Tuner updates are checked against latest github release
-* Ko-Fi member names when hovering donate button are retrieved from raw readme file of Vanilla RTX on GitHub (Specifically, any text between ### credits until "——" (double em dash) is encountered.)
-* Announcements will be picked from github readme, anything after ### PSA
-* Vanilla RTX Updates are delivered from its github repository, and rely on valid manifests residing in root/Vanilla-RTX and root/Vanilla-RTX-Normals
-* A zip is always retrieved on the first reinstallation attempt, the zip is then cached, any future reinstallation attempt checks for version differences of what you have cached vs the one on the remote 
-* So the pack won't be redownloaded when an update isn't available.
-* The naming convention for packages on github must remain the same or else the autoupdater's backward compatibility will break.
-* 
-*/
+
 namespace Vanilla_RTX_App;
 
 /*
@@ -65,6 +52,9 @@ pack updater, pack locator, pack browser, launcher, they deal with hardcoded pat
 
 - Expose as many params as you can to a json in app's root
 the hard URLs the app sends requests to + the hardcoded Minecraft paths
+* Resource packs only end up in shared
+* Options file is in both shared and non-shared, but non-shared is presumably the one that takes priority, still, we take care of both
+* PackLocator, PackUpdater (deployer), Browse Packs, and LaunchMinecraftRTX's options.txt updater are the only things that rely on hardcoded paths on the system
 
 Additionally, while going through params, 
 Check your github RAW and API urls, usage patterns (caching, and cooldowns)
