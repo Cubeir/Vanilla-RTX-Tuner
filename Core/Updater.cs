@@ -414,13 +414,8 @@ public class PackUpdater
 
             LogMessage($"📦 Found {packsToProcess.Count} pack(s) in cache: {string.Join(", ", packsToProcess.Select(p => p.displayName))}");
 
-            // Step 3: Get all existing manifests (excluding current temp extraction)
-            ForceWritable(resourcePackPath);
-            var existingManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories)
-                .Where(manifestPath => !manifestPath.StartsWith(tempExtractionDir, StringComparison.OrdinalIgnoreCase))
-                .ToList();
 
-            // Step 4: Process each pack atomically (delete old → move new)
+            // Step 4: Atomic deployment for each pack
             foreach (var pack in packsToProcess)
             {
                 try
@@ -428,7 +423,7 @@ public class PackUpdater
                     LogMessage($"🔄 Processing {pack.displayName}...");
 
                     // Atomic operation: Delete old, then immediately move new
-                    await DeleteExistingPackByUUID(existingManifests, resourcePackPath,
+                    await DeleteExistingPackByUUID(resourcePackPath,
                         pack.uuid, pack.moduleUuid, pack.displayName);
 
                     var finalDestination = GetSafeDirectoryName(resourcePackPath, pack.finalName);
@@ -470,35 +465,27 @@ public class PackUpdater
                 }
             }
 
-            // Step 6: Clean up orphaned temp directories (GUIDs without dashes)
+            // Step 6: Clean up orphaned temp directories (like from crashes)
             if (resourcePackPath != null)
             {
+                var cutoff = DateTime.UtcNow.AddMinutes(-5);
                 try
                 {
-                    var allDirs = Directory.GetDirectories(resourcePackPath, "*", SearchOption.TopDirectoryOnly);
-                    foreach (var dir in allDirs)
+                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "__rtxapp_*", SearchOption.TopDirectoryOnly)
+                        .Where(d => Directory.GetCreationTimeUtc(d) < cutoff);
+
+                    foreach (var dir in orphanedDirs)
                     {
-                        var dirName = Path.GetFileName(dir);
-                        // Check if it's a valid GUID format
-                        if (dirName.StartsWith("__rtxapp_", StringComparison.OrdinalIgnoreCase))
+                        try
                         {
-                            try
-                            {
-                                ForceWritable(dir);
-                                Directory.Delete(dir, true);
-                                LogMessage($"🧹 Removed __rtxapp temp directory: {dirName}");
-                            }
-                            catch
-                            {
-                                LogMessage("Orphaned directory removal error.");
-                            }
+                            ForceWritable(dir);
+                            Directory.Delete(dir, true);
+                            LogMessage($"🧹 Cleaned up previous orphaned folder(s).");
                         }
+                        catch { /* ignore */ }
                     }
                 }
-                catch
-                {
-                    LogMessage("Cleanup failure.");
-                }
+                catch { /* ignore */ }
             }
         }
     }
@@ -532,17 +519,20 @@ public class PackUpdater
 
         return safeName;
     }
-    private async Task DeleteExistingPackByUUID(List<string> existingManifests, string resourcePackPath,
+    private async Task DeleteExistingPackByUUID(string resourcePackPath,
         string targetHeaderUUID, string targetModuleUUID, string packName)
     {
-        foreach (var manifestPath in existingManifests)
+        var currentManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories)
+            .Where(m => !Path.GetDirectoryName(m)!.Contains("__rtxapp_")); // temp folder filter
+
+        foreach (var manifestPath in currentManifests)
         {
             var uuids = await ReadManifestUUIDs(manifestPath);
             if (uuids == null) continue;
 
             var (headerUUID, moduleUUID) = uuids.Value;
-
-            if (headerUUID == targetHeaderUUID && moduleUUID == targetModuleUUID)
+            if (headerUUID.Equals(targetHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
+                moduleUUID.Equals(targetModuleUUID, StringComparison.OrdinalIgnoreCase))
             {
                 var topLevelFolder = GetTopLevelFolderForManifest(manifestPath, resourcePackPath);
                 if (topLevelFolder != null && Directory.Exists(topLevelFolder))
@@ -551,6 +541,7 @@ public class PackUpdater
                     Directory.Delete(topLevelFolder, true);
                     LogMessage($"🗑️ Removed previous installation of: {packName}");
                 }
+                return; // UUID pair is globally unique, safe early exit
             }
         }
     }
@@ -598,41 +589,36 @@ public class PackUpdater
     // ---------- Enhanced option enabler
     private void ProcessEnhancementFolders(string rootDirectory)
     {
-        if (string.IsNullOrEmpty(EnhancementFolderName))
-        {
-            return; // Skip if no folder name is specified
-        }
+        if (string.IsNullOrEmpty(EnhancementFolderName)) return;
 
-        // Find all directories with the specified name recursively
-        var enhancementFolders = Directory.GetDirectories(rootDirectory, EnhancementFolderName, SearchOption.AllDirectories)
-                                          .ToList();
-
-        if (enhancementFolders.Count == 0)
-        {
-            Debug.WriteLine($"No '{EnhancementFolderName}' folders found.");
-            return;
-        }
+        var enhancementFolders = Directory.GetDirectories(rootDirectory, EnhancementFolderName, SearchOption.AllDirectories);
+        int processed = 0, failed = 0;
 
         foreach (var enhancementPath in enhancementFolders)
         {
             try
             {
-                // Get the parent directory
-                string parentDirectory = Directory.GetParent(enhancementPath).FullName;
-
-                // Copy contents
+                var parentDirectory = Directory.GetParent(enhancementPath)!.FullName;
                 CopyDirectoryContents(enhancementPath, parentDirectory);
 
-                // Delete
                 ForceWritable(enhancementPath);
                 Directory.Delete(enhancementPath, true);
-
-                Debug.WriteLine($"✅ Successfully processed and removed '{EnhancementFolderName}' folder.");
+                processed++;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"⚠️ Error processing '{EnhancementFolderName}' folder at {enhancementPath}: {ex.Message}");
+                failed++;
+                // Optional: keep detailed log for debugging, but don't flood UI
+                System.Diagnostics.Debug.WriteLine($"Enhancement folder error ({enhancementPath}): {ex.Message}");
             }
+        }
+
+        if (processed + failed > 0)
+        {
+            var msg = failed == 0
+                ? $"✅ Processed {processed} '{EnhancementFolderName}' enhancement folder(s)"
+                : $"✅ Processed {processed} enhancement folder(s), {failed} failed";
+            Debug.WriteLine(msg);
         }
     }
     private void CopyDirectoryContents(string sourceDir, string destDir)
