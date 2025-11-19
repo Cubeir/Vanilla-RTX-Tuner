@@ -39,11 +39,9 @@ namespace Vanilla_RTX_App;
 
 - Integerate BetterRTX if possible
 
-- Make frequency of startup PSAs less, once every 15 minutes
-
-- change lang to en from en-us? does it matter really? prolly not
-
-- test the shift alt behavior thingy more
+- more advanced PSA retriever, have various header keywords that translate to emojis in code, a few CLEAR and useful ones
+PSA, News, Warning, Known Issue, etc...
+and make it more dynamic, allow #, ##, ###
 
 - Add a proper, non-intrusive leave a review prompt
 
@@ -59,18 +57,15 @@ the hard URLs the app sends requests to + the hardcoded Minecraft paths
 * PackLocator, PackUpdater (deployer), Browse Packs, and LaunchMinecraftRTX's options.txt updater are the only things that rely on hardcoded paths on the system
 
 Additionally, while going through params, 
-Check your github RAW and API urls, usage patterns (caching, and cooldowns)
-All settled there? ensure there isn't a way the app can ddos github, ensure the usage is always clean and legit.
-
+Check your github usage patterns (caching, and cooldowns) -- especially updater, maximize up-to-dateness with as few requests as possible
+All settled there? ensure there isn't a way the app can ddos github
 
 - Do the TODO and ISSUES scattered in the code
 Finish all that you had postponed
 
-
 - What if, you expanded Butcher heightmaps into Butcher Normals
 Then had it generate simple seamless normal maps as well and blend them?
 That way all sliders can affect all packs in some shape or form, which is good.
-
 
 - With splash screen here, UpdateUI is useless, getting rid of it is too much work though, just too much...
 It is too integerated, previewer class has some funky behavior tied to it, circumvented by it
@@ -84,7 +79,6 @@ A public variable that gets all text dumped to perhaps, and gradually writes out
 This way direct interaction with non-UI threads will be zero
 Long running tasks dump their text, UI thread gradually writes it out on its own.
 only concern is performance with large logs
-
 This idea can be a public static method and it won't ever ever block Ui thread
 A variable is getting constantly updated with new logs, a worker in main UI thread's only job is to write out its content as it comes along
 

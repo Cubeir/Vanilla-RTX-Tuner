@@ -43,7 +43,14 @@ public class PackUpdater
     // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal.
     // TODO: SOMEHOW expose these two without cluttering/complicating the UI, maybe through a json, with the UUIDs, and everything else you plan to expose
     public string EnhancementFolderName { get; set; } = "__enhancements";
+
+
+    // DON'T ENABLE, not correctly implemented, the updater doesn't deal with dev folder 
+    // It doesn't remove existing packs
+    // Pack locators right now search in both, maybe its a good idea for updater to function as it does but between both folders
     public bool installToDevelopmentFolder { get; set; } = false;
+    // implement this
+    public bool CleanupBothFolders { get; set; } = false;
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -470,7 +477,7 @@ public class PackUpdater
             // Step 6: Clean up orphaned temp directories (like from crashes)
             if (resourcePackPath != null)
             {
-                var cutoff = DateTime.UtcNow.AddMinutes(-5);
+                var cutoff = DateTime.UtcNow.AddMinutes(-1);
                 try
                 {
                     var orphanedDirs = Directory.GetDirectories(resourcePackPath, "__rtxapp_*", SearchOption.TopDirectoryOnly)
@@ -940,7 +947,9 @@ public class PSAUpdater
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-App/master/README.md";
     private const string CACHE_KEY = "PSAContentCache";
     private const string TIMESTAMP_KEY = "PSALastCheckedTimestamp";
+    private const string LAST_SHOWN_KEY = "PSALastShownTimestamp";
     private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(6);
+    private static readonly TimeSpan SHOW_COOLDOWN = TimeSpan.FromMinutes(0.5);
 
     public static async Task<string?> GetPSAAsync()
     {
@@ -948,50 +957,95 @@ public class PSAUpdater
         {
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 
-            // Check if we have cached data and if cooldown is still active
-            if (localSettings.Values.ContainsKey(TIMESTAMP_KEY) &&
-                localSettings.Values.ContainsKey(CACHE_KEY))
+            // Check if we need to fetch new data from GitHub
+            bool shouldFetch = true;
+            if (localSettings.Values.ContainsKey(TIMESTAMP_KEY))
             {
                 var lastChecked = DateTime.Parse(localSettings.Values[TIMESTAMP_KEY] as string);
                 if (DateTime.UtcNow - lastChecked < COOLDOWN)
                 {
-                    // Return cached content
-                    return localSettings.Values[CACHE_KEY] as string;
+                    shouldFetch = false;
                 }
             }
 
-            // Cooldown expired or no cache, fetch new data
-            using (HttpClient client = new HttpClient())
+            // Fetch new data if cooldown expired
+            if (shouldFetch)
             {
-                client.Timeout = TimeSpan.FromSeconds(30);
-                var userAgent = $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)";
-                client.DefaultRequestHeaders.Add("User-Agent", userAgent);
-                var response = await client.GetAsync(README_URL);
-                if (!response.IsSuccessStatusCode)
-                    return localSettings.Values[CACHE_KEY] as string; // Return cached on failure
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    var userAgent = $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)";
+                    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+                    var response = await client.GetAsync(README_URL);
 
-                var content = await response.Content.ReadAsStringAsync();
-                int psaIndex = content.IndexOf("### PSA", StringComparison.OrdinalIgnoreCase);
-                if (psaIndex == -1)
-                    return null;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        int psaIndex = content.IndexOf("### PSA", StringComparison.OrdinalIgnoreCase);
 
-                var afterPSA = content.Substring(psaIndex + "### PSA".Length).Trim();
-                var result = string.IsNullOrWhiteSpace(afterPSA) ? null : afterPSA;
+                        if (psaIndex != -1)
+                        {
+                            var afterPSA = content.Substring(psaIndex + "### PSA".Length).Trim();
+                            var result = string.IsNullOrWhiteSpace(afterPSA) ? null : afterPSA;
 
-                // Cache the result and timestamp
-                localSettings.Values[CACHE_KEY] = result;
-                localSettings.Values[TIMESTAMP_KEY] = DateTime.UtcNow.ToString("O");
+                            // Cache the result and update fetch timestamp
+                            localSettings.Values[CACHE_KEY] = result;
+                        }
 
-                return result;
+                        localSettings.Values[TIMESTAMP_KEY] = DateTime.UtcNow.ToString("O");
+                    }
+                }
             }
+
+            // Now check if we should show the PSA based on last shown time
+            if (localSettings.Values.ContainsKey(LAST_SHOWN_KEY))
+            {
+                var lastShown = DateTime.Parse(localSettings.Values[LAST_SHOWN_KEY] as string);
+                if (DateTime.UtcNow - lastShown < SHOW_COOLDOWN)
+                {
+                    // Too soon to show again
+                    return null;
+                }
+            }
+
+            // Get cached content to show
+            var cachedContent = localSettings.Values.ContainsKey(CACHE_KEY)
+                ? localSettings.Values[CACHE_KEY] as string
+                : null;
+
+            // Update last shown timestamp if we have content to show
+            if (!string.IsNullOrWhiteSpace(cachedContent))
+            {
+                localSettings.Values[LAST_SHOWN_KEY] = DateTime.UtcNow.ToString("O");
+            }
+
+            return cachedContent;
         }
         catch
         {
-            // On error, return previously cached content if available
+            // On error, check if we can still show cached content
             var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-            return localSettings.Values.ContainsKey(CACHE_KEY)
+
+            // Check show cooldown
+            if (localSettings.Values.ContainsKey(LAST_SHOWN_KEY))
+            {
+                var lastShown = DateTime.Parse(localSettings.Values[LAST_SHOWN_KEY] as string);
+                if (DateTime.UtcNow - lastShown < SHOW_COOLDOWN)
+                {
+                    return null;
+                }
+            }
+
+            var cachedContent = localSettings.Values.ContainsKey(CACHE_KEY)
                 ? localSettings.Values[CACHE_KEY] as string
                 : null;
+
+            if (!string.IsNullOrWhiteSpace(cachedContent))
+            {
+                localSettings.Values[LAST_SHOWN_KEY] = DateTime.UtcNow.ToString("O");
+            }
+
+            return cachedContent;
         }
     }
 }
