@@ -23,11 +23,13 @@ namespace Vanilla_RTX_App.Core;
 /// Deployment deletes any pack that matches UUIDs as defined at the begenning of PackLocator class
 /// =====================================================================================================================
 
-// TODO: Implement Opus once it is on GH
+
 public class PackUpdater
 {
     private const string VANILLA_RTX_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
     private const string VANILLA_RTX_NORMALS_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX-Normals/manifest.json";
+    private const string VANILLA_RTX_OPUS_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX-Opus/manifest.json";
+
     private const string VANILLA_RTX_REPO_ZIPBALL_URL = "https://github.com/Cubeir/Vanilla-RTX/archive/refs/heads/master.zip";
 
     // Event for progress updates to avoid UI thread blocking
@@ -36,7 +38,7 @@ public class PackUpdater
 
     // For cooldown of checking for update to avoid spamming github
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
-    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(90);
+    private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(60);
 
     // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal.
     // TODO: SOMEHOW expose these two without cluttering/complicating the UI, maybe through a json, with the UUIDs, and everything else you plan to expose
@@ -169,7 +171,7 @@ public class PackUpdater
         }
     }
 
-    private async Task<bool> DoesCacheNeedUpdate(string cachedPath, (JObject rtx, JObject normals) remoteManifests)
+    private async Task<bool> DoesCacheNeedUpdate(string cachedPath, (JObject? rtx, JObject? normals, JObject? opus) remoteManifests)
     {
         try
         {
@@ -188,19 +190,64 @@ public class PackUpdater
             }
 
             var rtxManifest = await TryReadManifest("Vanilla-RTX/manifest.json");
-            bool rtxIsNewer = rtxManifest != null && IsRemoteVersionNewer(rtxManifest, remoteManifests.rtx);
-
             var normalsManifest = await TryReadManifest("Vanilla-RTX-Normals/manifest.json");
-            bool normalsIsNewer = normalsManifest != null && IsRemoteVersionNewer(normalsManifest, remoteManifests.normals);
+            var opusManifest = await TryReadManifest("Vanilla-RTX-Opus/manifest.json");
 
-            return rtxIsNewer || normalsIsNewer;
+            // Check each pack independently
+            bool needsUpdate = false;
 
+            // RTX Pack
+            if (remoteManifests.rtx != null)
+            {
+                if (rtxManifest == null)
+                {
+                    // Pack exists remotely but not in cache - definitely need update
+                    LogMessage("📦 Vanilla RTX is available remotely but missing from cache");
+                    needsUpdate = true;
+                }
+                else if (IsRemoteVersionNewer(rtxManifest, remoteManifests.rtx))
+                {
+                    LogMessage("📦 Vanilla RTX has a newer version available");
+                    needsUpdate = true;
+                }
+            }
 
-            return false;
+            // Normals Pack
+            if (remoteManifests.normals != null)
+            {
+                if (normalsManifest == null)
+                {
+                    LogMessage("📦 Vanilla RTX Normals is available remotely but missing from cache");
+                    needsUpdate = true;
+                }
+                else if (IsRemoteVersionNewer(normalsManifest, remoteManifests.normals))
+                {
+                    LogMessage("📦 Vanilla RTX Normals has a newer version available");
+                    needsUpdate = true;
+                }
+            }
+
+            // Opus Pack
+            if (remoteManifests.opus != null)
+            {
+                if (opusManifest == null)
+                {
+                    LogMessage("📦 Vanilla RTX Opus is available remotely but missing from cache");
+                    needsUpdate = true;
+                }
+                else if (IsRemoteVersionNewer(opusManifest, remoteManifests.opus))
+                {
+                    LogMessage("📦 Vanilla RTX Opus has a newer version available");
+                    needsUpdate = true;
+                }
+            }
+
+            return needsUpdate;
         }
-        catch
+        catch (Exception ex)
         {
-            return true;
+            LogMessage($"Error reading cached package: {ex.Message}");
+            return true; // Force update on read errors
         }
     }
 
@@ -230,20 +277,44 @@ public class PackUpdater
         }
     }
 
-    private async Task<(JObject rtx, JObject normals)?> FetchRemoteManifests()
+    private async Task<(JObject? rtx, JObject? normals, JObject? opus)?> FetchRemoteManifests()
     {
         try
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)");
 
-            var rtxTask = client.GetStringAsync(VANILLA_RTX_MANIFEST_URL);
-            var normalsTask = client.GetStringAsync(VANILLA_RTX_NORMALS_MANIFEST_URL);
+            // Fetch each manifest independently, allowing some to fail
+            async Task<JObject?> TryFetchManifest(string url)
+            {
+                try
+                {
+                    var response = await client.GetStringAsync(url);
+                    return JObject.Parse(response);
+                }
+                catch
+                {
+                    return null; // Pack doesn't exist remotely or network error
+                }
+            }
 
-            var rtxResponse = await rtxTask;
-            var normalsResponse = await normalsTask;
+            var rtxTask = TryFetchManifest(VANILLA_RTX_MANIFEST_URL);
+            var normalsTask = TryFetchManifest(VANILLA_RTX_NORMALS_MANIFEST_URL);
+            var opusTask = TryFetchManifest(VANILLA_RTX_OPUS_MANIFEST_URL);
 
-            return (JObject.Parse(rtxResponse), JObject.Parse(normalsResponse));
+            await Task.WhenAll(rtxTask, normalsTask, opusTask);
+
+            var rtx = await rtxTask;
+            var normals = await normalsTask;
+            var opus = await opusTask;
+
+            // Return null only if ALL manifests failed to fetch
+            if (rtx == null && normals == null && opus == null)
+            {
+                return null;
+            }
+
+            return (rtx, normals, opus);
         }
         catch
         {
@@ -275,7 +346,7 @@ public class PackUpdater
             LogMessage("⚠️ Minecraft is running. Please close the game while using the app.");
         }
 
-        bool success_status = false;
+        bool anyPackDeployed = false;
         string tempExtractionDir = null;
         string resourcePackPath = null;
 
@@ -300,20 +371,17 @@ public class PackUpdater
                 LogMessage("📁 Shared resources directory was missing and has been created.");
             }
 
-            // Step 1: Extract zipball directly into resource pack directory with UUID suffix
-            tempExtractionDir = Path.Combine(resourcePackPath, $"_vrtxapptemp_{Guid.NewGuid()}");
+            // Step 1: Extract zipball to temp directory
+            tempExtractionDir = Path.Combine( resourcePackPath,  "__rtxapp_" + Guid.NewGuid().ToString("N") );
             Directory.CreateDirectory(tempExtractionDir);
 
             ZipFile.ExtractToDirectory(packagePath, tempExtractionDir, overwriteFiles: true);
-            // LogMessage("📦 Extracted package to temporary directory");
+            LogMessage("📦 Extracted package to temporary directory");
 
             // Step 2: Find which packs exist in the zipball extraction
             var extractedManifests = Directory.GetFiles(tempExtractionDir, "manifest.json", SearchOption.AllDirectories);
 
-            string vanillaRTXSrc = null;
-            string vanillaRTXNormalsSrc = null;
-            bool foundVanillaRTX = false;
-            bool foundVanillaRTXNormals = false;
+            var packsToProcess = new List<(string uuid, string moduleUuid, string sourcePath, string finalName, string displayName)>();
 
             foreach (var manifestPath in extractedManifests)
             {
@@ -321,77 +389,63 @@ public class PackUpdater
                 if (uuids == null) continue;
 
                 var (headerUUID, moduleUUID) = uuids.Value;
+                var packSourcePath = Path.GetDirectoryName(manifestPath);
 
                 if (headerUUID == VANILLA_RTX_HEADER_UUID && moduleUUID == VANILLA_RTX_MODULE_UUID)
                 {
-                    vanillaRTXSrc = Path.GetDirectoryName(manifestPath);
-                    foundVanillaRTX = true;
+                    packsToProcess.Add((headerUUID, moduleUUID, packSourcePath, "vrtx", "Vanilla RTX"));
                 }
                 else if (headerUUID == VANILLA_RTX_NORMALS_HEADER_UUID && moduleUUID == VANILLA_RTX_NORMALS_MODULE_UUID)
                 {
-                    vanillaRTXNormalsSrc = Path.GetDirectoryName(manifestPath);
-                    foundVanillaRTXNormals = true;
+                    packsToProcess.Add((headerUUID, moduleUUID, packSourcePath, "vrtxn", "Vanilla RTX Normals"));
+                }
+                else if (headerUUID == VANILLA_RTX_OPUS_HEADER_UUID && moduleUUID == VANILLA_RTX_OPUS_MODULE_UUID)
+                {
+                    packsToProcess.Add((headerUUID, moduleUUID, packSourcePath, "vrtxo", "Vanilla RTX Opus"));
                 }
             }
 
-            if (!foundVanillaRTX && !foundVanillaRTXNormals)
+            if (packsToProcess.Count == 0)
             {
-                LogMessage("❌ Neither Vanilla-RTX nor Vanilla-RTX-Normals were found in the downloaded package.");
+                LogMessage("❌ No recognized Vanilla RTX packs found in the downloaded package.");
                 return false;
             }
 
-            if (!foundVanillaRTX || !foundVanillaRTXNormals)
-            {
-                LogMessage("⚠️ Extracted zipball was missing one of the packs.");
-            }
+            LogMessage($"📦 Found {packsToProcess.Count} pack(s): {string.Join(", ", packsToProcess.Select(p => p.displayName))}");
 
-            // Step 3: For each pack found in zipball, delete existing versions from resource pack root
+            // Step 3: Get all existing manifests (excluding current temp extraction)
             ForceWritable(resourcePackPath);
-
-            // Get all manifests in resource pack root, excluding CURRENT temp extraction directory
             var existingManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories)
                 .Where(manifestPath => !manifestPath.StartsWith(tempExtractionDir, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            // Delete existing Vanilla RTX if we found it in zipball
-            if (foundVanillaRTX)
+            // Step 4: Process each pack atomically (delete old → move new)
+            foreach (var pack in packsToProcess)
             {
-                await DeleteExistingPackByUUID(existingManifests, resourcePackPath,
-                    VANILLA_RTX_HEADER_UUID, VANILLA_RTX_MODULE_UUID, "Vanilla RTX");
+                try
+                {
+                    LogMessage($"🔄 Processing {pack.displayName}...");
+
+                    // Atomic operation: Delete old, then immediately move new
+                    await DeleteExistingPackByUUID(existingManifests, resourcePackPath,
+                        pack.uuid, pack.moduleUuid, pack.displayName);
+
+                    var finalDestination = GetSafeDirectoryName(resourcePackPath, pack.finalName);
+                    Directory.Move(pack.sourcePath, finalDestination);
+
+                    ProcessEnhancementFolders(finalDestination);
+
+                    LogMessage($"✅ {pack.displayName} deployed successfully");
+                    anyPackDeployed = true;
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"❌ Failed to deploy {pack.displayName}: {ex.Message}");
+                    // Continue with other packs - don't let one failure stop everything
+                }
             }
 
-            // Delete existing Vanilla RTX Normals if we found it in zipball
-            if (foundVanillaRTXNormals)
-            {
-                await DeleteExistingPackByUUID(existingManifests, resourcePackPath,
-                    VANILLA_RTX_NORMALS_HEADER_UUID, VANILLA_RTX_NORMALS_MODULE_UUID, "Vanilla RTX Normals");
-            }
-
-            // Step 4: Atomically move and rename pack directories
-            if (foundVanillaRTX && vanillaRTXSrc != null)
-            {
-                LogMessage("✅ Deploying Vanilla RTX.");
-
-                var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtx");
-                Directory.Move(vanillaRTXSrc, finalDestination);
-
-                ProcessEnhancementFolders(finalDestination);
-            }
-
-            if (foundVanillaRTXNormals && vanillaRTXNormalsSrc != null)
-            {
-                LogMessage("✅ Deploying Vanilla RTX Normals.");
-
-                var finalDestination = GetSafeDirectoryName(resourcePackPath, "vrtxn");
-                Directory.Move(vanillaRTXNormalsSrc, finalDestination);
-
-                ProcessEnhancementFolders(finalDestination);
-            }
-
-
-
-            success_status = true;
-            return true;
+            return anyPackDeployed;
         }
         catch (Exception ex)
         {
@@ -400,14 +454,14 @@ public class PackUpdater
         }
         finally
         {
-            // Step 5: Clean up current temp extraction directory
+            // Step 5: Clean up temp extraction directory
             if (tempExtractionDir != null && Directory.Exists(tempExtractionDir))
             {
                 try
                 {
                     ForceWritable(tempExtractionDir);
                     Directory.Delete(tempExtractionDir, true);
-                    LogMessage(success_status ? "✅ Deployment completed and cleaned up." : "🧹 Cleaned up after failed deployment.");
+                    LogMessage(anyPackDeployed ? "✅ Deployment completed and cleaned up." : "🧹 Cleaned up after failed deployment.");
                 }
                 catch (Exception ex)
                 {
@@ -415,29 +469,34 @@ public class PackUpdater
                 }
             }
 
-            // Step 6: Clean up any orphaned temp directories from previous runs
+            // Step 6: Clean up orphaned temp directories (GUIDs without dashes)
             if (resourcePackPath != null)
             {
                 try
                 {
-                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "_vrtxapptemp_*", SearchOption.TopDirectoryOnly);
-                    foreach (var orphanedDir in orphanedDirs)
+                    var allDirs = Directory.GetDirectories(resourcePackPath, "*", SearchOption.TopDirectoryOnly);
+                    foreach (var dir in allDirs)
                     {
-                        try
+                        var dirName = Path.GetFileName(dir);
+                        // Check if it's a valid GUID format
+                        if (dirName.StartsWith("__rtxapp_", StringComparison.OrdinalIgnoreCase))
                         {
-                            ForceWritable(orphanedDir);
-                            Directory.Delete(orphanedDir, true);
-                            LogMessage($"🧹 Removed orphaned temp directories.");
-                        }
-                        catch
-                        {
-                            // Silently ignore - might be in use or permission issue
+                            try
+                            {
+                                ForceWritable(dir);
+                                Directory.Delete(dir, true);
+                                LogMessage($"🧹 Removed __rtxapp temp directory: {dirName}");
+                            }
+                            catch
+                            {
+                                LogMessage("Orphaned directory removal error.");
+                            }
                         }
                     }
                 }
                 catch
                 {
-                    // Silently ignore orphaned cleanup failures - not critical
+                    LogMessage("Cleanup failure.");
                 }
             }
         }
@@ -676,7 +735,7 @@ public class CreditsUpdater
     private const string CREDITS_TIMESTAMP_KEY = "CreditsTimestamp";
     private const string CREDITS_LAST_SHOWN_KEY = "CreditsLastShown";
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/README.md";
-    private const int CACHE_UPDATE_COOLDOWN_DAYS = 2;
+    private const int CACHE_UPDATE_COOLDOWN_DAYS = 1;
     private const int DISPLAY_COOLDOWN_DAYS = 0;
 
     public static string Credits { get; private set; } = string.Empty;
@@ -894,7 +953,7 @@ public class PSAUpdater
     private const string README_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX-App/master/README.md";
     private const string CACHE_KEY = "PSAContentCache";
     private const string TIMESTAMP_KEY = "PSALastCheckedTimestamp";
-    private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(4);
+    private static readonly TimeSpan COOLDOWN = TimeSpan.FromHours(6);
 
     public static async Task<string?> GetPSAAsync()
     {
