@@ -39,7 +39,9 @@ public class PackUpdater
     private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(90);
 
     // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal.
+    // TODO: SOMEHOW expose these two without cluttering/complicating the UI, maybe through a json, with the UUIDs, and everything else you plan to expose
     public string EnhancementFolderName { get; set; } = "__enhancements";
+    public bool installToDevelopmentFolder { get; set; } = false;
 
     // -------------------------------\           /------------------------------------ //
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -290,7 +292,7 @@ public class PackUpdater
                 return false;
             }
 
-            resourcePackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs");
+            resourcePackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", installToDevelopmentFolder ? "development_resource_packs" : "resource_packs");
 
             if (!Directory.Exists(resourcePackPath))
             {
