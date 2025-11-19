@@ -117,7 +117,8 @@ public class PackUpdater
         else
         {
             // Either update failed, or is on cooldown, or no update is available, whatever the case got no choice, this is the latest we got
-            LogMessage("⚠️ Current cached package is the latest available: Redeploying");
+            // TODO: Update so it returns actual reasons
+            LogMessage("⚠️ Current cached package is the latest available at this time.");
             var deploySuccess = await DeployPackage(cachePath);
             return (deploySuccess, new List<string>(_logMessages));
         }
@@ -608,7 +609,7 @@ public class PackUpdater
 
         if (enhancementFolders.Count == 0)
         {
-            LogMessage($"No '{EnhancementFolderName}' folders found.");
+            Debug.WriteLine($"No '{EnhancementFolderName}' folders found.");
             return;
         }
 
@@ -619,8 +620,6 @@ public class PackUpdater
                 // Get the parent directory
                 string parentDirectory = Directory.GetParent(enhancementPath).FullName;
 
-                LogMessage($"Processing {EnhancementFolderName} at: {enhancementPath}");
-
                 // Copy contents
                 CopyDirectoryContents(enhancementPath, parentDirectory);
 
@@ -628,11 +627,11 @@ public class PackUpdater
                 ForceWritable(enhancementPath);
                 Directory.Delete(enhancementPath, true);
 
-                LogMessage($"✅ Successfully processed and removed '{EnhancementFolderName}' folder.");
+                Debug.WriteLine($"✅ Successfully processed and removed '{EnhancementFolderName}' folder.");
             }
             catch (Exception ex)
             {
-                LogMessage($"⚠️ Error processing '{EnhancementFolderName}' folder at {enhancementPath}: {ex.Message}");
+                Debug.WriteLine($"⚠️ Error processing '{EnhancementFolderName}' folder at {enhancementPath}: {ex.Message}");
             }
         }
     }
@@ -643,7 +642,7 @@ public class PackUpdater
             string fileName = Path.GetFileName(file);
             string destFile = Path.Combine(destDir, fileName);
             File.Copy(file, destFile, true); // overwrite
-            LogMessage($"  Copied file: {fileName}");
+            Debug.WriteLine($"  Copied file: {fileName}");
         }
         foreach (var subDir in Directory.GetDirectories(sourceDir))
         {
