@@ -9,8 +9,8 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using Windows.Storage;
 using Vanilla_RTX_App.Modules;
+using Windows.Storage;
 using static Vanilla_RTX_App.Core.PackLocator; // For static UUIDs, they are stored there for locating packs
 
 namespace Vanilla_RTX_App.Core;
@@ -130,46 +130,48 @@ public class PackUpdater
     {
         if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
         {
-            LogMessage("🛜 No network available cached version will be reused.");
+            LogMessage("🛜 No network available – reusing cache.");
             return false;
         }
 
-        // Cooldown logic
         var localSettings = ApplicationData.Current.LocalSettings;
-        object lastCheckObj = localSettings.Values[LastUpdateCheckKey];
-        DateTimeOffset now = DateTimeOffset.UtcNow;
-        if (lastCheckObj is string lastCheckStr && DateTimeOffset.TryParse(lastCheckStr, out var lastCheck))
+        var now = DateTimeOffset.UtcNow;
+
+        // Only honor cooldown if we have a VALID, usable cache
+        if (localSettings.Values[LastUpdateCheckKey] is string lastCheckStr &&
+            DateTimeOffset.TryParse(lastCheckStr, out var lastSuccessfulCheck))
         {
-            var cooldownEnd = lastCheck + UpdateCooldown;
-            if (now < cooldownEnd)
+            if (now < lastSuccessfulCheck + UpdateCooldown)
             {
-                var minutesLeft = (int)Math.Ceiling((cooldownEnd - now).TotalMinutes);
-                LogMessage($"⏳ Skipped update check.\nCooldown ends in: {minutesLeft} minute{(minutesLeft == 1 ? "" : "s")}");
-                return false; // Use cache, skip remote check
+                var minutesLeft = (int)Math.Ceiling((lastSuccessfulCheck + UpdateCooldown - now).TotalMinutes);
+                LogMessage($"⏳ Update check on cooldown – {minutesLeft} minute{(minutesLeft == 1 ? "" : "s")} left");
+                return false;
             }
         }
+
+        (JObject? rtx, JObject? normals, JObject? opus)? remote = null;
+        bool fetchSuccess = false;
 
         try
         {
-            var remoteManifests = await FetchRemoteManifests();
-
-            // Save the check time only if we actually attempted a remote check
-            localSettings.Values[LastUpdateCheckKey] = now.ToString("o");
-
-            if (remoteManifests == null)
-            {
-                LogMessage("Failed to fetch remote manifests: forcing cache update.");
-                return true;
-            }
-
-            var cacheNeedsUpdate = await DoesCacheNeedUpdate(cachePath, remoteManifests.Value);
-            return cacheNeedsUpdate;
+            remote = await FetchRemoteManifests();
+            fetchSuccess = true;
         }
         catch (Exception ex)
         {
-            LogMessage($"Error checking for updates: forcing cache update - {ex.Message}");
-            return true;
+            LogMessage($"Failed to contact GitHub – forcing redownload ({ex.Message})");
         }
+
+        // ONLY update cooldown timestamp on SUCCESSFUL remote contact + valid cache comparison
+        if (fetchSuccess && remote.HasValue)
+        {
+            localSettings.Values[LastUpdateCheckKey] = now.ToString("o");
+        }
+
+        if (remote == null)
+            return true; // network/manifest fail → force download
+
+        return await DoesCacheNeedUpdate(cachePath, remote.Value);
     }
 
     private async Task<bool> DoesCacheNeedUpdate(string cachedPath, (JObject? rtx, JObject? normals, JObject? opus) remoteManifests)
