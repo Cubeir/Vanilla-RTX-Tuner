@@ -412,7 +412,7 @@ public class PackUpdater
                 return false;
             }
 
-            LogMessage($"📦 Found {packsToProcess.Count} pack(s): {string.Join(", ", packsToProcess.Select(p => p.displayName))}");
+            LogMessage($"📦 Found {packsToProcess.Count} pack(s) in cache: {string.Join(", ", packsToProcess.Select(p => p.displayName))}");
 
             // Step 3: Get all existing manifests (excluding current temp extraction)
             ForceWritable(resourcePackPath);
