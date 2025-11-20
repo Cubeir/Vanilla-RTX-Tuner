@@ -43,10 +43,10 @@ public class PackUpdater
     // TODO: EXPOSE THESE TO AN EXTERNAL FILE. CONFIGURE AT STARTUP -- SAME WITH THE OTHER STUFF
     public string EnhancementFolderName { get; set; } = "__enhancements";
     // If enabled, installs to development folder
-    public bool installToDevelopmentFolder { get; set; } = false;
+    public bool InstallToDevelopmentFolder { get; set; } = false;
 
-    // Fucky implementationm, it tries to find the opposite folder of where we're deploying to, and clean the folders there too
-    public bool cleanUpBothFolders { get; set; } = true;
+    // Fucky implementation, it tries to find the opposite folder of where we're deploying to, and clean the folders there too
+    public bool CleanUpBothFolders { get; set; } = true;
 
 
     // -------------------------------\           /------------------------------------ \\
@@ -348,7 +348,7 @@ public class PackUpdater
 
     private async Task<bool> DeployPackage(string packagePath)
     {
-        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
+        if (Helpers.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             LogMessage("⚠️ Minecraft is running. Please close the game while using the app.");
         }
@@ -370,7 +370,7 @@ public class PackUpdater
                 return false;
             }
 
-            resourcePackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", installToDevelopmentFolder ? "development_resource_packs" : "resource_packs");
+            resourcePackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", InstallToDevelopmentFolder ? "development_resource_packs" : "resource_packs");
 
             if (!Directory.Exists(resourcePackPath))
             {
@@ -494,11 +494,16 @@ public class PackUpdater
                 var pathsToCleanOrphans = new List<string> { resourcePackPath };
 
                 // Same logic as deployment-time existing pack clean up thingy
-                if (cleanUpBothFolders)
+                if (CleanUpBothFolders)
                 {
-                    string opposingPath = installToDevelopmentFolder
-                        ? resourcePackPath.Replace("development_resource_packs", "resource_packs")
-                        : resourcePackPath.Replace("resource_packs", "development_resource_packs");
+                    var dirInfo = new DirectoryInfo(resourcePackPath);
+                    string opposingPath = InstallToDevelopmentFolder
+                        ? (dirInfo.Name.Equals("development_resource_packs", StringComparison.OrdinalIgnoreCase)
+                            ? Path.Combine(dirInfo.Parent.FullName, "resource_packs")
+                            : resourcePackPath)
+                        : (dirInfo.Name.Equals("resource_packs", StringComparison.OrdinalIgnoreCase)
+                            ? Path.Combine(dirInfo.Parent.FullName, "development_resource_packs")
+                            : resourcePackPath);
 
                     if (Directory.Exists(opposingPath))
                     {
@@ -506,7 +511,7 @@ public class PackUpdater
                     }
                 }
 
-                var cutoff = DateTime.UtcNow.AddMinutes(-1);
+                var cutoff = DateTime.UtcNow.AddMinutes(-1); // 1 minute grace period for temp folders
 
                 foreach (var pathToClean in pathsToCleanOrphans)
                 {
@@ -567,19 +572,17 @@ public class PackUpdater
         // Build list of paths to clean
         var pathsToClean = new List<string> { resourcePackPath };
 
-        if (cleanUpBothFolders)
+        if (CleanUpBothFolders)
         {
-            string opposingPath;
-            if (installToDevelopmentFolder)
-            {
-                // We're installing to dev, also clean regular
-                opposingPath = resourcePackPath.Replace("development_resource_packs", "resource_packs");
-            }
-            else
-            {
-                // We're installing to regular, also clean dev
-                opposingPath = resourcePackPath.Replace("resource_packs", "development_resource_packs");
-            }
+            var dirInfo = new DirectoryInfo(resourcePackPath);
+
+            string opposingPath = InstallToDevelopmentFolder
+                ? (dirInfo.Name.Equals("development_resource_packs", StringComparison.OrdinalIgnoreCase)
+                    ? Path.Combine(dirInfo.Parent.FullName, "resource_packs")
+                    : resourcePackPath)
+                : (dirInfo.Name.Equals("resource_packs", StringComparison.OrdinalIgnoreCase)
+                    ? Path.Combine(dirInfo.Parent.FullName, "development_resource_packs")
+                    : resourcePackPath);
 
             if (Directory.Exists(opposingPath))
             {
@@ -661,53 +664,81 @@ public class PackUpdater
         if (string.IsNullOrEmpty(EnhancementFolderName)) return;
 
         var enhancementFolders = Directory.GetDirectories(rootDirectory, EnhancementFolderName, SearchOption.AllDirectories);
-        int processed = 0, failed = 0;
+        int processed = 0, failed = 0, deleteIssues = 0;
 
         foreach (var enhancementPath in enhancementFolders)
         {
             try
             {
                 var parentDirectory = Directory.GetParent(enhancementPath)!.FullName;
-                CopyDirectoryContents(enhancementPath, parentDirectory);
 
-                ForceWritable(enhancementPath);
-                Directory.Delete(enhancementPath, true);
+                deleteIssues += MoveDirectoryContents(enhancementPath, parentDirectory);
+
+                try
+                {
+                    Directory.Delete(enhancementPath, false);
+                }
+                catch
+                {
+                    deleteIssues++;
+                }
+
                 processed++;
             }
             catch (Exception ex)
             {
                 failed++;
-                // Optional: keep detailed log for debugging, but don't flood UI
-                System.Diagnostics.Debug.WriteLine($"Enhancement folder error ({enhancementPath}): {ex.Message}");
+                Debug.WriteLine($"Enhancement folder error ({enhancementPath}): {ex.Message}");
             }
         }
 
         if (processed + failed > 0)
         {
             var msg = failed == 0
-                ? $"✅ Processed {processed} '{EnhancementFolderName}' enhancement folder(s)"
-                : $"✅ Processed {processed} enhancement folder(s), {failed} failed";
-            Debug.WriteLine(msg);
-        }
-    }
-    private void CopyDirectoryContents(string sourceDir, string destDir)
-    {
-        foreach (var file in Directory.GetFiles(sourceDir))
-        {
-            string fileName = Path.GetFileName(file);
-            string destFile = Path.Combine(destDir, fileName);
-            File.Copy(file, destFile, true); // overwrite
-            Debug.WriteLine($"  Copied file: {fileName}");
-        }
-        foreach (var subDir in Directory.GetDirectories(sourceDir))
-        {
-            string dirName = Path.GetFileName(subDir);
-            string destSubDir = Path.Combine(destDir, dirName);
-            Directory.CreateDirectory(destSubDir);
-            CopyDirectoryContents(subDir, destSubDir);
-        }
-    }
+                ? $"✅ Enabled Enhancements"
+                : $"✅ Processing {processed} failed {failed}. Delete failures: {deleteIssues}";
 
+            LogMessage(msg);
+        }
+    }
+    private int MoveDirectoryContents(string sourceDir, string targetDir)
+    {
+        int deleteFailures = 0;
+
+        foreach (string file in Directory.GetFiles(sourceDir))
+        {
+            string destFile = Path.Combine(targetDir, Path.GetFileName(file));
+
+            if (File.Exists(destFile))
+            {
+                try { File.Delete(destFile); }
+                catch { deleteFailures++; continue; }
+            }
+
+            try { File.Move(file, destFile); }
+            catch { deleteFailures++; }
+        }
+
+        foreach (string subDir in Directory.GetDirectories(sourceDir))
+        {
+            string destSubDir = Path.Combine(targetDir, Path.GetFileName(subDir));
+
+            if (Directory.Exists(destSubDir))
+            {
+                deleteFailures += MoveDirectoryContents(subDir, destSubDir);
+
+                try { Directory.Delete(subDir, false); }
+                catch { deleteFailures++; }
+            }
+            else
+            {
+                try { Directory.Move(subDir, destSubDir); }
+                catch { deleteFailures++; }
+            }
+        }
+
+        return deleteFailures;
+    }
 
     // ---------- Caching Helpers
     private (bool exists, string path) GetCacheInfo()
@@ -768,13 +799,6 @@ public class PackUpdater
     {
         _logMessages.Add($"{message}");
         ProgressUpdate?.Invoke(message);
-    }
-
-    public static bool IsMinecraftRunning()
-    {
-        var mcProcesses = Process.GetProcessesByName("Minecraft.Windows");
-
-        return mcProcesses.Length > 0;
     }
 }
 
