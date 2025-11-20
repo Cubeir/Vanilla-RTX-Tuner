@@ -4,26 +4,27 @@ All-in-one Vanilla RTX app to tune various aspects of Vanilla RTX to your prefer
 Ensuring ray tracing is accessible to newcomers, and frictionless for existing users — despite years of neglect from Mojang.
 
 <div>
-
-  <!-- Horizontal badges row -->
+  <!-- Badges -->
   <div style="display: flex; align-items: center; gap: 12px;">
     <a href="https://apps.microsoft.com/detail/9N6PCRZ5V9DJ?referrer=appbadge&mode=direct">
-      <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="350"/>
-    </a>
-    <a href="https://ko-fi.com/cubeir">
-      <img src="https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555" alt="Ko-Fi" width="150"/>
-    </a>
-    <a href="https://discord.gg/A4wv4wwYud">
-      <img src="https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3" alt="Discord" width="150"/>
+      <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="300"/>
     </a>
   </div>
-
   <!-- Cover image, centered -->
   <div style="text-align: center; margin-top: 16px;">
     <img src="https://github.com/user-attachments/assets/5b95f170-a683-4c51-b175-4abd4c401a19" alt="vanilla-rtx-app-cover-render"/>
   </div>
 
 </div>
+
+<div style="text-align: center">
+  
+[![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud) 
+![Repo Size](https://img.shields.io/github/repo-size/Cubeir/Vanilla-RTX-App?style=flat-square&color=F4E9D3&label=Repo%20Size&cacheSeconds=3600) 
+![Last Commit](https://img.shields.io/github/last-commit/Cubeir/Vanilla-RTX-App?style=flat-square&color=F4E9D3&label=Last%20Commit&cacheSeconds=1800) 
+[![Ko-Fi](https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
+
+<div>
 
 
 # Overview
@@ -111,10 +112,10 @@ For that reason, `Emissivity Multiplier` is automatically reset to default (1.0)
 ## Miscellaneous
 
 - Hovering any control in the app displays a unique Minecraft-inspired artwork communicating its function in the bottom left side of the app, for instance, sliders show how they should impact the textures in-game as you change them, toggles show before/after, and buttons display an artistic interpretation of what the they do!
-  In combination with tooltips, this is meant to help make the app less intimidating and more newbie-friendly!  
+  In combination with tooltips, this is meant to help make the app less intimidating and more beginner-friendly!  
 
-- The app persists tuning options, slider values, Preview toggle, and theme selection between sessions.  
-  Allowing you to keep your personal favorite tuning values and quickly re-tune newer versions without having to remember everything. Just don't press the reset button by accident!
+- The following settings persist between sesssions: tuning options/slider values, Preview toggle, and theme choice.
+  Allowing you to keep your personal favorite tuning values and quickly re-tune newer versions without having to remember everything.
 
 - Top-left titlebar buttons in order:
   - Cycle themes: Change between dark, light, or system theme.
@@ -122,11 +123,11 @@ For that reason, `Emissivity Multiplier` is automatically reset to default (1.0)
   - Donate: Opens the developer's Ko-Fi page.  
     When this button is hovered, an up-to-date list of Vanilla RTX Insiders is displayed. I'm able to maintain my projects thanks to them. Consider becoming a supporter to have your name there! (or else I have to resort to ads, dead serious!)
 
-- The app occasionally displays announcements from this readme file and caches it for several hours, these announcements will be shown on startup. They are used to inform users of important Vanilla RTX or App updates, known issues, etc... and sometimes for entertainment!
+- The app may occasionally displays announcements from this readme file and caches it for several hours, these announcements will be shown on startup. They are used to inform users of important Vanilla RTX or App updates, known issues, etc... and sometimes for entertainment!
 
 ### Need help?
 
 Join [Vanilla RTX server on Discord](https://discord.gg/A4wv4wwYud) & ask away!
 
 ### PSA
-Bye Bye Tuner! Vanilla RTX App is here with a fresh coat of paint and more capable than ever! Be sure to get the new app from the Microsoft Store!
+Bye Bye Tuner! The Vanilla RTX App has arrived with a fresh coat of paint and more capable than ever! Get the update from the Microsoft Store!
