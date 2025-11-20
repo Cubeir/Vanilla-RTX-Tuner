@@ -39,10 +39,6 @@ namespace Vanilla_RTX_App;
 
 - Integerate BetterRTX if possible
 
-- more advanced PSA retriever, have various header keywords that translate to emojis in code, a few CLEAR and useful ones
-PSA, News, Warning, Known Issue, etc...
-and make it more dynamic, allow #, ##, ###
-
 - Add a proper, non-intrusive leave a review prompt
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
