@@ -128,6 +128,10 @@ public class Processor
     #region ------------------- Processors
 
     // TODO: Further test this, it might be throwing colors off-balance in Vanilla RTX
+    // Tested: it is not throwing colors off balance, but it the convoluted overflow logic makes it HELLA CONFUSING TO USE!
+    // The behavior makes sense though! just watch the numbers as you press tune MANY times with different kinds of values
+    // The behavior is not perfect if you know what you're doing
+    // But the behavior is perfect for the average user who just gives a number and expects results
     private static void ProcessFog(PackInfo pack, bool processWaterOnly = false)
     {
         const double MIN_VALUE_THRESHOLD = 0.00000001; // Below this becomes zero
@@ -1005,8 +1009,8 @@ public class Processor
 
 
     // TODO: Do additions unbound, then scale back to RGB range?
-    // The way they combine is already flawless
-    // Just be mindful of what you put in alpha channel of textures in Vanilla RTX -- they get reused for generating the lazy heightmap
+    // Thing is, the compositing is already flawless
+    // Just be mindful of what you put in alpha channel of textures in Vanilla RTX -- they get reused for generating the lazy heightmap here
     private static void ProcessHeightmaps(PackInfo pack)
     {
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))

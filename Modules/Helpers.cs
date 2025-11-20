@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -443,6 +444,13 @@ public static class Helpers
         }
     }
 
+
+
+    public static bool IsMinecraftRunning()
+    {
+        var mcProcesses = Process.GetProcessesByName("Minecraft.Windows");
+        return mcProcesses.Length > 0;
+    }
 }
 
 
@@ -453,7 +461,7 @@ public static class RuntimeFlags
 {
     private static readonly HashSet<string> _flags = new();
 
-    public static bool Has(string key) => _flags.Contains(key); // Below does the same as this one
+    public static bool Has(string key) => _flags.Contains(key); // Below does the same as this one if already set
 
     public static bool Set(string key)
     {

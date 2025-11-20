@@ -91,7 +91,7 @@ public sealed partial class PackBrowserWindow : Window
             });
 
             var text = TunerVariables.Persistent.IsTargetingPreview ? "Minecraft Preview" : "Minecraft";
-            WindowTitle.Text = $"Select from your local {text} resource packs";
+            WindowTitle.Text = $"Select from compatible local {text} resource packs";
 
             await LoadPacksAsync();
         }

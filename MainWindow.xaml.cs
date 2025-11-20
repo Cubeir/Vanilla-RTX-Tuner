@@ -37,14 +37,15 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Finalizing processors is essential, reusable for other projects
-
 - Add images to readme for Ambient Lighting and any other one that is easy to demo, maybe include more in-app images besides the render
 Especially for MS store
 
 - Integerate BetterRTX if possible
 
 - Add a proper, non-intrusive leave a review prompt
+
+- Get copilot to examine the entire codebase for raw string path manipulation where better methods could've been used
+(note: it crashes, feed it file by file)
 
 - Somehow fix window maximizing when clicking titlebar buttons, they should absorb it but they dont.. window gets it too
 
@@ -87,8 +88,13 @@ A variable is getting constantly updated with new logs, a worker in main UI thre
 Or simple pixel arts you'd like to make in the same style
 Have 5-10 made
 
+- Tuner could, in theory, use the MANIFEST.JSON's metadata (i.e. TOOLS USED) to MARK packs
+e.g. you can preserve their tuning histories there, embed it into the manifest, like for ambient lighting toggle
+
 - Account for different font scalings, windows accessibility settings, etc...
 gonna need lots of painstakingly redoing xamls but if one day you have an abundance of time sure why not
+
+
 
 */
 
@@ -299,7 +305,7 @@ public sealed partial class MainWindow : Window
             }
         });
         // Warning if MC is running
-        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
+        if (Helpers.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             var buttonName = LaunchButtonText.Text;
             Log($"Please close Minecraft while using the app, when finished, launch the game using {buttonName} button.", LogLevel.Warning);
@@ -1821,7 +1827,7 @@ public sealed partial class MainWindow : Window
 
     private async void TuneSelectionButton_Click(object sender, RoutedEventArgs e)
     {
-        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
+        if (Helpers.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
             Log($"Please close Minecraft while using the app, when finished, launch the game using {LaunchButtonText.Text} button.", LogLevel.Warning);
 
         try
@@ -1863,7 +1869,7 @@ public sealed partial class MainWindow : Window
 
     private async void UpdateVanillaRTXButton_Click(object sender, RoutedEventArgs e)
     {
-        if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
+        if (Helpers.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
         {
             Log($"Please close Minecraft while using the app, when finished, launch the game using {LaunchButtonText.Text} button.", LogLevel.Warning);
         }
@@ -1928,7 +1934,7 @@ public sealed partial class MainWindow : Window
     private async void LaunchButton_Click(object sender, RoutedEventArgs e)
     {
 
-        if (PackUpdater.IsMinecraftRunning())
+        if (Helpers.IsMinecraftRunning())
         {
             Log("The game was already open, please restart the game for options.txt changes to take effect.", LogLevel.Warning);
         }
