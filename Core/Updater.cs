@@ -44,7 +44,9 @@ public class PackUpdater
     public string EnhancementFolderName { get; set; } = "__enhancements";
     // If enabled, installs to development folder
     public bool installToDevelopmentFolder { get; set; } = false;
-    // TODO: Add logic to clean up dev folder of existing Vanilla RTX installations EVEN IF we're installing to normal folder, to avoid duplicates
+
+    // Fucky implementationm, it tries to find the opposite folder of where we're deploying to, and clean the folders there too
+    public bool cleanUpBothFolders { get; set; } = true;
 
 
     // -------------------------------\           /------------------------------------ \\
@@ -436,17 +438,21 @@ public class PackUpdater
                     ProcessEnhancementFolders(finalDestination);
 
                     // Ensure empty contents.json and make TL.json
-                    Helpers.GenerateTexturesLists(finalDestination);
-                    var contentsPath = Path.Combine(finalDestination, "contents.json");
-                    if (File.Exists(contentsPath))
+                    try
                     {
-                        var attr = File.GetAttributes(contentsPath);
-                        if ((attr & System.IO.FileAttributes.ReadOnly) != 0)
-                            File.SetAttributes(contentsPath, attr & ~System.IO.FileAttributes.ReadOnly);
+                        Helpers.GenerateTexturesLists(finalDestination);
+                        var contentsPath = Path.Combine(finalDestination, "contents.json");
+                        if (File.Exists(contentsPath))
+                        {
+                            var attr = File.GetAttributes(contentsPath);
+                            if ((attr & System.IO.FileAttributes.ReadOnly) != 0)
+                                File.SetAttributes(contentsPath, attr & ~System.IO.FileAttributes.ReadOnly);
 
-                        File.Delete(contentsPath);
+                            File.Delete(contentsPath);
+                        }
+                        File.WriteAllText(contentsPath, "{}");
                     }
-                    File.WriteAllText(contentsPath, "{}");
+                    catch{ Debug.WriteLine("Contents json or textures list creation failed."); }
 
                     LogMessage($"✅ {pack.displayName} deployed successfully");
                     anyPackDeployed = true;
@@ -485,24 +491,43 @@ public class PackUpdater
             // Step 6: Clean up orphaned temp directories (like from crashes)
             if (resourcePackPath != null)
             {
-                var cutoff = DateTime.UtcNow.AddMinutes(-1);
-                try
-                {
-                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "__rtxapp_*", SearchOption.TopDirectoryOnly)
-                        .Where(d => Directory.GetCreationTimeUtc(d) < cutoff);
+                var pathsToCleanOrphans = new List<string> { resourcePackPath };
 
-                    foreach (var dir in orphanedDirs)
+                // Same logic as deployment-time existing pack clean up thingy
+                if (cleanUpBothFolders)
+                {
+                    string opposingPath = installToDevelopmentFolder
+                        ? resourcePackPath.Replace("development_resource_packs", "resource_packs")
+                        : resourcePackPath.Replace("resource_packs", "development_resource_packs");
+
+                    if (Directory.Exists(opposingPath))
                     {
-                        try
-                        {
-                            ForceWritable(dir);
-                            Directory.Delete(dir, true);
-                            LogMessage($"🧹 Cleaned up previous orphaned folder(s).");
-                        }
-                        catch { /* ignore */ }
+                        pathsToCleanOrphans.Add(opposingPath);
                     }
                 }
-                catch { /* ignore */ }
+
+                var cutoff = DateTime.UtcNow.AddMinutes(-1);
+
+                foreach (var pathToClean in pathsToCleanOrphans)
+                {
+                    try
+                    {
+                        var orphanedDirs = Directory.GetDirectories(pathToClean, "__rtxapp_*", SearchOption.TopDirectoryOnly)
+                            .Where(d => Directory.GetCreationTimeUtc(d) < cutoff);
+
+                        foreach (var dir in orphanedDirs)
+                        {
+                            try
+                            {
+                                ForceWritable(dir);
+                                Directory.Delete(dir, true);
+                                LogMessage($"🧹 Cleaned up previous orphaned folder(s).");
+                            }
+                            catch { /* ignore */ }
+                        }
+                    }
+                    catch { /* ignore */ }
+                }
             }
         }
     }
@@ -539,26 +564,53 @@ public class PackUpdater
     private async Task DeleteExistingPackByUUID(string resourcePackPath,
         string targetHeaderUUID, string targetModuleUUID, string packName)
     {
-        var currentManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories)
-            .Where(m => !Path.GetDirectoryName(m)!.Contains("__rtxapp_")); // temp folder filter
+        // Build list of paths to clean
+        var pathsToClean = new List<string> { resourcePackPath };
 
-        foreach (var manifestPath in currentManifests)
+        if (cleanUpBothFolders)
         {
-            var uuids = await ReadManifestUUIDs(manifestPath);
-            if (uuids == null) continue;
-
-            var (headerUUID, moduleUUID) = uuids.Value;
-            if (headerUUID.Equals(targetHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
-                moduleUUID.Equals(targetModuleUUID, StringComparison.OrdinalIgnoreCase))
+            string opposingPath;
+            if (installToDevelopmentFolder)
             {
-                var topLevelFolder = GetTopLevelFolderForManifest(manifestPath, resourcePackPath);
-                if (topLevelFolder != null && Directory.Exists(topLevelFolder))
+                // We're installing to dev, also clean regular
+                opposingPath = resourcePackPath.Replace("development_resource_packs", "resource_packs");
+            }
+            else
+            {
+                // We're installing to regular, also clean dev
+                opposingPath = resourcePackPath.Replace("resource_packs", "development_resource_packs");
+            }
+
+            if (Directory.Exists(opposingPath))
+            {
+                pathsToClean.Add(opposingPath);
+            }
+        }
+
+        // Clean from all paths
+        foreach (var pathToClean in pathsToClean)
+        {
+            var currentManifests = Directory.GetFiles(pathToClean, "manifest.json", SearchOption.AllDirectories)
+                .Where(m => !Path.GetDirectoryName(m)!.Contains("__rtxapp_"));
+
+            foreach (var manifestPath in currentManifests)
+            {
+                var uuids = await ReadManifestUUIDs(manifestPath);
+                if (uuids == null) continue;
+
+                var (headerUUID, moduleUUID) = uuids.Value;
+                if (headerUUID.Equals(targetHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
+                    moduleUUID.Equals(targetModuleUUID, StringComparison.OrdinalIgnoreCase))
                 {
-                    ForceWritable(topLevelFolder);
-                    Directory.Delete(topLevelFolder, true);
-                    LogMessage($"🗑️ Removed previous installation of: {packName}");
+                    var topLevelFolder = GetTopLevelFolderForManifest(manifestPath, pathToClean);
+                    if (topLevelFolder != null && Directory.Exists(topLevelFolder))
+                    {
+                        ForceWritable(topLevelFolder);
+                        Directory.Delete(topLevelFolder, true);
+                        LogMessage($"🗑️ Removed previous installation of: {packName}");
+                    }
+                    // Don't early return anymore - we might find it in both folders
                 }
-                return; // UUID pair is globally unique, safe early exit
             }
         }
     }
@@ -944,7 +996,6 @@ public class CreditsUpdater
         }
     }
 }
-
 
 /// =====================================================================================================================
 /// Show PSA from github readme, simply add a ### PSA tag followed by the announcement at the end of the readme file linked below
