@@ -3,28 +3,29 @@
 All-in-one Vanilla RTX app to tune various aspects of Vanilla RTX to your preferences, easily enable Minecraft's ray tracing, automatically update ray tracing packages for the latest versions of the game, and more...  
 Ensuring ray tracing is accessible to newcomers, and frictionless for existing users — despite years of neglect from Mojang.
 
-<div>
-  <!-- Badges -->
-  <div style="display: flex; align-items: center; gap: 12px;">
-    <a href="https://apps.microsoft.com/detail/9N6PCRZ5V9DJ?referrer=appbadge&mode=direct">
-      <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="300"/>
-    </a>
-  </div>
-  <!-- Cover image, centered -->
-  <div style="text-align: center; margin-top: 16px;">
-    <img src="https://github.com/user-attachments/assets/5b95f170-a683-4c51-b175-4abd4c401a19" alt="vanilla-rtx-app-cover-render"/>
-  </div>
+<!-- Microsoft Store badge -->
+<p align="center">
+  <a href="https://apps.microsoft.com/detail/9N6PCRZ5V9DJ?referrer=appbadge&mode=direct">
+    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="300"/>
+  </a>
+</p>
 
-</div>
+<!-- Cover image -->
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5b95f170-a683-4c51-b175-4abd4c401a19" alt="vanilla-rtx-app-cover-render"/>
+</p>
 
-<div style="text-align: center">
-  
-[![Discord](https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600)](https://discord.gg/A4wv4wwYud) 
-![Repo Size](https://img.shields.io/github/repo-size/Cubeir/Vanilla-RTX-App?style=flat-square&color=F4E9D3&label=Repo%20Size&cacheSeconds=3600) 
-![Last Commit](https://img.shields.io/github/last-commit/Cubeir/Vanilla-RTX-App?style=flat-square&color=F4E9D3&label=Last%20Commit&cacheSeconds=1800) 
-[![Ko-Fi](https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555)](https://ko-fi.com/cubeir)
-
-<div>
+<!-- Badges -->
+<p align="center">
+  <a href="https://discord.gg/A4wv4wwYud">
+    <img src="https://img.shields.io/discord/721377277480402985?style=flat-square&logo=discord&logoColor=F4E9D3&label=Discord&color=F4E9D3&cacheSeconds=3600"/>
+  </a>
+  <a href="https://ko-fi.com/cubeir">
+    <img src="https://img.shields.io/badge/-support%20my%20work-F4E9D3?style=flat-square&logo=ko-fi&logoColor=F4E9D3&labelColor=555555"/>
+  </a>
+  <img src="https://img.shields.io/github/repo-size/Cubeir/Vanilla-RTX-App?style=flat-square&color=F4E9D3&label=Repo%20Size&cacheSeconds=3600"/>
+  <img src="https://img.shields.io/github/last-commit/Cubeir/Vanilla-RTX-App?style=flat-square&color=F4E9D3&label=Last%20Commit&cacheSeconds=1800"/>
+</p>
 
 
 # Overview
