@@ -23,7 +23,6 @@ namespace Vanilla_RTX_App.Core;
 /// Deployment deletes any pack that matches UUIDs as defined at the begenning of PackLocator class
 /// =====================================================================================================================
 
-
 public class PackUpdater
 {
     private const string VANILLA_RTX_MANIFEST_URL = "https://raw.githubusercontent.com/Cubeir/Vanilla-RTX/master/Vanilla-RTX/manifest.json";
@@ -40,14 +39,13 @@ public class PackUpdater
     private const string LastUpdateCheckKey = "LastPackUpdateCheckTime";
     private static readonly TimeSpan UpdateCooldown = TimeSpan.FromMinutes(60);
 
-    // Locate a folder name and dump its content out, used for enabling enhanced files of Vanilla RTX after its removal.
+
+    // TODO: EXPOSE THESE TO AN EXTERNAL FILE. CONFIGURE AT STARTUP -- SAME WITH THE OTHER STUFF
     public string EnhancementFolderName { get; set; } = "__enhancements";
-
-    // If set to true packs will be deployed to development RP folder, could have some benefits later/be exposed to a JSON
+    // If enabled, installs to development folder
     public bool installToDevelopmentFolder { get; set; } = false;
+    // TODO: Add logic to clean up dev folder of existing Vanilla RTX installations EVEN IF we're installing to normal folder, to avoid duplicates
 
-    // Default is true to prevent duplicates between Regular and Dev RP folders
-    public bool CleanupBothFolders { get; set; } = true; 
 
     // -------------------------------\           /------------------------------------ \\
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -61,6 +59,7 @@ public class PackUpdater
             {
                 return await HandleNoCacheScenario();
             }
+            // Either cache location or the file itself were unavailable:
             else
             {
                 return await HandleCacheExistsScenario(cacheInfo.path);
@@ -91,7 +90,6 @@ public class PackUpdater
         var deploySuccess = await DeployPackage(downloadPath);
         return (deploySuccess, new List<string>(_logMessages));
     }
-
     private async Task<(bool Success, List<string> Logs)> HandleCacheExistsScenario(string cachePath)
     {
         LogMessage("✅ Cache found");
@@ -120,11 +118,15 @@ public class PackUpdater
         }
         else
         {
+            // Either update failed, or is on cooldown, or no update is available, whatever the case got no choice, this is the latest we got
+            // TODO: Update so it returns actual reasons
             LogMessage("ℹ️ Current cached package is the latest available at this moment.");
             var deploySuccess = await DeployPackage(cachePath);
             return (deploySuccess, new List<string>(_logMessages));
         }
     }
+
+
 
     private async Task<bool> CheckIfUpdateNeeded(string cachePath)
     {
@@ -137,6 +139,7 @@ public class PackUpdater
         var localSettings = ApplicationData.Current.LocalSettings;
         var now = DateTimeOffset.UtcNow;
 
+        // Only honor cooldown if we have a VALID, usable cache
         if (localSettings.Values[LastUpdateCheckKey] is string lastCheckStr &&
             DateTimeOffset.TryParse(lastCheckStr, out var lastSuccessfulCheck))
         {
@@ -161,13 +164,14 @@ public class PackUpdater
             LogMessage($"Failed to contact GitHub – forcing redownload ({ex.Message})");
         }
 
+        // ONLY update cooldown timestamp on SUCCESSFUL remote contact + valid cache comparison
         if (fetchSuccess && remote.HasValue)
         {
             localSettings.Values[LastUpdateCheckKey] = now.ToString("o");
         }
 
         if (remote == null)
-            return true;
+            return true; // network/manifest fail means force download
 
         return await DoesCacheNeedUpdate(cachePath, remote.Value);
     }
@@ -194,12 +198,15 @@ public class PackUpdater
             var normalsManifest = await TryReadManifest("Vanilla-RTX-Normals/manifest.json");
             var opusManifest = await TryReadManifest("Vanilla-RTX-Opus/manifest.json");
 
+            // Check each pack independently
             bool needsUpdate = false;
 
+            // RTX Pack
             if (remoteManifests.rtx != null)
             {
                 if (rtxManifest == null)
                 {
+                    // Pack exists remotely but not in cache - definitely need update
                     LogMessage("📦 Vanilla RTX is available remotely but missing from cache");
                     needsUpdate = true;
                 }
@@ -210,6 +217,7 @@ public class PackUpdater
                 }
             }
 
+            // Normals Pack
             if (remoteManifests.normals != null)
             {
                 if (normalsManifest == null)
@@ -224,6 +232,7 @@ public class PackUpdater
                 }
             }
 
+            // Opus Pack
             if (remoteManifests.opus != null)
             {
                 if (opusManifest == null)
@@ -243,7 +252,7 @@ public class PackUpdater
         catch (Exception ex)
         {
             LogMessage($"Error reading cached package: {ex.Message}");
-            return true;
+            return true; // Force update on read errors
         }
     }
 
@@ -280,6 +289,7 @@ public class PackUpdater
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", $"vanilla_rtx_app_updater/{TunerVariables.appVersion} (https://github.com/Cubeir/Vanilla-RTX-App)");
 
+            // Fetch each manifest independently, allowing some to fail
             async Task<JObject?> TryFetchManifest(string url)
             {
                 try
@@ -289,7 +299,7 @@ public class PackUpdater
                 }
                 catch
                 {
-                    return null;
+                    return null; // Pack doesn't exist remotely or network error
                 }
             }
 
@@ -303,6 +313,7 @@ public class PackUpdater
             var normals = await normalsTask;
             var opus = await opusTask;
 
+            // Return null only if ALL manifests failed to fetch
             if (rtx == null && normals == null && opus == null)
             {
                 return null;
@@ -332,6 +343,7 @@ public class PackUpdater
 
     // ---------- Deployment methods
 
+
     private async Task<bool> DeployPackage(string packagePath)
     {
         if (PackUpdater.IsMinecraftRunning() && RuntimeFlags.Set("Has_Told_User_To_Close_The_Game"))
@@ -341,13 +353,11 @@ public class PackUpdater
 
         bool anyPackDeployed = false;
         string tempExtractionDir = null;
-        string targetResourcePackPath = null;
-        string regularPackPath = null;
-        string developmentPackPath = null;
+        string resourcePackPath = null;
 
         try
         {
-            // Find the base paths
+            // Find the resource pack path, where we wanna deploy
             string basePath = TunerVariables.Persistent.IsTargetingPreview
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock Preview")
                 : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Minecraft Bedrock");
@@ -358,21 +368,16 @@ public class PackUpdater
                 return false;
             }
 
-            // Paths
-            regularPackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "resource_packs");
-            developmentPackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", "development_resource_packs");
+            resourcePackPath = Path.Combine(basePath, "Users", "Shared", "games", "com.mojang", installToDevelopmentFolder ? "development_resource_packs" : "resource_packs");
 
-            // Choose target installation path
-            targetResourcePackPath = installToDevelopmentFolder ? developmentPackPath : regularPackPath;
-
-            if (!Directory.Exists(targetResourcePackPath))
+            if (!Directory.Exists(resourcePackPath))
             {
-                Directory.CreateDirectory(targetResourcePackPath);
-                LogMessage($"📁 Created target directory: {(installToDevelopmentFolder ? "development_resource_packs" : "resource_packs")}");
+                Directory.CreateDirectory(resourcePackPath);
+                LogMessage("📁 Shared resources directory was missing and has been created.");
             }
 
             // Step 1: Extract zipball to temp directory
-            tempExtractionDir = Path.Combine(targetResourcePackPath, "__rtxapp_" + Guid.NewGuid().ToString("N"));
+            tempExtractionDir = Path.Combine(resourcePackPath, "__rtxapp_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempExtractionDir);
 
             ZipFile.ExtractToDirectory(packagePath, tempExtractionDir, overwriteFiles: true);
@@ -407,28 +412,12 @@ public class PackUpdater
 
             if (packsToProcess.Count == 0)
             {
-                LogMessage("❌ No recognizable Vanilla RTX packs found in the downloaded package.");
+                LogMessage("❌ No recognized Vanilla RTX packs found in the downloaded package.");
                 return false;
             }
 
             LogMessage($"📦 Found {packsToProcess.Count} pack(s) in cache: {string.Join(", ", packsToProcess.Select(p => p.displayName))}");
 
-            // Step 3: Build list of folders to clean from
-            var foldersToCleanFrom = new List<string>();
-
-            if (CleanupBothFolders)
-            {
-                // Clean from both regular and dev folders to prevent duplicates
-                if (Directory.Exists(regularPackPath))
-                    foldersToCleanFrom.Add(regularPackPath);
-                if (Directory.Exists(developmentPackPath))
-                    foldersToCleanFrom.Add(developmentPackPath);
-            }
-            else
-            {
-                // Only clean old packs from the target installation folder
-                foldersToCleanFrom.Add(targetResourcePackPath);
-            }
 
             // Step 4: Atomic deployment for each pack
             foreach (var pack in packsToProcess)
@@ -437,17 +426,27 @@ public class PackUpdater
                 {
                     LogMessage($"🔄 Processing {pack.displayName}...");
 
-                    // Delete old installations from all relevant folders
-                    foreach (var folderPath in foldersToCleanFrom)
-                    {
-                        await DeleteExistingPackByUUID(folderPath, pack.uuid, pack.moduleUuid, pack.displayName);
-                    }
+                    // Atomic operation: Delete old, then immediately move new
+                    await DeleteExistingPackByUUID(resourcePackPath,
+                        pack.uuid, pack.moduleUuid, pack.displayName);
 
-                    // Deploy to target folder
-                    var finalDestination = GetSafeDirectoryName(targetResourcePackPath, pack.finalName);
+                    var finalDestination = GetSafeDirectoryName(resourcePackPath, pack.finalName);
                     Directory.Move(pack.sourcePath, finalDestination);
 
                     ProcessEnhancementFolders(finalDestination);
+
+                    // Ensure empty contents.json and make TL.json
+                    Helpers.GenerateTexturesLists(finalDestination);
+                    var contentsPath = Path.Combine(finalDestination, "contents.json");
+                    if (File.Exists(contentsPath))
+                    {
+                        var attr = File.GetAttributes(contentsPath);
+                        if ((attr & System.IO.FileAttributes.ReadOnly) != 0)
+                            File.SetAttributes(contentsPath, attr & ~System.IO.FileAttributes.ReadOnly);
+
+                        File.Delete(contentsPath);
+                    }
+                    File.WriteAllText(contentsPath, "{}");
 
                     LogMessage($"✅ {pack.displayName} deployed successfully");
                     anyPackDeployed = true;
@@ -455,6 +454,7 @@ public class PackUpdater
                 catch (Exception ex)
                 {
                     LogMessage($"❌ Failed to deploy {pack.displayName}: {ex.Message}");
+                    // Continue with other packs - don't let one failure stop everything
                 }
             }
 
@@ -482,21 +482,13 @@ public class PackUpdater
                 }
             }
 
-            // Step 6: Clean up orphaned temp directories from both folders regardless of CleanBothFolders bool
-            var foldersToCleanOrphansFrom = new List<string>();
-            if (regularPackPath != null && Directory.Exists(regularPackPath))
-                foldersToCleanOrphansFrom.Add(regularPackPath);
-            if (developmentPackPath != null && Directory.Exists(developmentPackPath))
-                foldersToCleanOrphansFrom.Add(developmentPackPath);
-
-            var cutoff = DateTime.UtcNow.AddMinutes(-1);
-            bool cleanedAny = false;
-
-            foreach (var folderPath in foldersToCleanOrphansFrom)
+            // Step 6: Clean up orphaned temp directories (like from crashes)
+            if (resourcePackPath != null)
             {
+                var cutoff = DateTime.UtcNow.AddMinutes(-1);
                 try
                 {
-                    var orphanedDirs = Directory.GetDirectories(folderPath, "__rtxapp_*", SearchOption.TopDirectoryOnly)
+                    var orphanedDirs = Directory.GetDirectories(resourcePackPath, "__rtxapp_*", SearchOption.TopDirectoryOnly)
                         .Where(d => Directory.GetCreationTimeUtc(d) < cutoff);
 
                     foreach (var dir in orphanedDirs)
@@ -505,34 +497,31 @@ public class PackUpdater
                         {
                             ForceWritable(dir);
                             Directory.Delete(dir, true);
-                            cleanedAny = true;
+                            LogMessage($"🧹 Cleaned up previous orphaned folder(s).");
                         }
-                        catch { }
+                        catch { /* ignore */ }
                     }
                 }
-                catch { }
-            }
-
-            if (cleanedAny)
-            {
-                LogMessage($"🧹 Cleaned up orphaned temporary folders.");
+                catch { /* ignore */ }
             }
         }
     }
-
     private string GetSafeDirectoryName(string parentPath, string desiredName)
     {
         var fullPath = Path.Combine(parentPath, desiredName);
 
+        // If directory doesn't exist, we can use it
         if (!Directory.Exists(fullPath))
             return fullPath;
 
+        // If directory exists but is empty, we can safely overwrite
         if (Directory.GetFileSystemEntries(fullPath).Length == 0)
         {
             Directory.Delete(fullPath);
             return fullPath;
         }
 
+        // Directory exists and has files, find a numbered suffix
         int suffix = 1;
         string safeName;
         do
@@ -541,28 +530,20 @@ public class PackUpdater
             suffix++;
         } while (Directory.Exists(safeName) && Directory.GetFileSystemEntries(safeName).Length > 0);
 
+        // If we found an existing empty directory with this numbered name, delete it
         if (Directory.Exists(safeName))
             Directory.Delete(safeName);
 
         return safeName;
     }
-
-    private async Task DeleteExistingPackByUUID(string searchFolderPath,
+    private async Task DeleteExistingPackByUUID(string resourcePackPath,
         string targetHeaderUUID, string targetModuleUUID, string packName)
     {
-        if (!Directory.Exists(searchFolderPath))
-            return;
-
-        var currentManifests = Directory.GetFiles(searchFolderPath, "manifest.json", SearchOption.AllDirectories);
+        var currentManifests = Directory.GetFiles(resourcePackPath, "manifest.json", SearchOption.AllDirectories)
+            .Where(m => !Path.GetDirectoryName(m)!.Contains("__rtxapp_")); // temp folder filter
 
         foreach (var manifestPath in currentManifests)
         {
-            // Skip temp directories
-            var manifestDir = Path.GetDirectoryName(manifestPath);
-            var dirName = Path.GetFileName(manifestDir);
-            if (dirName != null && dirName.StartsWith("__rtxapp_", StringComparison.OrdinalIgnoreCase))
-                continue;
-
             var uuids = await ReadManifestUUIDs(manifestPath);
             if (uuids == null) continue;
 
@@ -570,25 +551,23 @@ public class PackUpdater
             if (headerUUID.Equals(targetHeaderUUID, StringComparison.OrdinalIgnoreCase) &&
                 moduleUUID.Equals(targetModuleUUID, StringComparison.OrdinalIgnoreCase))
             {
-                var topLevelFolder = GetTopLevelFolderForManifest(manifestPath, searchFolderPath);
+                var topLevelFolder = GetTopLevelFolderForManifest(manifestPath, resourcePackPath);
                 if (topLevelFolder != null && Directory.Exists(topLevelFolder))
                 {
                     ForceWritable(topLevelFolder);
                     Directory.Delete(topLevelFolder, true);
-
-                    string folderType = searchFolderPath.Contains("development") ? "dev folder" : "main folder";
-                    LogMessage($"🗑️ Removed previous {packName} from {folderType}");
+                    LogMessage($"🗑️ Removed previous installation of: {packName}");
                 }
                 return; // UUID pair is globally unique, safe early exit
             }
         }
     }
-
     private void ForceWritable(string path)
     {
         var di = new DirectoryInfo(path);
         if (!di.Exists) return;
 
+        // Only modify if actually read-only
         if ((di.Attributes & System.IO.FileAttributes.ReadOnly) != 0)
             di.Attributes &= ~System.IO.FileAttributes.ReadOnly;
 
@@ -604,7 +583,6 @@ public class PackUpdater
                 dir.Attributes &= ~System.IO.FileAttributes.ReadOnly;
         }
     }
-
     private async Task<(string headerUUID, string moduleUUID)?> ReadManifestUUIDs(string manifestPath)
     {
         try
@@ -622,6 +600,8 @@ public class PackUpdater
             return null;
         }
     }
+
+
 
     // ---------- Enhanced option enabler
     private void ProcessEnhancementFolders(string rootDirectory)
@@ -645,27 +625,28 @@ public class PackUpdater
             catch (Exception ex)
             {
                 failed++;
+                // Optional: keep detailed log for debugging, but don't flood UI
                 System.Diagnostics.Debug.WriteLine($"Enhancement folder error ({enhancementPath}): {ex.Message}");
             }
         }
 
-        if (processed > 0)
+        if (processed + failed > 0)
         {
-            LogMessage(failed == 0
-                ? $"✅ Merged {processed} enhancements"
-                : $"⚠️ Merged {processed} enhancements, {failed} failed");
+            var msg = failed == 0
+                ? $"✅ Processed {processed} '{EnhancementFolderName}' enhancement folder(s)"
+                : $"✅ Processed {processed} enhancement folder(s), {failed} failed";
+            Debug.WriteLine(msg);
         }
     }
-
     private void CopyDirectoryContents(string sourceDir, string destDir)
     {
         foreach (var file in Directory.GetFiles(sourceDir))
         {
             string fileName = Path.GetFileName(file);
             string destFile = Path.Combine(destDir, fileName);
-            File.Copy(file, destFile, true);
+            File.Copy(file, destFile, true); // overwrite
+            Debug.WriteLine($"  Copied file: {fileName}");
         }
-
         foreach (var subDir in Directory.GetDirectories(sourceDir))
         {
             string dirName = Path.GetFileName(subDir);
@@ -674,6 +655,7 @@ public class PackUpdater
             CopyDirectoryContents(subDir, destSubDir);
         }
     }
+
 
     // ---------- Caching Helpers
     private (bool exists, string path) GetCacheInfo()
@@ -709,6 +691,7 @@ public class PackUpdater
         return exists;
     }
 
+
     // ---------- Other Helpers
     private string GetTopLevelFolderForManifest(string manifestPath, string resourcePackPath)
     {
@@ -716,6 +699,7 @@ public class PackUpdater
         var resourcePackDir = new DirectoryInfo(resourcePackPath);
         var currentDir = new DirectoryInfo(manifestDir);
 
+        // Walk up the directory tree until we find the direct child of resourcePackPath
         while (currentDir != null && currentDir.Parent != null)
         {
             if (currentDir.Parent.FullName.Equals(resourcePackDir.FullName, StringComparison.OrdinalIgnoreCase))
@@ -737,6 +721,7 @@ public class PackUpdater
     public static bool IsMinecraftRunning()
     {
         var mcProcesses = Process.GetProcessesByName("Minecraft.Windows");
+
         return mcProcesses.Length > 0;
     }
 }
