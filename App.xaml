@@ -34,21 +34,21 @@
 
                 <!-- Dark theme -->
                 <ResourceDictionary x:Key="Dark">
-                    <Color x:Key="FakeSplitButtonDarkBorderColor">#40454545</Color>
-                    <Color x:Key="FakeSplitButtonBrightBorderColor">#506E6E6E</Color>
+                    <Color x:Key="FakeSplitButtonDarkBorderColor">#3A454545</Color>
+                    <Color x:Key="FakeSplitButtonBrightBorderColor">#4A6E6E6E</Color>
                     <Visibility x:Key="LightThemeBackgroundVisibility">Collapsed</Visibility>
                     <SolidColorBrush x:Key="IntersectionNeutralizerBrush"
-                                     Color="#FF000000" />
+                                     Color="#20000000" />
 
                 </ResourceDictionary>
 
                 <!-- Light theme -->
                 <ResourceDictionary x:Key="Light">
-                    <Color x:Key="FakeSplitButtonDarkBorderColor">#54FAFAFA</Color>
+                    <Color x:Key="FakeSplitButtonDarkBorderColor">#4AFAFAFA</Color>
                     <Color x:Key="FakeSplitButtonBrightBorderColor">#FAFEFEFE</Color>
                     <Visibility x:Key="LightThemeBackgroundVisibility">Visible</Visibility>
                     <SolidColorBrush x:Key="IntersectionNeutralizerBrush"
-                                     Color="#FFFFFFFF" />
+                                     Color="#37FFFFFF" />
                 </ResourceDictionary>
 
             </ResourceDictionary.ThemeDictionaries>

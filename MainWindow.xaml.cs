@@ -37,8 +37,6 @@ namespace Vanilla_RTX_App;
 /*
 ### GENERAL TODO & IDEAS ###
 
-- Make the color resources for between-buttons less opaque, especially in dark theme, and the special pixel
-
 - Finalizing processors is essential, reusable for other projects
 
 - Add images to readme for Ambient Lighting and any other one that is easy to demo, maybe include more in-app images besides the render
