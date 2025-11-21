@@ -127,7 +127,7 @@ public class PackUpdater
         {
             // Either update failed, or is on cooldown, or no update is available, whatever the case got no choice, this is the latest we got
             // TODO: Update so it returns actual reasons
-            LogMessage("ℹ️ Current cached package is the latest available at this moment.");
+            LogMessage("ℹ️ Current cached package is the latest available at the moment.");
             var deploySuccess = await DeployPackage(cachePath);
             return (deploySuccess, new List<string>(_logMessages));
         }

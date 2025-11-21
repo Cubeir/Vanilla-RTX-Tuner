@@ -10,10 +10,11 @@ using Windows.Storage;
 namespace Vanilla_RTX_App.Modules;
 public static class MojankMessages
 {
-    public static readonly string[] WarningMessages = new[]
+    public static readonly string[] JokeMessages = new[]
     {
         "Easy there pal, I'm about to void your Minecraft warranty.",
         "Careful now...",
+        "I'm about to vandalize your {Insert Minecraft Edition} splash screen",
         "You're one click away from the akashic records.",
         "You're poking... something...",
         "The next click can't be undone!\njust kidding.",
@@ -33,9 +34,9 @@ public static class MojankMessages
         "You were warned not to push that button, Dovahkiin.",
         "Some of these lines are cheesy at best, BUT",
         "War never changes. Neither does Mojang's QA.",
-        "Predatory practices are their creed. Continue and find out who.",
+        "Predatory practices form their creed.",
         "Mojank Studios! Where elevating slop takes a backseat to game's development.",
-        "I love Minecraft! guess who doesn't?"
+        "I love Minecarft! guess who doesn't?"
     };
 }
 

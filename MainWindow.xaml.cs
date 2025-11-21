@@ -637,7 +637,6 @@ public sealed partial class MainWindow : Window
         {
             var textBox = Instance.SidebarLog;
 
-            // Get the appropriate prefix for the log level (empty if no level provided)
             string prefix = level switch
             {
                 LogLevel.Success => "✅ ",
@@ -659,7 +658,6 @@ public sealed partial class MainWindow : Window
             }
             else
             {
-                // StringBuilder better performance with large logs
                 var sb = new StringBuilder(prefixedMessage.Length + textBox.Text.Length + separator.Length + 2);
                 sb.Append(prefixedMessage)
                   .Append('\n')
@@ -668,6 +666,11 @@ public sealed partial class MainWindow : Window
                   .Append(textBox.Text);
                 textBox.Text = sb.ToString();
             }
+
+            // Scroll to top
+            textBox.UpdateLayout();
+            var sv = GetScrollViewer(textBox);
+            sv?.ChangeView(null, 0, null);
         }
 
         if (Instance.DispatcherQueue.HasThreadAccess)
@@ -675,6 +678,21 @@ public sealed partial class MainWindow : Window
         else
             Instance.DispatcherQueue.TryEnqueue(Prepend);
     }
+    public static ScrollViewer GetScrollViewer(DependencyObject obj)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+        {
+            var child = VisualTreeHelper.GetChild(obj, i);
+            if (child is ScrollViewer sv)
+                return sv;
+
+            var result = GetScrollViewer(child);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+
 
 
     public static void OpenUrl(string url)
@@ -1206,7 +1224,7 @@ public sealed partial class MainWindow : Window
 
         if (_mojankClickCount == 3)
         {
-            var message = MojankMessages.WarningMessages[Random.Shared.Next(MojankMessages.WarningMessages.Length)];
+            var message = MojankMessages.JokeMessages[Random.Shared.Next(MojankMessages.JokeMessages.Length)];
             Log(message + " Continue and you might see a UAC prompt...", LogLevel.Warning);
         }
 

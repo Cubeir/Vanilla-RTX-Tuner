@@ -1137,7 +1137,8 @@ public class Processor
     }
 
 
-    // Make it lower metalness in proportion to the increase in roughness -- that way it can truly align with VV's style
+    // TODO: Make it lower metalness in proportion to the increase in roughness -- that way it can truly align with VV's style (will it ruin anything? keep it subtle)
+    // TODO: Make the decaying curve's effect much stronger, expect 20-30 boost for 0-50 values, above that decaying to 15-10, then towards 255, 0, roundown for that
     private static void ProcessRoughingUp(PackInfo pack)
     {
         if (string.IsNullOrEmpty(pack.Path) || !Directory.Exists(pack.Path))
