@@ -224,7 +224,7 @@ public sealed partial class MainWindow : Window
 
         Instance = this;
 
-        var defaultSize = new SizeInt32(980, 600);
+        var defaultSize = new SizeInt32(950, 550);
         _windowStateManager.ApplySavedStateOrDefaults();
 
         // Version, title and initial logs
