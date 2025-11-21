@@ -1894,13 +1894,14 @@ public sealed partial class MainWindow : Window
 
             // foreach (var log in logs) Log(log);
 
+            var action = _updater.HasDeployableCache() ? "Reinstallation" : "Installation";
             if (success)
             {
-                Log("Reinstallation completed.", LogLevel.Success);
+                Log($"{action} completed.", LogLevel.Success);
             }
             else
             {
-                Log("Reinstallation failed.", LogLevel.Error);
+                Log($"{action} failed.", LogLevel.Error);
             }
         }
         catch (Exception ex)

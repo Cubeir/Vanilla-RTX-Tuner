@@ -42,10 +42,11 @@ public class PackUpdater
 
     // TODO: EXPOSE THESE TO AN EXTERNAL FILE. CONFIGURE AT STARTUP -- SAME WITH THE OTHER STUFF
     public string EnhancementFolderName { get; set; } = "__enhancements";
+
     // If enabled, installs to development folder
     public bool InstallToDevelopmentFolder { get; set; } = false;
 
-    // Fucky implementation, it tries to find the opposite folder of where we're deploying to, and clean the folders there too
+    // If enabled, tries to find the opposite folder of where we're deploying to, and clean the folders there too
     public bool CleanUpTheOtherFolder { get; set; } =
 #if DEBUG
         false;
@@ -484,7 +485,7 @@ public class PackUpdater
                 {
                     ForceWritable(tempExtractionDir);
                     Directory.Delete(tempExtractionDir, true);
-                    LogMessage(anyPackDeployed ? "✅ Deployment completed and cleaned up." : "🧹 Cleaned up after failed deployment.");
+                    LogMessage(anyPackDeployed ? "✅ Cleaned up after successful deployment" : "🧹 Cleaned up after failed deployment");
                 }
                 catch (Exception ex)
                 {
