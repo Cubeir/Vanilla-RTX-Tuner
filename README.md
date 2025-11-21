@@ -40,14 +40,16 @@ Below you'll find an up-to-date list of features & documentation of functionalit
 
 - `Install latest RTX packages`  
   Downloads and (re)installs the latest Vanilla RTX & Vanilla RTX Normals packages directly from the [Vanilla RTX GitHub repository](https://github.com/cubeir/Vanilla-RTX)  
-  No third party sites. Files are cached, making pack reinstalls instant unless a new update is available. This serves two main purposes: first to reset the packs back to original state, allowing you to rapidly experiment and learn in practice what the tuning options do, and second to ensure you're always getting the latest version of Vanilla RTX, acting like an auto-updater. The updater also ensures you will only ever have one instance of each Vanilla RTX pack installed across both resource packs and development resource packs folders.  
+  Files are then cached, making pack reinstalls instant unless a new update is available. This serves two main purposes: first to give a quick way reset the packs back to original state, allowing you to rapidly experiment and learn in practice what the tuning options do, and second to ensure you're always getting the latest version of Vanilla RTX, acting like an auto-updater. The updater also ensures you will only ever have one instance of each Vanilla RTX pack installed across both resource packs and development resource packs folders.  
   
-The app might notify you of important updates on startup, Vanilla RTX is constantly evolving and adapting to the latest release version of Minecraft, for the most reliable and up-to-date information, check the news channel on the [VANILLA RTX Discord server](https://discord.gg/A4wv4wwYud).
+The app might notify you of important updates on startup, Vanilla RTX is constantly evolving and adapting to the latest release version of Minecraft, however for the most reliable and up-to-date information, check the news channel on the [VANILLA RTX Discord server](https://discord.gg/A4wv4wwYud).
   
 
 - `Preview (Toggle)`  
   All of the app's functionalities are targeted at Preview/Beta version of Minecraft instead of main release while  `Preview` is active.
-  
+
+![vanilla-rtx-app-in-app-image](https://github.com/user-attachments/assets/00a40b3e-91dc-4e5b-a504-3c6bc426c927)
+
 - `Export selection`  
   Exports selected packs. Useful for backing up your snapshot of the pack before making further changes, or to share your tuned version of Vanilla RTX (or another PBR resource pack) with friends!
   
@@ -55,9 +57,10 @@ The app might notify you of important updates on startup, Vanilla RTX is constan
 
 The Vanilla RTX App includes tools to tune Vanilla RTX or any other RTX or Vibrant Visuals resource pack according to your preferences. Tuning options use algorithms designed to protect the artist's original work with PBR textures, making it difficult to accidentally destroy the pack's intended look. The whole tuning process works together with the app's other features to keep the experience streamlined.
 
-Upon launch, the app automatically scans for already-installed Vanilla RTX packs, available packs become selectable for tuning or export.    
-If packs are installed or reinstalled through the app, or if Preview button is toggled, checkboxes refresh.
-If multiple versions of the same Vanilla RTX variant are present, the newest will be picked, you can still select older versions manually from the list of local packs.
+![vanilla-rtx-app-ui-in-game-images_2](https://github.com/user-attachments/assets/b56c6c67-cfa6-47a0-8c62-bc9220299981)
+
+Upon launch, the app automatically scans for already-installed Vanilla RTX packs, available packs become selectable for tuning or export, you can also select up to one additional custom pack at a time.
+>  If Vanilla RTX packs are installed or reinstalled through the app, or if Preview button is toggled, checkboxes refresh. If multiple versions of the same Vanilla RTX variant are present, the newest will be picked, you can still select older versions manually from the list of local packs.
 
 - `Select a local pack`  
   Opens a menu containing a list of your installed RTX or Vibrant Visuals resource packs. You can select one pack to be tuned alongside any of the 3 primary Vanilla RTX variants.
@@ -67,19 +70,23 @@ If multiple versions of the same Vanilla RTX variant are present, the newest wil
   Updates all fog densities by a given factor — e.g., `0.5` to halve, `3.0` to triple, or `0` to effectively disable air fog. If a fog density is already at 0, the multiplier is instead converted into an acceptable literal number between `0.0-1.0`.
   If fog density is at maximum, excess of the multiplier will be used to scatter more light in the atmosphere. Underwater fog is affected partially to a much lesser degree.
   
-  ![fog-panel](https://github.com/user-attachments/assets/a865a95c-f436-47f9-a56f-ec17c75e1fb0)
+  ![fog-panel](https://github.com/user-attachments/assets/a013dc6a-bd46-41f1-b980-0620f0514588)
 
 - `Emissivity multiplier`  
   Multiplies emissivity on blocks using a special formula that preserves the relative emissive values and keeps the composition intact, even if the multiplier is too high for a particular block.
   
-  ![street-default-vanilla-rtx](https://github.com/user-attachments/assets/bc5af2b1-8dd3-47fc-8344-15bce477ba5d)
-  ![street-3x-emissivity-tuned-vanilla-rtx](https://github.com/user-attachments/assets/a545d9c2-2890-46b3-b5f6-3cea7d98e13e)
+  ![street-default-vanilla-rtx](https://github.com/user-attachments/assets/19e802e9-42c6-4e70-a931-6474f5e10716)
+![street-3x-emissivity-tuned-vanilla-rtx](https://github.com/user-attachments/assets/90e7d2a4-afdc-4250-9ecf-d5cc15fd9dc7)
+
 
 - `Increase ambient light`  
-Adds a small amount of emissivity to all surfaces, effectively increasing ambient light with ray tracing. With vibrant visuals this may result in a nightvision effect.  
+Adds a small amount of emissivity to all surfaces, effectively increasing ambient light with ray tracing. This will result in a nightvision effect if made too strong.   
 This option works in conjunction with the Emissivity Multiplier — higher initial multipliers (e.g. 6.0) will amplify the effect.
 Because changes stack on each tuning attempt, only use this once on freshly installed packs, and avoid setting higher emissivity multipliers than `1.0` on further consecutive tuning attempts.  
 > For this reason, `Emissivity Multiplier` is automatically reset to default (1.0) if previous tuning attempt has had this option enabled, making it harder to break packs.
+
+![ambient-lighting](https://github.com/user-attachments/assets/07f1e65b-be7a-40d1-95de-79eb70a3f3ac)
+  ![vanilla-rtx-app-ui-in-game-images](https://github.com/user-attachments/assets/1cca7e22-dd6d-42e7-8059-b6481aef6685)
 
 - `Normal intensity adjustment`  
   Adjusts normal map and heightmap intensities.
@@ -114,6 +121,8 @@ Because changes stack on each tuning attempt, only use this once on freshly inst
   Effectively making it as if the app was just freshly installed on your system!
 
 ## Miscellaneous
+
+![vanilla-rtx-app-ui-in-game-images (3)](https://github.com/user-attachments/assets/15863ba8-f796-432f-90f9-aeaa0584e760)
 
 - Hovering any control in the app displays a unique Minecraft-inspired artwork communicating its function in the bottom left side of the app, for instance, sliders show how they should impact the textures in-game as you change them, toggles show before/after, and buttons display an artistic interpretation of what the they do!
   In combination with tooltips, this is meant to help make the app less intimidating and more beginner-friendly!  
