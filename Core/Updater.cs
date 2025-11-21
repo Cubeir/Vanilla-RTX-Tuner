@@ -485,7 +485,7 @@ public class PackUpdater
                 {
                     ForceWritable(tempExtractionDir);
                     Directory.Delete(tempExtractionDir, true);
-                    LogMessage(anyPackDeployed ? "✅ Cleaned up after successful deployment" : "🧹 Cleaned up after failed deployment");
+                    LogMessage(anyPackDeployed ? "✅ Cleaned up" : "🧹 Cleaned up after fail");
                 }
                 catch (Exception ex)
                 {

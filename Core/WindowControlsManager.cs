@@ -22,7 +22,8 @@ public class WindowControlsManager
             "DonateButton",
             "SidebarLog",
             "SidelogProgressBar",
-            "CycleThemeButton"
+            "CycleThemeButton",
+            "LogCopyButton"
         };
 
     // Static dictionary to track states for multiple windows

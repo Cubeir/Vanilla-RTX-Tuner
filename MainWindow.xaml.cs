@@ -122,6 +122,8 @@ public static class TunerVariables
     public static bool IsNormalsEnabled = false;
     public static bool IsOpusEnabled = false;
 
+    public static string HaveDeployableCache = "";
+
     // These variables are saved and loaded, they persist
     public static class Persistent
     {
@@ -272,11 +274,13 @@ public sealed partial class MainWindow : Window
         {
             UpdateVanillaRTXGlyph.Glyph = "\uE8F7"; // Syncfolder icon
             UpdateVanillaRTXButtonText.Text = "Reinstall latest RTX packs";
+            HaveDeployableCache = "Reinstallation";
         }
         else
         {
             UpdateVanillaRTXGlyph.Glyph = "\uEBD3"; // Default cloud icon
             UpdateVanillaRTXButtonText.Text = "Install latest RTX packages";
+            HaveDeployableCache = "Installation";
         }
 
         // Brief delay to ensure everything is fully rendered, then fade out splash screen
@@ -1891,17 +1895,15 @@ public sealed partial class MainWindow : Window
 
             // Run the update operation
             var (success, logs) = await Task.Run(() => updater.UpdatePacksAsync());
-
             // foreach (var log in logs) Log(log);
 
-            var action = _updater.HasDeployableCache() ? "Reinstallation" : "Installation";
             if (success)
             {
-                Log($"{action} completed.", LogLevel.Success);
+                Log($"{HaveDeployableCache} completed.", LogLevel.Success);
             }
             else
             {
-                Log($"{action} failed.", LogLevel.Error);
+                Log($"{HaveDeployableCache} failed.", LogLevel.Error);
             }
         }
         catch (Exception ex)
