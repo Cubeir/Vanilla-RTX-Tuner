@@ -15,7 +15,7 @@ using static Vanilla_RTX_App.Core.PackLocator; // For static UUIDs, they are sto
 
 namespace Vanilla_RTX_App.Core;
 
-// Updating logging of classes here to allow it to properly use the actual Logging method with logLevels
+// Updating logging of classes here to allow proper use of the actual Logging method with logLevels
 
 /// =====================================================================================================================
 /// Only deals with cache, we don't care if user has Vanilla RTX installed or not, we compare versions of cache to remote
@@ -46,8 +46,12 @@ public class PackUpdater
     public bool InstallToDevelopmentFolder { get; set; } = false;
 
     // Fucky implementation, it tries to find the opposite folder of where we're deploying to, and clean the folders there too
-    public bool CleanUpBothFolders { get; set; } = true;
-
+    public bool CleanUpTheOtherFolder { get; set; } =
+#if DEBUG
+        false;
+#else
+        true;
+#endif
 
     // -------------------------------\           /------------------------------------ \\
     public async Task<(bool Success, List<string> Logs)> UpdatePacksAsync()
@@ -494,7 +498,7 @@ public class PackUpdater
                 var pathsToCleanOrphans = new List<string> { resourcePackPath };
 
                 // Same logic as deployment-time existing pack clean up thingy
-                if (CleanUpBothFolders)
+                if (CleanUpTheOtherFolder)
                 {
                     var dirInfo = new DirectoryInfo(resourcePackPath);
                     string opposingPath = InstallToDevelopmentFolder
@@ -572,7 +576,7 @@ public class PackUpdater
         // Build list of paths to clean
         var pathsToClean = new List<string> { resourcePackPath };
 
-        if (CleanUpBothFolders)
+        if (CleanUpTheOtherFolder)
         {
             var dirInfo = new DirectoryInfo(resourcePackPath);
 
